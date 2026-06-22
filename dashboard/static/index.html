@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Strategy Backtester</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <h2>Strategies</h2>
+      <input type="text" id="search" placeholder="Search..." oninput="filterStrategies()">
+    </div>
+    <div class="strategy-list" id="strategy-list"></div>
+  </aside>
+
+  <main class="main">
+    <div class="empty-state" id="empty-state">Select a strategy from the sidebar</div>
+
+    <div class="workspace hidden" id="workspace">
+      <header class="workspace-header">
+        <div>
+          <h1 id="strat-name"></h1>
+          <p class="text-muted" id="strat-file"></p>
+        </div>
+        <a id="strat-video" class="btn-outline" target="_blank" hidden>Watch Video</a>
+      </header>
+
+      <div class="source-tabs">
+        <button class="source-tab active" data-source="local" onclick="switchSource('local')">Local Upload</button>
+        <button class="source-tab" data-source="drive" onclick="switchSource('drive')">Google Drive</button>
+      </div>
+
+      <section class="upload-section" id="upload-section">
+        <h3>Upload CSV Files</h3>
+        <div class="csv-requirements" id="csv-args"></div>
+
+        <!-- Local Upload -->
+        <div id="source-local">
+          <div class="drop-zone" id="drop-zone">
+            <p>Drop CSV files here or click to browse</p>
+            <input type="file" id="file-input" multiple accept=".csv" hidden>
+          </div>
+          <div id="file-list"></div>
+        </div>
+
+        <!-- Google Drive -->
+        <div id="source-drive" class="hidden">
+          <div class="drive-section">
+            <label class="drive-label">Paste a Google Drive folder URL or file URL(s):</label>
+            <input type="text" id="drive-url" class="drive-input" placeholder="https://drive.google.com/drive/folders/... or file ID">
+            <button class="btn-secondary btn-sm" onclick="loadDriveFolder()">Browse Folder</button>
+            <div id="drive-files" class="drive-files"></div>
+
+            <div class="drive-divider"><span>OR add individual file links</span></div>
+            <div id="drive-file-inputs"></div>
+          </div>
+        </div>
+
+        <button class="btn-primary" id="btn-run" onclick="runBacktest()">Run Backtest</button>
+      </section>
+
+      <section class="results-section hidden" id="results-section">
+        <div id="results-message" class="results-message hidden"></div>
+        <div class="stats-grid" id="stats-grid"></div>
+        <div class="chart-box">
+          <h3>Results</h3>
+          <canvas id="resultsChart"></canvas>
+        </div>
+        <div class="trades-box">
+          <h3>Trade History <span class="badge" id="trade-count"></span></h3>
+          <div class="table-wrap">
+            <table>
+              <thead><tr>
+                <th>#</th><th>Entry</th><th>Direction</th><th>Entry Price</th>
+                <th>Exit Price</th><th>PnL (pips)</th><th>Outcome</th><th></th>
+              </tr></thead>
+              <tbody id="trades-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</div>
+
+<!-- Trade Detail Modal -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>Trade <span id="modal-trade-id"></span></h3>
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
+
+<div class="loader hidden" id="loader"><div class="spinner"></div><p id="loader-text">Running backtest...</p></div>
+<script src="app.js"></script>
+</body>
+</html>

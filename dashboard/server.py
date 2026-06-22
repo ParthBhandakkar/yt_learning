@@ -8,6 +8,8 @@ import re
 import subprocess
 import sys
 import tempfile
+import uuid
+from datetime import datetime
 from pathlib import Path
 from typing import Optional
 
@@ -19,15 +21,23 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 
 STRATEGIES_DIR = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(STRATEGIES_DIR))
+from core import enrich_trades_pnl, load_csv, trade_pnl_pips
+
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 OUT_DIR = Path(__file__).resolve().parent / "out"
-
+TMP_DIR = OUT_DIR / "_tmp"
 OUT_DIR.mkdir(exist_ok=True)
+TMP_DIR.mkdir(exist_ok=True)
 STATIC_DIR.mkdir(exist_ok=True)
 
 app = FastAPI(title="Standalone Strategy Backtester")
 
 DELAYED_IMPORTS: dict[str, dict] = {}
+
+CHART_SESSIONS: dict[str, dict] = {}
+CHART_TF_ORDER = ["1m", "5m", "15m", "1h", "4h", "daily"]
+CHART_WINDOW_SIZE = 150
 
 # ---------------------------------------------------------------------------
 # Strategy discovery
@@ -163,6 +173,147 @@ def match_files_to_args(csv_args: list[dict], uploaded: dict[str, str]) -> dict[
     return result
 
 
+# ---------------------------------------------------------------------------
+# Chart session (candlestick viewer)
+# ---------------------------------------------------------------------------
+
+def pick_chart_csv_path(file_map: dict[str, str], csv_args: list[dict]) -> Optional[str]:
+    if len(file_map) == 1:
+        return next(iter(file_map.values()))
+    best_path: Optional[str] = None
+    best_rank = len(CHART_TF_ORDER) + 1
+    for ca in csv_args:
+        arg = ca["arg"].lower()
+        for i, tf in enumerate(CHART_TF_ORDER):
+            if tf.replace("_", "") in arg.replace("_", ""):
+                if i < best_rank and ca["arg"] in file_map:
+                    best_rank = i
+                    best_path = file_map[ca["arg"]]
+                break
+    return best_path or next(iter(file_map.values()), None)
+
+
+def _parse_trade_ts(iso_str: str) -> Optional[int]:
+    if not iso_str:
+        return None
+    try:
+        return int(datetime.fromisoformat(iso_str.replace("Z", "+00:00")).timestamp())
+    except (ValueError, TypeError):
+        return None
+
+
+def create_chart_session(csv_path: str, trades: list) -> str:
+    session_id = uuid.uuid4().hex[:12]
+    candles = load_csv(csv_path)
+    CHART_SESSIONS[session_id] = {
+        "candles": candles,
+        "trades": trades,
+        "total": len(candles),
+    }
+    return session_id
+
+
+def _bars_from_candles(candles, start: int, count: int) -> list[dict]:
+    return [
+        {"time": c.timestamp, "open": c.open, "high": c.high, "low": c.low, "close": c.close}
+        for c in candles[start:start + count]
+    ]
+
+
+def _snap_marker_time(candles, start: int, count: int, ts: int) -> int:
+    chunk = candles[start:start + count]
+    if not chunk:
+        return ts
+    best = chunk[0].timestamp
+    best_diff = abs(best - ts)
+    for c in chunk:
+        diff = abs(c.timestamp - ts)
+        if diff < best_diff:
+            best_diff = diff
+            best = c.timestamp
+    return best
+
+
+def _markers_for_range(trades: list, candles, bar_start: int, bar_count: int, t_min: int, t_max: int) -> list[dict]:
+    markers = []
+    for i, t in enumerate(trades):
+        entry_ts = _parse_trade_ts(t.get("entry_time"))
+        exit_ts = _parse_trade_ts(t.get("exit_time"))
+        direction = (t.get("direction") or "").lower()
+        outcome = t.get("outcome", "")
+
+        if entry_ts and t_min <= entry_ts <= t_max:
+            markers.append({
+                "time": _snap_marker_time(candles, bar_start, bar_count, entry_ts),
+                "position": "belowBar" if direction == "long" else "aboveBar",
+                "color": "#58a6ff",
+                "shape": "arrowUp" if direction == "long" else "arrowDown",
+                "text": f"E{i + 1}",
+            })
+        if exit_ts and t_min <= exit_ts <= t_max:
+            color = "#3fb950" if outcome == "win" else "#f85149" if outcome == "loss" else "#d29922"
+            markers.append({
+                "time": _snap_marker_time(candles, bar_start, bar_count, exit_ts),
+                "position": "aboveBar" if direction == "long" else "belowBar",
+                "color": color,
+                "shape": "circle",
+                "text": f"X{i + 1}",
+            })
+    markers.sort(key=lambda m: m["time"])
+    return markers
+
+
+def _locate_window_start(candles, ts: int, window: int = CHART_WINDOW_SIZE) -> int:
+    if not candles:
+        return 0
+    lo, hi = 0, len(candles) - 1
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if candles[mid].timestamp < ts:
+            lo = mid + 1
+        else:
+            hi = mid
+    center = max(0, lo - window // 4)
+    return min(center, max(0, len(candles) - window))
+
+
+@app.get("/api/chart/{session_id}")
+async def get_chart_window(session_id: str, start: int = 0, count: int = CHART_WINDOW_SIZE):
+    session = CHART_SESSIONS.get(session_id)
+    if not session:
+        return JSONResponse({"error": "Chart session not found"}, status_code=404)
+
+    count = min(max(count, 10), 500)
+    start = max(start, 0)
+    total = session["total"]
+    candles = session["candles"]
+    if start >= total:
+        return {"bars": [], "markers": [], "start": start, "count": 0, "total": total}
+
+    actual = min(count, total - start)
+    bars = _bars_from_candles(candles, start, actual)
+    t_min = bars[0]["time"]
+    t_max = bars[-1]["time"]
+    markers = _markers_for_range(session["trades"], candles, start, actual, t_min, t_max)
+    return {
+        "bars": bars,
+        "markers": markers,
+        "start": start,
+        "count": actual,
+        "total": total,
+        "window_size": CHART_WINDOW_SIZE,
+    }
+
+
+@app.get("/api/chart/{session_id}/locate")
+async def locate_chart_time(session_id: str, ts: int):
+    session = CHART_SESSIONS.get(session_id)
+    if not session:
+        return JSONResponse({"error": "Chart session not found"}, status_code=404)
+    start = _locate_window_start(session["candles"], ts)
+    return {"start": start, "total": session["total"]}
+
+
 def compute_stats(trades: list) -> dict:
     default = lambda: {"total_trades": 0, "winning_trades": 0, "losing_trades": 0, "open_trades": 0,
         "win_rate": 0, "total_pnl_pips": 0, "profit_factor": 0, "avg_win_pips": 0, "avg_loss_pips": 0,
@@ -178,9 +329,9 @@ def compute_stats(trades: list) -> dict:
     loss_count = len(losses)
     win_rate = round(win_count / total * 100, 2) if total else 0
 
-    total_pnl = sum(t.get("pnl_pips", 0) for t in trades)
-    gross_profit = sum(t.get("pnl_pips", 0) for t in wins)
-    gross_loss = abs(sum(t.get("pnl_pips", 0) for t in losses))
+    total_pnl = sum(trade_pnl_pips(t) for t in trades)
+    gross_profit = sum(trade_pnl_pips(t) for t in wins)
+    gross_loss = abs(sum(trade_pnl_pips(t) for t in losses))
     profit_factor = round(gross_profit / gross_loss, 2) if gross_loss else (float("inf") if gross_profit else 0)
 
     avg_win = round(gross_profit / win_count, 1) if wins else 0
@@ -195,7 +346,7 @@ def compute_stats(trades: list) -> dict:
             cl += 1; cw = 0
             max_cons_l = max(max_cons_l, cl)
 
-    all_pips = [t.get("pnl_pips", 0) for t in trades]
+    all_pips = [trade_pnl_pips(t) for t in trades]
 
     return {
         "total_trades": total,
@@ -226,9 +377,45 @@ class DriveFolderRequest(BaseModel):
     url: str
 
 
+class SaveResultsRequest(BaseModel):
+    strategy_id: str
+    trades: list
+    stats: dict
+
+
 class DriveBacktestRequest(BaseModel):
     strategy_id: str
     drive_files: dict[str, str]  # arg -> drive URL or file ID
+
+
+def persist_backtest_results(strategy: dict, trades: list, stats: dict) -> str:
+    """Save backtest output under dashboard/out/ inside the project."""
+    ts = datetime.now().strftime("%Y%m%d_%H%M%S")
+    stem = strategy["file"].replace(".py", "")
+    filename = f"{strategy['id']}_{stem}_{ts}.json"
+    out_path = OUT_DIR / filename
+    payload = {
+        "strategy_id": strategy["id"],
+        "strategy_name": strategy["name"],
+        "strategy_file": strategy["file"],
+        "saved_at": datetime.now().isoformat(),
+        "stats": stats,
+        "trades": trades,
+    }
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, indent=2, default=str)
+    return str(out_path.relative_to(STRATEGIES_DIR)).replace("\\", "/")
+
+
+@app.post("/api/save-results")
+async def save_results(req: SaveResultsRequest):
+    strategy = next((s for s in _STRATEGIES if s["id"] == req.strategy_id), None)
+    if not strategy:
+        return JSONResponse({"error": "Strategy not found"}, status_code=404)
+    if not req.trades:
+        return JSONResponse({"error": "No trades to save"}, status_code=400)
+    saved_to = persist_backtest_results(strategy, req.trades, req.stats)
+    return {"saved_to": saved_to, "message": f"Results saved to {saved_to}"}
 
 
 @app.post("/api/drive/list-folder")
@@ -239,7 +426,7 @@ async def drive_list_folder(req: DriveFolderRequest):
         if not folder_id or len(folder_id) < 10:
             return JSONResponse({"error": "Could not extract folder ID from URL"}, status_code=400)
 
-        files = gdown.download_folder(id=folder_id, output="/tmp", skip_download=True)
+        files = gdown.download_folder(id=folder_id, output=str(TMP_DIR), skip_download=True)
         csv_files = []
         for f in (files or []):
             if hasattr(f, "name") and f.name.endswith(".csv"):
@@ -324,8 +511,18 @@ def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> 
         if not isinstance(trades, list):
             trades = [trades]
 
+        enrich_trades_pnl(trades)
         stats = compute_stats(trades)
-        return {"trades": trades, "stats": stats, "stdout": result.stdout.strip()}
+        saved_to = persist_backtest_results(strategy, trades, stats)
+        chart_path = pick_chart_csv_path(file_map, strategy["csv_args"])
+        chart_session = create_chart_session(chart_path, trades) if chart_path else None
+        return {
+            "trades": trades,
+            "stats": stats,
+            "stdout": result.stdout.strip(),
+            "saved_to": saved_to,
+            "chart_session": chart_session,
+        }
 
     except subprocess.TimeoutExpired:
         return JSONResponse({"error": "Backtest timed out after 180s"}, status_code=500)

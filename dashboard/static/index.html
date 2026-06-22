@@ -6,6 +6,8 @@
 <title>Strategy Backtester</title>
 <link rel="stylesheet" href="style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<!-- TradingView Lightweight Charts (official library by TradingView) -->
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
 </head>
 <body>
 <div class="app">
@@ -64,11 +66,35 @@
       </section>
 
       <section class="results-section hidden" id="results-section">
+        <div class="results-toolbar">
+          <div id="saved-path" class="saved-path hidden"></div>
+          <button class="btn-secondary btn-sm" id="btn-save" onclick="saveResults()">Save Results to Project</button>
+        </div>
         <div id="results-message" class="results-message hidden"></div>
         <div class="stats-grid" id="stats-grid"></div>
         <div class="chart-box">
           <h3>Results</h3>
           <canvas id="resultsChart"></canvas>
+        </div>
+        <div class="chart-box candle-chart-box hidden" id="candle-chart-section">
+          <div class="candle-chart-header">
+            <div>
+              <h3>Price Chart</h3>
+              <a class="tv-attribution" href="https://www.tradingview.com/lightweight-charts/" target="_blank" rel="noopener">Charts by TradingView</a>
+            </div>
+            <div class="candle-chart-legend">
+              <span><span class="legend-dot entry"></span> Entry</span>
+              <span><span class="legend-dot exit-win"></span> Exit (win)</span>
+              <span><span class="legend-dot exit-loss"></span> Exit (loss)</span>
+            </div>
+          </div>
+          <div id="candleChart" class="candle-chart-container"></div>
+          <div class="candle-chart-controls">
+            <span id="candle-window-label" class="candle-window-label"></span>
+            <button class="btn-sm" type="button" onclick="jumpToFirstTrade()">Jump to First Trade</button>
+            <button class="btn-sm" type="button" onclick="resetCandleView()">Reset View</button>
+          </div>
+          <p class="candle-hint">Drag to pan, scroll to zoom — TradingView-style navigation. More candles load as you scroll.</p>
         </div>
         <div class="trades-box">
           <h3>Trade History <span class="badge" id="trade-count"></span></h3>
@@ -76,7 +102,7 @@
             <table>
               <thead><tr>
                 <th>#</th><th>Entry</th><th>Direction</th><th>Entry Price</th>
-                <th>Exit Price</th><th>PnL (pips)</th><th>Outcome</th><th></th>
+                <th>Exit Price</th><th>PnL (pips)</th><th>Outcome</th><th></th><th></th>
               </tr></thead>
               <tbody id="trades-body"></tbody>
             </table>

@@ -6,7 +6,9 @@ Provides pure functions operating on OHLCV data loaded from CSV.
 import csv
 import json
 import math
+import re
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import NamedTuple, Optional
 
 
@@ -24,19 +26,134 @@ class Candle(NamedTuple):
     volume: int
 
 
+def _norm_header(name: str) -> str:
+    return re.sub(r"[\s\-\.]+", "_", name.strip().lower())
+
+
+_OHLC_ALIASES = {
+    "open": ("open", "o", "op", "bid_open", "ask_open"),
+    "high": ("high", "h", "hi"),
+    "low": ("low", "l", "lo"),
+    "close": ("close", "c", "cl", "last", "price"),
+    "volume": ("tick_volume", "tickvolume", "volume", "vol", "v", "tick_vol", "tickvol"),
+    "time_utc": ("time_utc", "datetime", "date_time", "timestamp_utc", "gmt_time", "utc"),
+    "time": ("time", "timestamp", "unix", "epoch", "ts", "time_unix"),
+    "date": ("date", "dt", "day"),
+}
+
+
+def _resolve_column(headers: list[str], aliases: tuple[str, ...]) -> Optional[str]:
+    normalized = {_norm_header(h): h for h in headers}
+    for alias in aliases:
+        if alias in normalized:
+            return normalized[alias]
+    return None
+
+
+def detect_csv_columns(headers: list[str]) -> dict[str, Optional[str]]:
+    """Map logical OHLCV fields to actual CSV header names."""
+    if not headers:
+        raise ValueError("CSV has no header row")
+
+    mapping: dict[str, Optional[str]] = {"time_part": None}
+    for field, aliases in _OHLC_ALIASES.items():
+        mapping[field] = _resolve_column(headers, aliases)
+
+    # MT4/MT5 style: separate Date + Time columns (Time is HH:MM:SS, not unix)
+    if mapping["date"] and mapping["time"] and mapping["time_utc"] is None:
+        if _norm_header(mapping["time"]) == "time":
+            mapping["time_part"] = mapping["time"]
+            mapping["time"] = None
+
+    missing = [f for f in ("open", "high", "low", "close") if not mapping[f]]
+    if missing:
+        raise ValueError(
+            f"Could not detect required OHLC columns ({', '.join(missing)}). "
+            f"Found headers: {headers}"
+        )
+
+    has_time = mapping["time"] or mapping["time_utc"] or mapping["date"]
+    if not has_time:
+        raise ValueError(
+            "Could not detect a time column. Expected unix timestamp, datetime, "
+            f"or separate date/time columns. Found headers: {headers}"
+        )
+
+    return mapping
+
+
+def _parse_timestamp(row: dict[str, str], cols: dict[str, Optional[str]]) -> tuple[int, str]:
+    if cols.get("time_utc"):
+        raw = row[cols["time_utc"]].strip()
+        if re.match(r"^-?\d+(\.\d+)?$", raw):
+            ts = float(raw)
+            if ts > 1e12:
+                ts /= 1000
+            ts_int = int(ts)
+            return ts_int, to_iso(ts_int)
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        ts_int = int(dt.timestamp())
+        return ts_int, dt.astimezone(timezone.utc).isoformat()
+
+    if cols.get("time"):
+        raw = row[cols["time"]].strip()
+        if not raw:
+            raise ValueError("Empty timestamp value")
+        if re.match(r"^-?\d+(\.\d+)?$", raw):
+            ts = float(raw)
+            if ts > 1e12:
+                ts /= 1000
+            ts_int = int(ts)
+            return ts_int, to_iso(ts_int)
+        dt = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        ts_int = int(dt.timestamp())
+        return ts_int, dt.astimezone(timezone.utc).isoformat()
+
+    date_raw = row[cols["date"]].strip()  # type: ignore[index]
+    date_raw = date_raw.replace(".", "-")
+    time_raw = row[cols["time_part"]].strip() if cols.get("time_part") else "00:00:00"  # type: ignore[index]
+    combined = f"{date_raw} {time_raw}"
+    for fmt in ("%Y-%m-%d %H:%M:%S", "%Y-%m-%d %H:%M", "%m/%d/%Y %H:%M:%S", "%m/%d/%Y %H:%M"):
+        try:
+            dt = datetime.strptime(combined, fmt).replace(tzinfo=timezone.utc)
+            ts_int = int(dt.timestamp())
+            return ts_int, dt.isoformat()
+        except ValueError:
+            continue
+    raise ValueError(f"Could not parse date/time: {combined!r}")
+
+
+def _parse_volume(row: dict[str, str], cols: dict[str, Optional[str]]) -> int:
+    vol_col = cols.get("volume")
+    if not vol_col:
+        return 0
+    raw = row.get(vol_col, "").strip()
+    if not raw:
+        return 0
+    return int(float(raw))
+
+
 def load_csv(path: str) -> list[Candle]:
-    candles = []
-    with open(path, "r") as f:
+    candles: list[Candle] = []
+    with open(path, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
+        if not reader.fieldnames:
+            return candles
+        cols = detect_csv_columns(list(reader.fieldnames))
         for row in reader:
+            ts, time_utc = _parse_timestamp(row, cols)
             candles.append(Candle(
-                time_utc=row["time_utc"],
-                timestamp=int(row["time"]),
-                open=float(row["open"]),
-                high=float(row["high"]),
-                low=float(row["low"]),
-                close=float(row["close"]),
-                volume=int(row["tick_volume"]),
+                time_utc=time_utc,
+                timestamp=ts,
+                open=float(row[cols["open"]]),  # type: ignore[index]
+                high=float(row[cols["high"]]),  # type: ignore[index]
+                low=float(row[cols["low"]]),  # type: ignore[index]
+                close=float(row[cols["close"]]),  # type: ignore[index]
+                volume=_parse_volume(row, cols),
             ))
     return candles
 
@@ -398,6 +515,52 @@ def find_highest_tf_ifvg(
 
 
 # ---------------------------------------------------------------------------
+# PnL helpers
+# ---------------------------------------------------------------------------
+
+def infer_pip_size(price: float) -> float:
+    """Guess pip size from price level (indices, metals, JPY, standard forex)."""
+    if price >= 1000:
+        return 1.0
+    if price >= 100:
+        return 0.1
+    if price >= 10:
+        return 0.01
+    return 0.0001
+
+
+def trade_pnl_pips(trade: dict) -> float:
+    """Return trade PnL in pips, computing from prices when not stored."""
+    stored = trade.get("pnl_pips")
+    if stored is not None:
+        return float(stored)
+
+    entry = trade.get("entry_price")
+    exit_p = trade.get("exit_price")
+    if entry is None or exit_p is None:
+        return 0.0
+
+    ref = float(entry)
+    pip_size = infer_pip_size(ref)
+    direction = (trade.get("direction") or "").lower()
+    if direction == "long":
+        raw = float(exit_p) - ref
+    elif direction == "short":
+        raw = ref - float(exit_p)
+    else:
+        return 0.0
+    return round(raw / pip_size, 1)
+
+
+def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
+    """Fill missing pnl_pips on each trade from entry/exit prices."""
+    for trade in trades:
+        if trade.get("pnl_pips") is None:
+            trade["pnl_pips"] = trade_pnl_pips(trade)
+    return trades
+
+
+# ---------------------------------------------------------------------------
 # Save output JSON
 # ---------------------------------------------------------------------------
 
@@ -410,15 +573,12 @@ def save_trades(trades: list[dict], output_path: str):
 # Parse CSV filename for metadata
 # ---------------------------------------------------------------------------
 
-import re
-
 def parse_csv_filename(path: str) -> dict:
-    base = path.rsplit("/", 1)[-1].replace(".csv", "")
+    base = Path(path).stem
     parts = base.split("_")
-    # pattern: SYMBOL_TIMEFRAME_START_END
-    # Timeframe is like 1h, 15m, 5m, 4h, 1d
-    symbol = parts[0]
-    tf = parts[1]
-    start_date = parts[2]
+    # pattern: SYMBOL_TIMEFRAME_START_END (e.g. XAUUSD_5m_2021-01-01_2024-01-01)
+    symbol = parts[0] if parts else "UNKNOWN"
+    tf = parts[1] if len(parts) > 1 else "unknown"
+    start_date = parts[2] if len(parts) > 2 else ""
     end_date = parts[3] if len(parts) > 3 else ""
     return {"symbol": symbol, "timeframe": tf, "start_date": start_date, "end_date": end_date}

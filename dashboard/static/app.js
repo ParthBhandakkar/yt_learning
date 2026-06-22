@@ -4,6 +4,20 @@ let uploadedFiles = [];
 let chartInstance = null;
 let dataSource = 'local';
 let driveFolderFiles = [];
+let lastResults = null;
+let candleChart = null;
+let candleSeries = null;
+let candleResizeObs = null;
+let candleState = {
+  sessionId: null,
+  bars: [],
+  trades: [],
+  loadedStart: 0,
+  loadedEnd: 0,
+  total: 0,
+  chunkSize: 200,
+  loading: false,
+};
 
 async function loadStrategies() {
   const res = await fetch('/api/strategies');
@@ -321,8 +335,18 @@ async function runDriveBacktest() {
 
 // Render results
 function renderResults(data) {
-  const { trades, stats, stdout } = data;
+  const { trades, stats, stdout, saved_to } = data;
+  lastResults = { trades, stats, strategy_id: selectedStrategy?.id };
   document.getElementById('results-section').classList.remove('hidden');
+
+  const savedEl = document.getElementById('saved-path');
+  if (saved_to) {
+    savedEl.textContent = 'Saved to: ' + saved_to;
+    savedEl.classList.remove('hidden');
+  } else {
+    savedEl.classList.add('hidden');
+    savedEl.textContent = '';
+  }
 
   const msgEl = document.getElementById('results-message');
   if (trades.length === 0 && stdout) {
@@ -338,6 +362,43 @@ function renderResults(data) {
   renderStats(stats, trades);
   renderTrades(trades);
   renderChart(trades);
+  initCandleChart(data.chart_session, trades);
+}
+
+async function saveResults() {
+  if (!lastResults || !selectedStrategy) {
+    alert('Run a backtest first');
+    return;
+  }
+
+  const btn = document.getElementById('btn-save');
+  btn.disabled = true;
+  btn.textContent = 'Saving...';
+
+  try {
+    const res = await fetch('/api/save-results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        strategy_id: selectedStrategy.id,
+        trades: lastResults.trades,
+        stats: lastResults.stats,
+      }),
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert(data.error || 'Save failed');
+      return;
+    }
+    const savedEl = document.getElementById('saved-path');
+    savedEl.textContent = 'Saved to: ' + data.saved_to;
+    savedEl.classList.remove('hidden');
+  } catch (err) {
+    alert('Error: ' + err.message);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Save Results to Project';
+  }
 }
 
 function renderStats(stats, trades) {
@@ -373,6 +434,7 @@ function renderTrades(trades) {
       <td class="${t.outcome === 'win' ? 'win' : t.outcome === 'loss' ? 'loss' : ''}">${t.pnl_pips || 0}</td>
       <td><span class="${t.outcome}">${(t.outcome || '').toUpperCase()}</span></td>
       <td><button class="btn-sm" onclick="showTradeDetail(${i})">Detail</button></td>
+      <td><button class="btn-sm" onclick="jumpToTrade(${i})">Chart</button></td>
     </tr>
   `).join('');
 }
@@ -421,6 +483,283 @@ function renderChart(trades) {
       }
     }
   });
+}
+
+// ---------------------------------------------------------------------------
+// Candlestick chart — TradingView Lightweight Charts
+// ---------------------------------------------------------------------------
+
+function destroyCandleChart() {
+  if (candleResizeObs) {
+    candleResizeObs.disconnect();
+    candleResizeObs = null;
+  }
+  if (candleChart) {
+    candleChart.remove();
+    candleChart = null;
+    candleSeries = null;
+  }
+}
+
+function snapToBarTime(bars, ts) {
+  if (!bars.length) return ts;
+  let best = bars[0].time;
+  let bestDiff = Math.abs(best - ts);
+  for (const b of bars) {
+    const diff = Math.abs(b.time - ts);
+    if (diff < bestDiff) {
+      bestDiff = diff;
+      best = b.time;
+    }
+  }
+  return best;
+}
+
+function buildTradeMarkers(trades, bars) {
+  if (!bars.length) return [];
+  const tMin = bars[0].time;
+  const tMax = bars[bars.length - 1].time;
+  const markers = [];
+
+  trades.forEach((t, i) => {
+    const entryTs = t.entry_time ? Math.floor(new Date(t.entry_time).getTime() / 1000) : null;
+    const exitTs = t.exit_time ? Math.floor(new Date(t.exit_time).getTime() / 1000) : null;
+    const direction = (t.direction || '').toLowerCase();
+    const outcome = t.outcome || '';
+
+    if (entryTs && entryTs >= tMin && entryTs <= tMax) {
+      markers.push({
+        time: snapToBarTime(bars, entryTs),
+        position: direction === 'long' ? 'belowBar' : 'aboveBar',
+        color: '#2962FF',
+        shape: direction === 'long' ? 'arrowUp' : 'arrowDown',
+        text: `E${i + 1}`,
+      });
+    }
+    if (exitTs && exitTs >= tMin && exitTs <= tMax) {
+      const color = outcome === 'win' ? '#26a69a' : outcome === 'loss' ? '#ef5350' : '#d29922';
+      markers.push({
+        time: snapToBarTime(bars, exitTs),
+        position: direction === 'long' ? 'aboveBar' : 'belowBar',
+        color,
+        shape: 'circle',
+        text: `X${i + 1}`,
+      });
+    }
+  });
+
+  return markers.sort((a, b) => a.time - b.time);
+}
+
+function updateCandleMarkers() {
+  if (!candleSeries) return;
+  candleSeries.setMarkers(buildTradeMarkers(candleState.trades, candleState.bars));
+}
+
+function updateCandleLabel() {
+  const el = document.getElementById('candle-window-label');
+  if (!el || !candleState.total) return;
+  const range = candleChart?.timeScale().getVisibleLogicalRange();
+  if (!range) {
+    el.textContent = `Loaded ${candleState.bars.length} of ${candleState.total} candles`;
+    return;
+  }
+  const from = Math.max(0, Math.floor(range.from));
+  const to = Math.min(candleState.bars.length, Math.ceil(range.to));
+  const absFrom = candleState.loadedStart + from + 1;
+  const absTo = candleState.loadedStart + to;
+  el.textContent = `Viewing candles ${absFrom}–${absTo} of ${candleState.total}`;
+}
+
+async function fetchCandleChunk(start, count) {
+  const res = await fetch(
+    `/api/chart/${candleState.sessionId}?start=${start}&count=${count}`
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || 'Failed to load candles');
+  return data;
+}
+
+function applyCandleData(preserveRange, prepended = 0) {
+  const prevRange = preserveRange ? candleChart.timeScale().getVisibleLogicalRange() : null;
+  candleSeries.setData(candleState.bars);
+  updateCandleMarkers();
+  if (prevRange && prepended > 0) {
+    candleChart.timeScale().setVisibleLogicalRange({
+      from: prevRange.from + prepended,
+      to: prevRange.to + prepended,
+    });
+  }
+  updateCandleLabel();
+}
+
+async function loadInitialCandles() {
+  const data = await fetchCandleChunk(0, candleState.chunkSize);
+  candleState.bars = data.bars;
+  candleState.loadedStart = data.start;
+  candleState.loadedEnd = data.start + data.bars.length;
+  candleState.total = data.total;
+  candleSeries.setData(candleState.bars);
+  updateCandleMarkers();
+  candleChart.timeScale().fitContent();
+  updateCandleLabel();
+}
+
+async function extendCandlesBackward() {
+  if (candleState.loading || candleState.loadedStart <= 0) return;
+  candleState.loading = true;
+  try {
+    const newStart = Math.max(0, candleState.loadedStart - candleState.chunkSize);
+    const count = candleState.loadedStart - newStart;
+    const data = await fetchCandleChunk(newStart, count);
+    if (!data.bars.length) return;
+    candleState.bars = [...data.bars, ...candleState.bars];
+    candleState.loadedStart = newStart;
+    applyCandleData(true, data.bars.length);
+  } finally {
+    candleState.loading = false;
+  }
+}
+
+async function extendCandlesForward() {
+  if (candleState.loading || candleState.loadedEnd >= candleState.total) return;
+  candleState.loading = true;
+  try {
+    const data = await fetchCandleChunk(candleState.loadedEnd, candleState.chunkSize);
+    if (!data.bars.length) return;
+    candleState.bars = [...candleState.bars, ...data.bars];
+    candleState.loadedEnd += data.bars.length;
+    applyCandleData(false);
+  } finally {
+    candleState.loading = false;
+  }
+}
+
+async function ensureCandlesAround(absIndex) {
+  while (candleState.loadedStart > absIndex && candleState.loadedStart > 0) {
+    await extendCandlesBackward();
+  }
+  while (candleState.loadedEnd < absIndex + 150 && candleState.loadedEnd < candleState.total) {
+    await extendCandlesForward();
+  }
+}
+
+function onVisibleRangeChange(range) {
+  if (!range || candleState.loading) return;
+  updateCandleLabel();
+  if (range.from < 25) extendCandlesBackward();
+  if (range.to > candleState.bars.length - 25) extendCandlesForward();
+}
+
+async function jumpToTrade(idx) {
+  const trades = JSON.parse(sessionStorage.getItem('lastTrades') || '[]');
+  const t = trades[idx];
+  if (!t?.entry_time || !candleState.sessionId) return;
+
+  const ts = Math.floor(new Date(t.entry_time).getTime() / 1000);
+  const res = await fetch(`/api/chart/${candleState.sessionId}/locate?ts=${ts}`);
+  const data = await res.json();
+  if (!res.ok) return;
+
+  await ensureCandlesAround(data.start);
+  const localIdx = candleState.bars.findIndex((b) => b.time >= ts);
+  if (localIdx >= 0) {
+    candleChart.timeScale().setVisibleLogicalRange({
+      from: Math.max(0, localIdx - 25),
+      to: localIdx + 125,
+    });
+  }
+  updateCandleLabel();
+}
+
+async function jumpToFirstTrade() {
+  const trades = JSON.parse(sessionStorage.getItem('lastTrades') || '[]');
+  if (trades.length) await jumpToTrade(0);
+}
+
+function resetCandleView() {
+  if (!candleChart) return;
+  candleChart.timeScale().fitContent();
+  updateCandleLabel();
+}
+
+function initCandleChart(sessionId, trades) {
+  destroyCandleChart();
+  const section = document.getElementById('candle-chart-section');
+  if (!sessionId) {
+    section.classList.add('hidden');
+    return;
+  }
+
+  section.classList.remove('hidden');
+  candleState = {
+    sessionId,
+    bars: [],
+    trades: trades || [],
+    loadedStart: 0,
+    loadedEnd: 0,
+    total: 0,
+    chunkSize: 200,
+    loading: false,
+  };
+
+  const container = document.getElementById('candleChart');
+  container.innerHTML = '';
+
+  candleChart = LightweightCharts.createChart(container, {
+    layout: {
+      background: { color: '#131722' },
+      textColor: '#d1d4dc',
+    },
+    grid: {
+      vertLines: { color: '#1e222d' },
+      horzLines: { color: '#1e222d' },
+    },
+    crosshair: {
+      mode: LightweightCharts.CrosshairMode.Normal,
+      vertLine: { color: '#758696', width: 1, style: LightweightCharts.LineStyle.Dashed },
+      horzLine: { color: '#758696', width: 1, style: LightweightCharts.LineStyle.Dashed },
+    },
+    rightPriceScale: { borderColor: '#2a2e39' },
+    timeScale: {
+      borderColor: '#2a2e39',
+      timeVisible: true,
+      secondsVisible: false,
+      rightOffset: 8,
+      barSpacing: 8,
+    },
+    handleScroll: {
+      mouseWheel: true,
+      pressedMouseMove: true,
+      horzTouchDrag: true,
+      vertTouchDrag: false,
+    },
+    handleScale: {
+      axisPressedMouseMove: true,
+      mouseWheel: true,
+      pinch: true,
+    },
+  });
+
+  candleSeries = candleChart.addCandlestickSeries({
+    upColor: '#26a69a',
+    downColor: '#ef5350',
+    borderUpColor: '#26a69a',
+    borderDownColor: '#ef5350',
+    wickUpColor: '#26a69a',
+    wickDownColor: '#ef5350',
+  });
+
+  candleChart.timeScale().subscribeVisibleLogicalRangeChange(onVisibleRangeChange);
+
+  candleResizeObs = new ResizeObserver(() => {
+    if (candleChart) {
+      candleChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
+    }
+  });
+  candleResizeObs.observe(container);
+
+  loadInitialCandles();
 }
 
 // Trade detail modal

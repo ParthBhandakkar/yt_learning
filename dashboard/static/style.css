@@ -55,6 +55,8 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 
 /* Results */
 .results-section { }
+.results-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+.saved-path { font-size: 12px; color: var(--green); font-family: monospace; }
 .stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
 .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 14px; text-align: center; }
 .stat-card .stat-val { font-size: 20px; font-weight: 700; display: block; }
@@ -65,6 +67,21 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .chart-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; margin-bottom: 20px; }
 .chart-box h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
 .chart-box canvas { max-height: 300px; }
+
+.candle-chart-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
+.candle-chart-header h3 { margin-bottom: 2px; }
+.tv-attribution { font-size: 11px; color: var(--muted); text-decoration: none; }
+.tv-attribution:hover { color: var(--accent); }
+.candle-chart-legend { display: flex; gap: 14px; font-size: 11px; color: var(--muted); }
+.legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
+.legend-dot.entry { background: #58a6ff; }
+.legend-dot.exit-win { background: var(--green); }
+.legend-dot.exit-loss { background: var(--red); }
+.candle-chart-container { height: 380px; width: 100%; border-radius: 6px; overflow: hidden; }
+.candle-chart-controls { display: flex; align-items: center; gap: 10px; margin-top: 12px; flex-wrap: wrap; }
+.candle-chart-controls input[type="range"] { display: none; }
+.candle-window-label { font-size: 12px; color: var(--muted); font-family: monospace; white-space: nowrap; }
+.candle-hint { font-size: 11px; color: var(--muted); margin-top: 8px; }
 
 .trades-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 20px; }
 .trades-box h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; }

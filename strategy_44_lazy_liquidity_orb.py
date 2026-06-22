@@ -22,7 +22,7 @@ Usage:
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -135,8 +135,6 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
             cur = []; cur_date = d
         cur.append(c)
     if cur: days.append(cur)
-
-    from datetime import timedelta
 
     for day_candles in days:
         if len(day_candles) < 10:

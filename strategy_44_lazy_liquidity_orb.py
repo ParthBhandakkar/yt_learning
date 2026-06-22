@@ -22,7 +22,7 @@ Usage:
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -136,8 +136,6 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
         cur.append(c)
     if cur: days.append(cur)
 
-    from datetime import timedelta
-
     for day_candles in days:
         if len(day_candles) < 10:
             continue
@@ -218,6 +216,15 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
             trade["exit_time"] = to_iso(day_candles[-1].timestamp)
             trade["exit_price"] = day_candles[-1].close
             trade["outcome"] = "open"
+
+    for trade in trades:
+        if "exit_price" in trade and "entry_price" in trade:
+            diff = trade["exit_price"] - trade["entry_price"]
+            if trade["direction"] == "short":
+                diff = -diff
+            trade["pnl_pips"] = round(diff * 10000, 1)
+        else:
+            trade["pnl_pips"] = 0
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

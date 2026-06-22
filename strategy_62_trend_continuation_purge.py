@@ -14,6 +14,22 @@ Core concepts:
 
 Usage:
   python strategy_62_trend_continuation_purge.py --csv1h 1h.csv --csv5m 5m.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. One trade on the full history (break on first purge + iFVG match).
+  2. BOS uses the last swing on the entire 1H series — at early dates that swing
+     may not exist yet relative to the trade.
+  3. iFVG from core.py can trigger on wicks; entry index j may not be the actual
+     inversion bar when FVG is found on sweep_idx:j+5 slice (future bars included).
+
+HOW TO FIX:
+  1. Per-day or per-swing walk-forward on 1H; only use swings confirmed before
+     the purge candle.
+  2. At 5m bar j, detect iFVG only on candles[0:j+1] after sweep is confirmed.
+  3. Close-only inversion; enter on bar after iFVG close.
+  4. Collect all purge setups across the sample, not just the first.
 """
 
 import argparse

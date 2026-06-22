@@ -15,6 +15,22 @@ Core concepts:
 
 Usage:
   python strategy_52_draw_on_liquidity.py --csv15m 15m_data.csv --csv1m 1m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: CRITICAL — results are likely inflated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Exit loop starts at the ENTRY bar: for cx in range(i, ...). On the same
+     candle you "enter," the code checks if high/low already hit TP or SL.
+     In real life you are not in the trade until after that bar closes — so
+     same-bar TP/SL is peeking at the future path of the entry candle.
+  2. Stop loss uses candles[i-3:i+3] — includes 3 future bars when sizing risk
+     at bar i.
+
+HOW TO FIX:
+  1. Start exit checks on the NEXT bar only: if cx_c.timestamp > entry_ts.
+  2. Compute SL from candles[max(0,i-3):i+1] only (no future bars).
+  3. Confirm FVG on past data only; enter on bar after fib confirmation close.
+  4. Verify limit/FVG entry price was reachable on that bar or the next.
 """
 
 import argparse

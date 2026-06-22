@@ -15,6 +15,21 @@ Core concepts:
 
 Usage:
   python strategy_17_1h_pattern_1h_1m.py --csv1h 1h_data.csv --csv5m 5m_data.csv --csv1m 1m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. MSS/iFVG is detected on a slice like candles[i-5:i+10] — that includes up
+     to 10 future 1m bars when deciding at bar i. You cannot see those bars yet.
+  2. "Unswept" swing levels are labeled but not verified as still unswept at
+     decision time — the code assumes they are valid without checking sweeps.
+  3. core.detect_ifvg can fire on wicks before the candle closes.
+
+HOW TO FIX:
+  1. Only pass candles[0:i+1] into structure detectors at bar i.
+  2. Confirm a level is unswept by scanning only past candles up to i.
+  3. Wait for swing/FVG +1 bar confirmation; enter on the next bar after MSS.
+  4. Use close-only inversion signals.
 """
 
 import argparse

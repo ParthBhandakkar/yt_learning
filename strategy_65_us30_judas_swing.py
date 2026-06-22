@@ -14,6 +14,20 @@ Core concepts:
 
 Usage:
   python strategy_65_us30_judas_swing.py --csv15m 15m.csv --csv1m 1m.csv
+
+BACKTEST INTEGRITY NOTICE (severity: CRITICAL — results are likely inflated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Same-bar exit leak: for cx in range(j, ...) checks TP/SL on the entry bar j
+     before you could realistically be filled — inflates wins.
+  2. Pre-9:30 filter uses UTC hour, not New York hour — wrong session window.
+  3. MSS window includes future bars (j+5 slice). Only one trade on full file.
+
+HOW TO FIX:
+  1. Exit loop: only bars with timestamp strictly after entry_time.
+  2. Convert all session filters to NY time (UTC-4/5), same as other strategies.
+  3. At bar j, MSS only on candles[0:j+1]; enter next bar after confirmation.
+  4. Per-day loop; record all valid Judas setups across years.
 """
 
 import argparse

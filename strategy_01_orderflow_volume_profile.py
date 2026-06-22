@@ -16,6 +16,25 @@ Output:  JSON file with chronological trade events
 
 Usage:
   python strategy_01_orderflow_volume_profile.py --csv data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: CRITICAL — results are likely inflated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  At the start of each day, this script builds the volume profile, VWAP, daily
+  high, and daily low from the ENTIRE day — including hours that have not
+  happened yet when a trade would be taken. It is like trading at 9:30 AM while
+  already knowing where the day will close.
+  Absorption detection also peeks at future candles (follow_through uses bars
+  after index i) to decide if price "failed" to break a level — you cannot know
+  that until those future bars have closed.
+
+HOW TO FIX:
+  1. Walk bar-by-bar through the day. Recompute VP/VWAP/high/low only from
+     candles seen so far (or use yesterday's completed profile for levels).
+  2. Only call detect_absorption_at_level when bar i has fully closed and use
+     only candles[0:i+1] — never candles[i:i+window] for the decision at i.
+  3. Set stop/target from levels known at entry time, not end-of-day extremes.
+  4. Enter on the bar AFTER the inversion signal closes (e.g. i+1 open/close).
 """
 
 import argparse

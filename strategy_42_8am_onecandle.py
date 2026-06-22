@@ -15,6 +15,20 @@ Core concepts:
 
 Usage:
   python strategy_42_8am_onecandle.py --csv1h 1h_data.csv --csv1m 1m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Scans full history and takes only the first valid setup (one trade demo,
+     not a multi-year backtest).
+  2. MSS is run on candles[j-5:j+3] — includes future 1m bars when deciding at j.
+  3. FVG/iFVG uses core helpers that can trigger on wicks before bar close.
+
+HOW TO FIX:
+  1. Loop each trading day: build 8AM range only after that 1H candle closes.
+  2. At minute j, use only past 1m candles for MSS/FVG detection.
+  3. Close-only inversion; enter on next bar after MSS inside the range.
+  4. Allow multiple days of trades instead of break on first match.
 """
 
 import argparse

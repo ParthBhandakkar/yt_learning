@@ -14,6 +14,21 @@ Core concepts:
 
 Usage:
   python strategy_39_mechanical_2day_bias.py --csv_daily daily.csv --csv_15m 15m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Uses only the last two daily candles in the whole file for bias — not
+     rolling day-1/day-2 pairs for each trade day.
+  2. MSS/CISD is detected on slices like candles[j-5:j+3], which include up to
+     3 future 15m bars when judging bar j.
+  3. Stops after the first matching trade on the entire dataset.
+
+HOW TO FIX:
+  1. Walk forward: for each day 3, use that day's actual prior two daily candles.
+  2. At bar j, only pass candles[0:j+1] into detect_mss / detect_cisd.
+  3. Enter on the bar after structure confirmation closes.
+  4. Run per-day and collect all valid trades across the sample.
 """
 
 import argparse

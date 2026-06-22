@@ -14,6 +14,21 @@ Core concepts:
 
 Usage:
   python strategy_78_easy_ict_judas_swing.py --csv15m 15m.csv --csv5m 5m.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. get_session_range() scans ALL 15m candles in the file to build Asian
+     session high/low — not reset per calendar day. Ranges can mix days and
+     include data from far in the future relative to an early trade.
+  2. MSS uses slices with i+3 future bars. Often one trade on full history.
+
+HOW TO FIX:
+  1. Group 15m candles by NY calendar day; build Asia range per day only from
+     that day's 8PM–2AM candles (after the session completes).
+  2. At 5m bar i, structure detection only on candles[0:i+1].
+  3. Per-day Judas swing loop; multiple trades across the backtest period.
+  4. Enter on the bar after sweep + MSS confirmation closes.
 """
 
 import argparse

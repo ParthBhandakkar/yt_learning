@@ -14,6 +14,22 @@ Core concepts:
 
 Usage:
   python strategy_69_ict_market_maker.py --csv4h 4h.csv --csv15m 15m.csv [--csv1m 1m.csv]
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Scans entire 4H/15m history and stops at the first MMXM match — one demo
+     trade, not a multi-year backtest.
+  2. FVG/MSS checked on candles[j-3:j+3] or j+5 windows — includes future bars
+     when deciding at bar j.
+  3. Displacement and MSS can be judged on the same bar using data from bars
+     that have not closed yet.
+
+HOW TO FIX:
+  1. Walk each 4H "leg" per calendar period; allow multiple trades over time.
+  2. At 15m bar j, only use candles[0:j+1] for MSS/FVG/displacement.
+  3. Enter on the bar after MSS closes; use close-only structure rules.
+  4. Align 4H bias candles to the active trading day only.
 """
 
 import argparse

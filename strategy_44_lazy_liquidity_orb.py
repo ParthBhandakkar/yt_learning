@@ -17,6 +17,20 @@ Core concepts:
 
 Usage:
   python strategy_44_lazy_liquidity_orb.py --csv15m 15m_data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: MINOR — relatively honest; small fill issue)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  Per-day ORB logic is mostly sound: 3AM anchor is a completed candle, breakout
+  uses body close after the anchor, and exits check bars AFTER entry time.
+  The main optimism: "limit_retest" entries assume you get filled at the boundary
+  without checking if price actually came back to that level on a later bar.
+
+HOW TO FIX:
+  1. For limit entries, scan forward candles until price touches the limit or
+     the setup expires — skip the trade if retest never happens.
+  2. Keep market entries on breakout close as-is (already realistic).
+  3. Optionally enter market breakouts on the next bar open for conservatism.
 """
 
 import argparse

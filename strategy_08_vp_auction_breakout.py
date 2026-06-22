@@ -15,6 +15,19 @@ Core concepts:
 
 Usage:
   python strategy_08_vp_auction_breakout.py --csv 5m_data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: MINOR — one of the more honest scripts)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  Similar to strategy 04: Asia-session profile is built from completed session
+  candles, and entries use the next bar's close after a reclaim/breakout signal.
+  Minor risk: day grouping order and very tight consolidation windows may still
+  be slightly optimistic.
+
+HOW TO FIX:
+  1. Keep profile limited to completed Asia session candles only.
+  2. Ensure days are processed in strict chronological order.
+  3. Optionally enter at next-bar open instead of close for a stricter test.
 """
 
 import argparse

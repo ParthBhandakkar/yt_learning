@@ -13,6 +13,21 @@ Core concepts:
 
 Usage:
   python strategy_77_simple_ict_liquidity.py --csv4h 4h.csv --csv5m 5m.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. "Liquidity" swing is taken from the last swing on the entire 4H file —
+     at the trade date you would not know future swings yet.
+  2. Only one trade on the full dataset (first sweep + MSS).
+  3. MSS detected on slices with j+3 future 5m bars included.
+
+HOW TO FIX:
+  1. For each day, find the most recent confirmed 4H swing using only 4H bars
+     that closed before the current session.
+  2. Per-day loop on 5m; collect all sweep + MSS trades, not just first.
+  3. Confirm swings with +1 bar lag; MSS only on past candles at bar j.
+  4. Enter on the bar after MSS close at the liquidity sweep.
 """
 
 import argparse

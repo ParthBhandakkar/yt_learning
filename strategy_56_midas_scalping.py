@@ -15,6 +15,21 @@ Core concepts:
 
 Usage:
   python strategy_56_midas_scalping.py --csv15m 15m_data.csv --csv1m 1m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Picks one session from the entire dataset and one trade (first match) —
+     not a daily walk-forward backtest.
+  2. MSS is detected on candles[i-3:i+5], which includes up to 5 future 1m bars
+     when evaluating bar i.
+  3. Entry is on the same displacement bar used to confirm structure.
+
+HOW TO FIX:
+  1. Loop each trading day / session separately; take all valid Midas setups.
+  2. At bar i, only use candles[0:i+1] for MSS/displacement checks.
+  3. Enter on the bar after displacement + MSS confirmation closes.
+  4. Verify pre-session "unswept" levels using only candles before the open.
 """
 
 import argparse

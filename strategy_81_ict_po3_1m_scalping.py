@@ -15,6 +15,21 @@ Core concepts:
 
 Usage:
   python strategy_81_ict_po3_1m_scalping.py --csv1h 1h.csv --csv1m 1m.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Entry can occur on the same bar as the liquidity sweep while MSS is
+     detected using candles[i-2:i+5] — future bars help "confirm" the sweep.
+  2. 1H bias from the last two 1H candles in the whole file, not per day.
+  3. One trade on entire CSV (break on first match).
+
+HOW TO FIX:
+  1. Confirm sweep on bar i only after bar i closes; MSS only on candles[0:i+1]
+     then act earliest on bar i+1.
+  2. For each day, use that day's relevant 1H candles for PO3 bias only.
+  3. Per-day PO3 loop on 1m; record all valid setups.
+  4. Close-only MSS/iFVG; no wick-based triggers from core.detect_ifvg.
 """
 
 import argparse

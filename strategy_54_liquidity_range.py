@@ -14,6 +14,22 @@ Core concepts:
 
 Usage:
   python strategy_54_liquidity_range.py --csv5m 5m_data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Sliding window (start += 20) re-scans overlapping sections and can fire
+     multiple correlated trades on the same price move.
+  2. Range and MSS are found on slices like scan[s:s+10] and [j-3:j+3] that
+     include future bars relative to the decision bar.
+  3. Swings at the edge of a scan window are not confirmed with the required
+     +1 bar lag.
+
+HOW TO FIX:
+  1. Walk bar-by-bar once; at index i only use candles[0:i+1].
+  2. Confirm MSS only after all bars in the pattern have closed.
+  3. One trade per range sweep; skip overlapping signals on the same liquidity.
+  4. Enter on the bar after MSS close back inside the range.
 """
 
 import argparse

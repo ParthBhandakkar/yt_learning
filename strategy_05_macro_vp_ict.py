@@ -13,6 +13,22 @@ Core concepts:
 
 Usage:
   python strategy_05_macro_vp_ict.py --csv1m NQ_1m_data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: CRITICAL — results are likely inflated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. "Previous day" volume profile is built from the wrong slice of data (start
+     of current day), so macro levels are not what you would have in live trading.
+  2. Order blocks are traded at bar i before waiting for the next 3 bars to
+     confirm displacement — you are entering before the OB is proven.
+  3. core.detect_ifvg can trigger on a wick (high/low) before the candle
+     closes — live trading only knows the wick after the bar finishes.
+
+HOW TO FIX:
+  1. Build prior-day VP only from the previous calendar/session day's candles.
+  2. Only allow OB entries at index i + lookahead (after confirmation bars).
+  3. Use close-only iFVG (ignore wick touches) or enter on the bar after close.
+  4. Run a per-day loop; do not mix overnight session boundaries incorrectly.
 """
 
 import argparse

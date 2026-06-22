@@ -14,6 +14,23 @@ Core concepts:
 
 Usage:
   python strategy_06_fractal_inversion.py --csv1h 1h_data.csv --csv5m 5m_data.csv --csv1m 1m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Scans the full history and takes the first matching setup — not one trade
+     per day across years (cherry-picking the first lucky match).
+  2. 1H trend bias uses the last 20 hours of the entire file, which at early
+     dates still includes "future" relative to that trade day.
+  3. Inversion/FVG logic uses wick-based iFVG from core.py and windows that
+     include bars after the signal bar before the signal is "confirmed."
+
+HOW TO FIX:
+  1. Loop day-by-day (or bar-by-bar) and only use 1H candles that closed before
+     the current session.
+  2. Confirm swings/FVG only after the required extra bar(s) have closed.
+  3. Use close-only inversion; enter on the next bar after confirmation.
+  4. Allow multiple days of trades instead of one break on first match.
 """
 
 import argparse

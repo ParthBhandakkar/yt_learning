@@ -15,6 +15,21 @@ Core concepts:
 
 Usage:
   python strategy_29_tbv_core.py --csv 3m_data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  At loop index i, the code builds chunk = candles[i-15:i+3] and runs FVG/swing
+  detection on it. Bars i+1 and i+2 are in the future when you are deciding at
+  bar i — so swings and gaps are confirmed using data you should not have yet.
+  The sliding window also creates many overlapping signals on the same move.
+
+HOW TO FIX:
+  1. At bar i, only use candles[0:i+1] (or [i-15:i+1] at most).
+  2. Confirm 3-candle swings only after bar i+1 has closed (act at i+2 earliest).
+  3. Enter on the bar after the sweep candle closes, not the same bar if the
+     sweep is only known after close.
+  4. Deduplicate trades so one sweep does not fire many overlapping entries.
 """
 
 import argparse

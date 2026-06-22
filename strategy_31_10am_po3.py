@@ -14,6 +14,22 @@ Core concepts:
 
 Usage:
   python strategy_31_10am_po3.py --csv4h 4h_data.csv --csv15m 15m_data.csv --csv1m 1m_data.csv
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Daily bias uses global "last" 2AM/6AM/10AM candles in the file — not the
+     pair for each specific trading day.
+  2. 15m FVGs are scanned across the entire history without limiting to before
+     10AM on the trade day — old gaps can be cherry-picked.
+  3. Only one trade per full backtest (break on first match). iFVG uses wick
+     touches from core.detect_ifvg before the bar closes.
+
+HOW TO FIX:
+  1. For each calendar day, pick that day's 2AM/6AM/10AM 4H candles only.
+  2. Only consider 15m FVGs that formed before 10AM on that same day.
+  3. Loop per day; record all valid PO3 setups, not just the first in the file.
+  4. Close-only iFVG; enter on the bar after MSS/inversion closes.
 """
 
 import argparse

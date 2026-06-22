@@ -3,3 +3,4 @@
 [IST 22-JUN-2026 15:00:00] - Compute PnL stats from entry/exit prices when strategies omit pnl_pips
 [IST 22-JUN-2026 16:00:00] - Add scrollable candlestick chart with entry/exit markers below results chart
 [IST 22-JUN-2026 17:00:00] - Refactor price chart to TradingView Lightweight Charts with native pan/zoom
+[IST 23-JUN-2026 10:00:00] - Add BACKTEST INTEGRITY NOTICE comments to all 22 strategy files documenting leaks and fixes

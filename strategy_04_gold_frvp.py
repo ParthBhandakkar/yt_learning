@@ -16,6 +16,19 @@ Core concepts:
 
 Usage:
   python strategy_04_gold_frvp.py --csv XAUUSD_5m_2021-01-01_2024-01-01.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: MINOR — one of the more honest scripts)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  Most logic is OK: London session profile uses only 03:00–07:00 candles, and
+  failed-auction / breakout entries use the NEXT bar's close (i+1), which is
+  realistic. Small issues: POC "invalidation" can react to a touch on bar i
+  before entry on i+1, and breakout consolidation windows are tight.
+
+HOW TO FIX:
+  1. Keep session-bounded VP — do not expand to full-day candles.
+  2. Treat any invalidation as confirmed only after the invalidating bar closes.
+  3. Optionally model entry at i+1 open instead of i+1 close for conservatism.
 """
 
 import argparse

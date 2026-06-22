@@ -15,6 +15,22 @@ Core concepts:
 
 Usage:
   python strategy_28_multitf_ifvg.py --csv1m 1m_data.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: CRITICAL — results are likely inflated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. resample() builds higher-timeframe candles from a forward window — the
+     "5m/15m" bar includes 1m candles that have not happened yet at entry time.
+  2. Entry 1m index is guessed as start_idx + j*tf_mult — often points to the
+     wrong minute bar (early entry or wrong price).
+  3. Only one trade is taken on the full file (first match), not a walk-forward
+     backtest. Stop loss can use bars after entry that were used to find the setup.
+
+HOW TO FIX:
+  1. Build HTF candles only from 1m data with timestamp <= current bar.
+  2. Map HTF events to exact 1m timestamps, not approximate index math.
+  3. Loop per trading day; take all valid setups with proper exit simulation.
+  4. Use close-only iFVG; confirm FVG/swing with +1 bar lag from core.py rules.
 """
 
 import argparse

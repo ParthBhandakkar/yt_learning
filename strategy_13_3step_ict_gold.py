@@ -15,6 +15,22 @@ Core concepts:
 Usage:
   python strategy_13_3step_ict_gold.py --csv_gold XAUUSD_1h.csv --csv_silver XAGUSD_1h.csv
       --csv_gold_5m XAUUSD_5m.csv [--output results.json]
+
+BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
+---------------------------------------------------------------------------
+HOW THE LEAK HAPPENS (in simple terms):
+  1. Takes only the first matching trade on the entire dataset (not a real
+     multi-year backtest — stops after one "winning story").
+  2. SMT comparison between gold/silver can use misaligned slice indices when
+     falling back to swing highs/lows on short windows.
+  3. FVG/MSS on a sliding 1H chunk does not wait for swing/FVG confirmation
+     lag (+1 bar) required by three-candle patterns.
+
+HOW TO FIX:
+  1. Run per-day or per-session loops; record all valid setups, not just first.
+  2. Align gold/silver candles by timestamp, not array index in a slice.
+  3. Only act on FVG at index i after bar i+1 has closed; same for swings.
+  4. Enter on the bar after MSS/CISD confirmation closes.
 """
 
 import argparse

@@ -31,6 +31,9 @@ HOW TO FIX:
   2. Confirm swings/FVG only after the required extra bar(s) have closed.
   3. Use close-only inversion; enter on the next bar after confirmation.
   4. Allow multiple days of trades instead of one break on first match.
+
+FIXED: Per-day NY loops; 1H bias from candles before session only; detect_fvg_as_of,
+ifvg_up_to (close-only), past_slice for SL; simulate_exits; one trade per day max.
 """
 
 import argparse
@@ -43,10 +46,16 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_fvg, detect_ifvg, detect_mss,
     swing_highs, swing_lows,
-    resample, save_trades,
-    candles_for_time_range,
+    save_trades,
+)
+from causal_backtest import (
+    group_by_ny_day,
+    ny_hour,
+    past_slice,
+    detect_fvg_as_of,
+    ifvg_up_to,
+    simulate_exits,
 )
 
 
@@ -59,7 +68,9 @@ def classify_1h_orderflow(candles_1h: list[Candle]) -> str:
     if len(candles_1h) < 10:
         return "neutral"
 
-    fvgs = detect_fvg(candles_1h[-20:])
+    window = candles_1h[-20:]
+    as_of_idx = len(window) - 1
+    fvgs = detect_fvg_as_of(window, as_of_idx)
     bullish_fvgs = [f for f in fvgs if f["direction"] == "bullish"]
     bearish_fvgs = [f for f in fvgs if f["direction"] == "bearish"]
 
@@ -100,23 +111,26 @@ def find_macro_draw(candles_1h: list[Candle], orderflow: str) -> dict:
 # Step 3: Find first 5m/15m FVG after 9:30 AM NY
 # ---------------------------------------------------------------------------
 
-def find_post_open_fvg(candles: list[Candle], tf_minutes: int, orderflow: str) -> Optional[dict]:
-    """Find first fresh FVG after 9:30 NY time aligned with orderflow"""
+def find_post_open_fvg(candles: list[Candle], orderflow: str) -> Optional[dict]:
+    """Find first fresh FVG after 9:30 NY time aligned with orderflow (causal scan)."""
+    start = None
     for i, c in enumerate(candles):
-        h = (datetime.fromtimestamp(c.timestamp, tz=timezone.utc).hour - 4) % 24
+        h = ny_hour(c.timestamp)
         if h > 9 or (h == 9 and datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute >= 30):
             start = i
             break
-    else:
+    if start is None:
         return None
 
-    fvgs = detect_fvg(candles[start:start + 20])
-    for fvg in fvgs:
-        fvg["idx"] += start
-        if orderflow == "bullish" and fvg["direction"] == "bullish":
-            return fvg
-        if orderflow == "bearish" and fvg["direction"] == "bearish":
-            return fvg
+    for j in range(start, min(start + 20, len(candles))):
+        sub = past_slice(candles, j)
+        for fvg in detect_fvg_as_of(sub, j):
+            if fvg["idx"] < start:
+                continue
+            if orderflow == "bullish" and fvg["direction"] == "bullish":
+                return fvg
+            if orderflow == "bearish" and fvg["direction"] == "bearish":
+                return fvg
     return None
 
 
@@ -124,44 +138,32 @@ def find_post_open_fvg(candles: list[Candle], tf_minutes: int, orderflow: str) -
 # Step 4: 1m FVG inversion check
 # ---------------------------------------------------------------------------
 
-def check_1m_inversion(candles_1m: list[Candle], htf_fvg: dict, start_idx: int) -> Optional[dict]:
-    """Check if ALL micro FVGs in the pullback leg get inverted"""
-    pullback_leg = candles_1m[start_idx:start_idx + 30]
+def check_1m_inversion(candles_1m: list[Candle], start_idx: int, max_bars: int = 30) -> Optional[dict]:
+    """Check if ALL micro FVGs in the pullback leg get inverted (close-only)."""
+    window_end = min(start_idx + max_bars, len(candles_1m))
+    micro_fvgs: list[dict] = []
+    seen: set[int] = set()
 
-    # Find all micro FVGs in the pullback leg
-    micro_fvgs = detect_fvg(pullback_leg)
+    for j in range(start_idx, window_end):
+        sub = past_slice(candles_1m, j)
+        for fvg in detect_fvg_as_of(sub, j):
+            if fvg["idx"] >= start_idx and fvg["idx"] not in seen:
+                seen.add(fvg["idx"])
+                micro_fvgs.append(fvg)
+
     if not micro_fvgs:
         return None
 
-    # Check if price inverts ALL of them
-    for mfvg in micro_fvgs:
-        mfvg["idx"] += start_idx
-        inverted_prices = []
-        for i in range(mfvg["idx"] + 1, min(mfvg["idx"] + 15, len(candles_1m))):
-            c = candles_1m[i]
-            if mfvg["direction"] == "bearish":
-                if c.close > mfvg["upper"] or c.high > mfvg["upper"]:
-                    inverted_prices.append((i, c.close))
-                    break
-            else:
-                if c.close < mfvg["lower"] or c.low < mfvg["lower"]:
-                    inverted_prices.append((i, c.close))
-                    break
-
-        if not inverted_prices:
-            return None
-
-    # All FVGs inverted – find the final close that confirms
     last_inv_idx = start_idx
     for mfvg in micro_fvgs:
-        for i in range(mfvg["idx"] + 1, min(mfvg["idx"] + 15, len(candles_1m))):
-            c = candles_1m[i]
-            if mfvg["direction"] == "bearish" and (c.close > mfvg["upper"] or c.high > mfvg["upper"]):
-                last_inv_idx = max(last_inv_idx, i)
+        inv = None
+        for k in range(mfvg["idx"] + 1, window_end):
+            inv = ifvg_up_to(candles_1m, mfvg, k)
+            if inv:
+                last_inv_idx = max(last_inv_idx, inv["idx"])
                 break
-            elif mfvg["direction"] == "bullish" and (c.close < mfvg["lower"] or c.low < mfvg["lower"]):
-                last_inv_idx = max(last_inv_idx, i)
-                break
+        if inv is None:
+            return None
 
     entry_candle = candles_1m[last_inv_idx]
     return {
@@ -178,128 +180,117 @@ def check_1m_inversion(candles_1m: list[Candle], htf_fvg: dict, start_idx: int) 
 
 def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
+    days_5m = group_by_ny_day(candles_5m)
 
-    # Step 1: 1H order flow
-    orderflow = classify_1h_orderflow(candles_1h)
-    if orderflow == "neutral":
-        print("No clear 1H order flow direction – skipping")
-        save_trades(trades, output_path)
-        return trades
-
-    # Step 2: Macro draw
-    macro_draw = find_macro_draw(candles_1h, orderflow)
-
-    # Step 3: Find post-open FVG on 5m
-    htf_fvg = find_post_open_fvg(candles_5m, 5, orderflow)
-    if htf_fvg is None:
-        print(f"No post-open 5m FVG found for {orderflow} bias")
-        save_trades(trades, output_path)
-        return trades
-
-    events_log = [
-        {
-            "timestamp": to_iso(candles_1h[-1].timestamp),
-            "type": "orderflow_identified",
-            "orderflow": orderflow,
-            "description": f"1H order flow: {orderflow}",
-        },
-        {
-            "timestamp": to_iso(candles_5m[htf_fvg["idx"]].timestamp),
-            "type": "htf_fvg_formed",
-            "direction": htf_fvg["direction"],
-            "upper": round(htf_fvg["upper"], 5),
-            "lower": round(htf_fvg["lower"], 5),
-            "description": f"Post-open 5m {htf_fvg['direction']} FVG formed: {htf_fvg['lower']:.5f}-{htf_fvg['upper']:.5f}",
-        },
-    ]
-
-    # Step 4: Wait for price to step into FVG, then check 1m inversion
-    for i in range(htf_fvg["idx"] + 1, len(candles_5m)):
-        c = candles_5m[i]
-        if htf_fvg["direction"] == "bullish" and c.low < htf_fvg["upper"] and c.high > htf_fvg["lower"]:
-            price_in_fvg = True
-        elif htf_fvg["direction"] == "bearish" and c.high > htf_fvg["lower"] and c.low < htf_fvg["upper"]:
-            price_in_fvg = True
-        else:
+    for day_5m in days_5m:
+        if not day_5m:
+            continue
+        session_start_ts = day_5m[0].timestamp
+        candles_1h_before = [c for c in candles_1h if c.timestamp < session_start_ts]
+        if len(candles_1h_before) < 10:
             continue
 
-        events_log.append({
-            "timestamp": to_iso(c.timestamp),
-            "type": "price_entered_htf_fvg",
-            "description": f"Price entered 5m FVG zone at {c.close:.5f}",
-        })
-
-        # Convert 5m time to 1m index
-        start_1m = next((j for j, x in enumerate(candles_1m) if x.timestamp >= c.timestamp), 0)
-        inv_result = check_1m_inversion(candles_1m, htf_fvg, start_1m)
-        if inv_result is None:
+        orderflow = classify_1h_orderflow(candles_1h_before)
+        if orderflow == "neutral":
             continue
 
-        events_log.append({
-            "timestamp": to_iso(candles_1m[inv_result["entry_idx"]].timestamp),
-            "type": "micro_fvg_inversion",
-            "description": inv_result["description"],
-        })
+        macro_draw = find_macro_draw(candles_1h_before, orderflow)
+        htf_fvg = find_post_open_fvg(day_5m, orderflow)
+        if htf_fvg is None:
+            continue
 
-        entry_candle = candles_1m[inv_result["entry_idx"]]
-        direction = orderflow
-        local_low = min(x.low for x in candles_1m[max(0, start_1m - 5):start_1m + 10])
-        local_high = max(x.high for x in candles_1m[max(0, start_1m - 5):start_1m + 10])
+        events_log = [
+            {
+                "timestamp": to_iso(candles_1h_before[-1].timestamp),
+                "type": "orderflow_identified",
+                "orderflow": orderflow,
+                "description": f"1H order flow: {orderflow}",
+            },
+            {
+                "timestamp": to_iso(day_5m[htf_fvg["idx"]].timestamp),
+                "type": "htf_fvg_formed",
+                "direction": htf_fvg["direction"],
+                "upper": round(htf_fvg["upper"], 5),
+                "lower": round(htf_fvg["lower"], 5),
+                "description": (
+                    f"Post-open 5m {htf_fvg['direction']} FVG formed: "
+                    f"{htf_fvg['lower']:.5f}-{htf_fvg['upper']:.5f}"
+                ),
+            },
+        ]
 
-        if direction == "bullish":
-            sl = local_low - (local_low * 0.0005)
-        else:
-            sl = local_high + (local_high * 0.0005)
+        day_trade = None
+        for i in range(htf_fvg["idx"] + 1, len(day_5m)):
+            c = day_5m[i]
+            if htf_fvg["direction"] == "bullish" and c.low < htf_fvg["upper"] and c.high > htf_fvg["lower"]:
+                price_in_fvg = True
+            elif htf_fvg["direction"] == "bearish" and c.high > htf_fvg["lower"] and c.low < htf_fvg["upper"]:
+                price_in_fvg = True
+            else:
+                continue
 
-        risk = abs(inv_result["entry_price"] - sl)
-        tp = inv_result["entry_price"] + (2 * risk) if direction == "bullish" else inv_result["entry_price"] - (2 * risk)
+            events_log.append({
+                "timestamp": to_iso(c.timestamp),
+                "type": "price_entered_htf_fvg",
+                "description": f"Price entered 5m FVG zone at {c.close:.5f}",
+            })
 
-        trade = {
-            "trade_number": len(trades) + 1,
-            "entry_time": to_iso(entry_candle.timestamp),
-            "direction": direction,
-            "entry_price": round(inv_result["entry_price"], 5),
-            "stop_loss": round(sl, 5),
-            "take_profit": round(tp, 5),
-            "reason": f"1H {orderflow} flow + 5m FVG + 1m inversion confirmation",
-            "macro_draw": macro_draw,
-            "events": list(events_log),
-        }
-        trades.append(trade)
-        break
+            start_1m = next((j for j, x in enumerate(candles_1m) if x.timestamp >= c.timestamp), 0)
+            inv_result = check_1m_inversion(candles_1m, start_1m)
+            if inv_result is None:
+                continue
 
-    # Exit checks
-    for trade in trades:
-        entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-        all_candles = candles_1m
-        for c in all_candles:
-            if c.timestamp > entry_ts:
-                if trade["direction"] == "bullish":
-                    if c.high >= trade["take_profit"]:
-                        trade["exit_time"] = to_iso(c.timestamp)
-                        trade["exit_price"] = trade["take_profit"]
-                        trade["outcome"] = "win"
-                        break
-                    elif c.low <= trade["stop_loss"]:
-                        trade["exit_time"] = to_iso(c.timestamp)
-                        trade["exit_price"] = trade["stop_loss"]
-                        trade["outcome"] = "loss"
-                        break
-                else:
-                    if c.low <= trade["take_profit"]:
-                        trade["exit_time"] = to_iso(c.timestamp)
-                        trade["exit_price"] = trade["take_profit"]
-                        trade["outcome"] = "win"
-                        break
-                    elif c.high >= trade["stop_loss"]:
-                        trade["exit_time"] = to_iso(c.timestamp)
-                        trade["exit_price"] = trade["stop_loss"]
-                        trade["outcome"] = "loss"
-                        break
-        if "exit_time" not in trade:
-            trade["exit_time"] = to_iso(all_candles[-1].timestamp)
-            trade["exit_price"] = all_candles[-1].close
-            trade["outcome"] = "open"
+            events_log.append({
+                "timestamp": to_iso(candles_1m[inv_result["entry_idx"]].timestamp),
+                "type": "micro_fvg_inversion",
+                "description": inv_result["description"],
+            })
+
+            entry_idx = inv_result["entry_idx"]
+            entry_candle = candles_1m[entry_idx]
+            direction = orderflow
+            past = past_slice(candles_1m, entry_idx)
+            local_low = min(x.low for x in past[max(0, len(past) - 15):])
+            local_high = max(x.high for x in past[max(0, len(past) - 15):])
+
+            if direction == "bullish":
+                sl = local_low - (local_low * 0.0005)
+            else:
+                sl = local_high + (local_high * 0.0005)
+
+            risk = abs(inv_result["entry_price"] - sl)
+            tp = (
+                inv_result["entry_price"] + (2 * risk)
+                if direction == "bullish"
+                else inv_result["entry_price"] - (2 * risk)
+            )
+
+            day_trade = {
+                "trade_number": len(trades) + 1,
+                "entry_time": to_iso(entry_candle.timestamp),
+                "direction": direction,
+                "entry_price": round(inv_result["entry_price"], 5),
+                "stop_loss": round(sl, 5),
+                "take_profit": round(tp, 5),
+                "reason": f"1H {orderflow} flow + 5m FVG + 1m inversion confirmation",
+                "macro_draw": macro_draw,
+                "events": list(events_log),
+            }
+            break
+
+        if day_trade is None:
+            continue
+
+        exit_info = simulate_exits(
+            candles_1m,
+            entry_idx,
+            entry_candle.timestamp,
+            "long" if day_trade["direction"] == "bullish" else "short",
+            day_trade["stop_loss"],
+            day_trade["take_profit"],
+        )
+        day_trade.update(exit_info)
+        trades.append(day_trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

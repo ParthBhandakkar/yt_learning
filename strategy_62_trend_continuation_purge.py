@@ -15,42 +15,31 @@ Core concepts:
 Usage:
   python strategy_62_trend_continuation_purge.py --csv1h 1h.csv --csv5m 5m.csv
 
-BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
----------------------------------------------------------------------------
-HOW THE LEAK HAPPENS (in simple terms):
-  1. One trade on the full history (break on first purge + iFVG match).
-  2. BOS uses the last swing on the entire 1H series — at early dates that swing
-     may not exist yet relative to the trade.
-  3. iFVG from core.py can trigger on wicks; entry index j may not be the actual
-     inversion bar when FVG is found on sweep_idx:j+5 slice (future bars included).
-
-HOW TO FIX:
-  1. Per-day or per-swing walk-forward on 1H; only use swings confirmed before
-     the purge candle.
-  2. At 5m bar j, detect iFVG only on candles[0:j+1] after sweep is confirmed.
-  3. Close-only inversion; enter on bar after iFVG close.
-  4. Collect all purge setups across the sample, not just the first.
+FIXED: Causal backtest — per-day 1H walk-forward; swings/FVG/iFVG only from data
+available at decision bar (detect_fvg_as_of, ifvg_up_to); simulate_exits for TP/SL.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_fvg, detect_ifvg, detect_mss,
     swing_highs, swing_lows,
-    save_trades, resample,
+    save_trades,
+)
+from causal_backtest import (
+    group_by_ny_day,
+    ny_date,
+    past_slice,
+    detect_fvg_as_of,
+    ifvg_up_to,
+    simulate_exits,
 )
 
-
-# ---------------------------------------------------------------------------
-# Step 1: Trend identification (3-second rule)
-# ---------------------------------------------------------------------------
 
 def identify_trend(candles_1h: list[Candle]) -> Optional[str]:
     if len(candles_1h) < 8:
@@ -68,16 +57,11 @@ def identify_trend(candles_1h: list[Candle]) -> Optional[str]:
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 2: Find the BOS swing level to sweep
-# ---------------------------------------------------------------------------
-
 def find_bos_level(candles: list[Candle], trend: str) -> Optional[dict]:
     sh = swing_highs(candles)
     sl = swing_lows(candles)
 
     if trend == "bullish" and sl:
-        # Find the low that caused the most recent BOS
         swing_l = candles[sl[-1]].low
         return {"type": "swing_low", "level": swing_l, "idx": sl[-1]}
 
@@ -88,17 +72,12 @@ def find_bos_level(candles: list[Candle], trend: str) -> Optional[dict]:
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 3: Sweep detection + FVG inversion entry
-# ---------------------------------------------------------------------------
-
-def find_purge_entry(
+def find_purge_entry_causal(
     candles_5m: list[Candle], bos_level: float, bos_type: str, start_idx: int
 ) -> Optional[dict]:
-    for i in range(start_idx, len(candles_5m) - 3):
+    for i in range(start_idx, len(candles_5m) - 2):
         c = candles_5m[i]
 
-        # Check sweep
         if bos_type == "swing_low" and c.low < bos_level:
             sweep_idx = i
         elif bos_type == "swing_high" and c.high > bos_level:
@@ -106,113 +85,120 @@ def find_purge_entry(
         else:
             continue
 
-        # After sweep, look for FVG inversion
-        for j in range(sweep_idx + 1, min(sweep_idx + 15, len(candles_5m))):
-            fvgs = detect_fvg(candles_5m[sweep_idx:j + 3])
+        for j in range(sweep_idx + 1, min(sweep_idx + 15, len(candles_5m) - 1)):
+            fvgs = detect_fvg_as_of(candles_5m, j)
             for fvg in fvgs:
-                inv = detect_ifvg(candles_5m[sweep_idx:j + 5], fvg)
-                if inv:
-                    entry_c = candles_5m[j]
-                    direction = "long" if bos_type == "swing_low" else "short"
-                    local_low = min(x.low for x in candles_5m[max(0, sweep_idx - 2):j + 2])
-                    local_high = max(x.high for x in candles_5m[max(0, sweep_idx - 2):j + 2])
-
-                    sl = local_low - (local_low * 0.0005) if direction == "long" else local_high + (local_high * 0.0005)
-                    risk = abs(entry_c.close - sl)
-                    tp = entry_c.close + (2 * risk) if direction == "long" else entry_c.close - (2 * risk)
-
-                    return {
-                        "entry_idx": j,
-                        "entry_price": entry_c.close,
-                        "direction": direction,
-                        "sl": sl,
-                        "tp": tp,
-                        "sweep_idx": sweep_idx,
-                        "fvg": fvg,
-                        "description": f"Continuation purge: swept BOS {bos_type} {bos_level:.5f} + FVG inversion at {entry_c.close:.5f}",
-                    }
+                if fvg["idx"] < sweep_idx:
+                    continue
+                inv = ifvg_up_to(candles_5m, fvg, j)
+                if inv is None or inv["idx"] > j:
+                    continue
+                entry_idx = inv["idx"] + 1
+                if entry_idx >= len(candles_5m):
+                    continue
+                entry_c = candles_5m[entry_idx]
+                direction = "long" if bos_type == "swing_low" else "short"
+                past = past_slice(candles_5m, inv["idx"])
+                local_low = min(x.low for x in past[max(0, sweep_idx - 2) :])
+                local_high = max(x.high for x in past[max(0, sweep_idx - 2) :])
+                sl = (
+                    local_low - (local_low * 0.0005)
+                    if direction == "long"
+                    else local_high + (local_high * 0.0005)
+                )
+                risk = abs(entry_c.close - sl)
+                tp = entry_c.close + (2 * risk) if direction == "long" else entry_c.close - (2 * risk)
+                return {
+                    "entry_idx": entry_idx,
+                    "entry_price": entry_c.close,
+                    "direction": direction,
+                    "sl": sl,
+                    "tp": tp,
+                    "sweep_idx": sweep_idx,
+                    "fvg": fvg,
+                    "description": (
+                        f"Continuation purge: swept BOS {bos_type} {bos_level:.5f} "
+                        f"+ FVG inversion at {entry_c.close:.5f}"
+                    ),
+                }
         break
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
-
 def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], output_path: str):
     trades = []
+    days_1h = group_by_ny_day(candles_1h)
+    h1_accum: list[Candle] = []
 
-    trend = identify_trend(candles_1h)
-    if trend is None:
-        print("No clear trend identified")
-        save_trades(trades, output_path)
-        return trades
+    for day_1h in days_1h:
+        h1_accum.extend(day_1h)
+        if len(h1_accum) < 8:
+            continue
 
-    events_log = [{
-        "timestamp": to_iso(candles_1h[-1].timestamp),
-        "type": "trend_identified",
-        "trend": trend,
-        "description": f"Clear {trend} trend (3-second rule)",
-    }]
+        trend = identify_trend(h1_accum)
+        if trend is None:
+            continue
 
-    bos = find_bos_level(candles_1h, trend)
-    if bos is None:
-        save_trades(trades, output_path)
-        return trades
+        bos = find_bos_level(h1_accum, trend)
+        if bos is None:
+            continue
 
-    events_log.append({
-        "timestamp": to_iso(candles_1h[bos["idx"]].timestamp),
-        "type": "bos_level_located",
-        "level": round(bos["level"], 5),
-        "description": f"BOS {bos['type']} at {bos['level']:.5f}",
-    })
+        day_date = ny_date(day_1h[0].timestamp)
+        day_5m = [c for c in candles_5m if ny_date(c.timestamp) == day_date]
+        if not day_5m:
+            continue
 
-    bos_ts = candles_1h[bos["idx"]].timestamp
-    start_5m = next((i for i, c in enumerate(candles_5m) if c.timestamp >= bos_ts), 0)
+        bos_ts = h1_accum[bos["idx"]].timestamp
+        start_5m = next((i for i, c in enumerate(day_5m) if c.timestamp >= bos_ts), 0)
 
-    result = find_purge_entry(candles_5m, bos["level"], bos["type"], start_5m)
-    if result is None:
-        print("No purge entry found")
-        save_trades(trades, output_path)
-        return trades
+        result = find_purge_entry_causal(day_5m, bos["level"], bos["type"], start_5m)
+        if result is None:
+            continue
 
-    events_log.append({
-        "timestamp": to_iso(candles_5m[result["sweep_idx"]].timestamp),
-        "type": "bos_sweep",
-        "description": f"BOS {bos['type']} {bos['level']:.5f} swept",
-    })
-    events_log.append({
-        "timestamp": to_iso(candles_5m[result["entry_idx"]].timestamp),
-        "type": "fvg_inversion_entry",
-        "description": result["description"],
-    })
+        events_log = [{
+            "timestamp": to_iso(h1_accum[-1].timestamp),
+            "type": "trend_identified",
+            "trend": trend,
+            "description": f"Clear {trend} trend (3-second rule)",
+        }]
+        events_log.append({
+            "timestamp": to_iso(h1_accum[bos["idx"]].timestamp),
+            "type": "bos_level_located",
+            "level": round(bos["level"], 5),
+            "description": f"BOS {bos['type']} at {bos['level']:.5f}",
+        })
+        events_log.append({
+            "timestamp": to_iso(day_5m[result["sweep_idx"]].timestamp),
+            "type": "bos_sweep",
+            "description": f"BOS {bos['type']} {bos['level']:.5f} swept",
+        })
+        events_log.append({
+            "timestamp": to_iso(day_5m[result["entry_idx"]].timestamp),
+            "type": "fvg_inversion_entry",
+            "description": result["description"],
+        })
 
-    trade = {
-        "trade_number": len(trades) + 1,
-        "entry_time": to_iso(candles_5m[result["entry_idx"]].timestamp),
-        "direction": result["direction"],
-        "entry_price": round(result["entry_price"], 5),
-        "stop_loss": round(result["sl"], 5),
-        "take_profit": round(result["tp"], 5),
-        "reason": result["description"],
-        "events": list(events_log),
-    }
-    trades.append(trade)
-
-    # Exit
-    entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-    for c in candles_5m:
-        if c.timestamp > entry_ts:
-            if trade["direction"] == "long":
-                if c.high >= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.low <= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-            else:
-                if c.low <= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.high >= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-    if "exit_time" not in trade:
-        trade["exit_time"] = to_iso(candles_5m[-1].timestamp)
-        trade["exit_price"] = candles_5m[-1].close
-        trade["outcome"] = "open"
+        entry_c = day_5m[result["entry_idx"]]
+        exit_info = simulate_exits(
+            day_5m,
+            result["entry_idx"],
+            entry_c.timestamp,
+            result["direction"],
+            result["sl"],
+            result["tp"],
+        )
+        trade = {
+            "trade_number": len(trades) + 1,
+            "entry_time": to_iso(entry_c.timestamp),
+            "direction": result["direction"],
+            "entry_price": round(result["entry_price"], 5),
+            "stop_loss": round(result["sl"], 5),
+            "take_profit": round(result["tp"], 5),
+            "reason": result["description"],
+            "events": events_log,
+            **exit_info,
+        }
+        trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

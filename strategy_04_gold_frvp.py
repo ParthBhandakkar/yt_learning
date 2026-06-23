@@ -19,6 +19,9 @@ Usage:
 
 BACKTEST INTEGRITY NOTICE (severity: MINOR — one of the more honest scripts)
 ---------------------------------------------------------------------------
+FIXED: failed auction/breakout entries remain at i+1; POC invalidation counts
+only on bars that closed before entry; exits use simulate_exits.
+
 HOW THE LEAK HAPPENS (in simple terms):
   Most logic is OK: London session profile uses only 03:00–07:00 candles, and
   failed-auction / breakout entries use the NEXT bar's close (i+1), which is
@@ -44,6 +47,7 @@ from core import (
     compute_volume_profile, detect_fvg,
     candles_for_time_range, save_trades,
 )
+from causal_backtest import simulate_exits
 
 
 # ---------------------------------------------------------------------------
@@ -93,11 +97,9 @@ def detect_failed_auction(
 
         # Long failed auction: close below VAL then reclaim
         if c0.close < vp.val and c1.close > vp.val:
-            # POC invalidation check
-            if _poc_mitigated_before_entry(candles_5m, start_idx, i, vp.poc):
-                continue
-            # Find retest entry
             entry_idx = i + 1
+            if _poc_mitigated_before_entry(candles_5m, start_idx, entry_idx, vp.poc):
+                continue
             entry_price = c1.close
             sweep_low = min(c0.low, c1.low)
             return {
@@ -115,9 +117,9 @@ def detect_failed_auction(
 
         # Short failed auction: close above VAH then reject
         if c0.close > vp.vah and c1.close < vp.vah:
-            if _poc_mitigated_before_entry(candles_5m, start_idx, i, vp.poc):
-                continue
             entry_idx = i + 1
+            if _poc_mitigated_before_entry(candles_5m, start_idx, entry_idx, vp.poc):
+                continue
             entry_price = c1.close
             sweep_high = max(c0.high, c1.high)
             return {
@@ -135,9 +137,9 @@ def detect_failed_auction(
     return None
 
 
-def _poc_mitigated_before_entry(candles, start_idx, current_idx, poc_level) -> bool:
-    """POC Invalidation Rule: if price touched POC before entry, cancel"""
-    for i in range(start_idx, current_idx):
+def _poc_mitigated_before_entry(candles, start_idx, entry_idx, poc_level) -> bool:
+    """POC invalidation: only count touches on bars that closed before entry."""
+    for i in range(start_idx, entry_idx):
         c = candles[i]
         if c.low <= poc_level <= c.high:
             return True
@@ -301,6 +303,15 @@ def run_strategy(candles_5m: list[Candle], output_path: str):
                     "profile_shape": shape,
                     "events": list(events_log),
                 }
+                exit_info = simulate_exits(
+                    day_candles,
+                    result["entry_idx"],
+                    entry_candle.timestamp,
+                    direction,
+                    trade["stop_loss"],
+                    trade["take_profit"],
+                )
+                trade.update(exit_info)
                 trades.append(trade)
                 trades_taken += 1
                 directions_taken.add(direction)
@@ -335,41 +346,18 @@ def run_strategy(candles_5m: list[Candle], output_path: str):
                         "profile_shape": shape,
                         "events": list(events_log),
                     }
+                    exit_info = simulate_exits(
+                        day_candles,
+                        result["entry_idx"],
+                        entry_candle.timestamp,
+                        direction,
+                        trade["stop_loss"],
+                        trade["take_profit"],
+                    )
+                    trade.update(exit_info)
                     trades.append(trade)
                     trades_taken += 1
                     directions_taken.add(direction)
-
-        # Check exits
-        for trade in trades[-trades_taken:] if trades_taken > 0 else []:
-            entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-            for c in day_candles:
-                if c.timestamp > entry_ts:
-                    if trade["direction"] == "long":
-                        if c.high >= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["take_profit"]
-                            trade["outcome"] = "win"
-                            break
-                        elif c.low <= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["stop_loss"]
-                            trade["outcome"] = "loss"
-                            break
-                    else:
-                        if c.low <= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["take_profit"]
-                            trade["outcome"] = "win"
-                            break
-                        elif c.high >= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["stop_loss"]
-                            trade["outcome"] = "loss"
-                            break
-            if "exit_time" not in trade:
-                trade["exit_time"] = to_iso(day_candles[-1].timestamp)
-                trade["exit_price"] = day_candles[-1].close
-                trade["outcome"] = "open"
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

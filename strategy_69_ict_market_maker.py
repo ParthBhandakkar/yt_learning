@@ -15,42 +15,31 @@ Core concepts:
 Usage:
   python strategy_69_ict_market_maker.py --csv4h 4h.csv --csv15m 15m.csv [--csv1m 1m.csv]
 
-BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
----------------------------------------------------------------------------
-HOW THE LEAK HAPPENS (in simple terms):
-  1. Scans entire 4H/15m history and stops at the first MMXM match — one demo
-     trade, not a multi-year backtest.
-  2. FVG/MSS checked on candles[j-3:j+3] or j+5 windows — includes future bars
-     when deciding at bar j.
-  3. Displacement and MSS can be judged on the same bar using data from bars
-     that have not closed yet.
-
-HOW TO FIX:
-  1. Walk each 4H "leg" per calendar period; allow multiple trades over time.
-  2. At 15m bar j, only use candles[0:j+1] for MSS/FVG/displacement.
-  3. Enter on the bar after MSS closes; use close-only structure rules.
-  4. Align 4H bias candles to the active trading day only.
+FIXED: Causal backtest — per-day 4H walk-forward; MSS/FVG from data available at
+decision bar (mss_events_up_to, detect_fvg_as_of); simulate_exits for TP/SL.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_mss, detect_fvg,
     swing_highs, swing_lows,
-    save_trades, resample,
+    save_trades,
+)
+from causal_backtest import (
+    group_by_ny_day,
+    ny_date,
+    past_slice,
+    mss_events_up_to,
+    detect_fvg_as_of,
+    simulate_exits,
 )
 
-
-# ---------------------------------------------------------------------------
-# Step 1: 4H trend
-# ---------------------------------------------------------------------------
 
 def trend_4h(candles_4h: list[Candle]) -> str:
     if len(candles_4h) < 6:
@@ -58,14 +47,12 @@ def trend_4h(candles_4h: list[Candle]) -> str:
     last = candles_4h[-6:]
     hh = sum(1 for i in range(1, len(last)) if last[i].high > last[i - 1].high)
     ll = sum(1 for i in range(1, len(last)) if last[i].low < last[i - 1].low)
-    if hh >= 4: return "bullish"
-    if ll >= 4: return "bearish"
+    if hh >= 4:
+        return "bullish"
+    if ll >= 4:
+        return "bearish"
     return "neutral"
 
-
-# ---------------------------------------------------------------------------
-# Step 2: Liquidity level before BOS
-# ---------------------------------------------------------------------------
 
 def find_liquidity_level(candles_4h: list[Candle], trend: str) -> Optional[dict]:
     sh = swing_highs(candles_4h)
@@ -80,12 +67,10 @@ def find_liquidity_level(candles_4h: list[Candle], trend: str) -> Optional[dict]
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 3-4: Sweep + 15m MSS + FVG entry
-# ---------------------------------------------------------------------------
-
-def find_entry_15m(candles_15m: list[Candle], liq_level: float, liq_type: str, start_idx: int) -> Optional[dict]:
-    for i in range(start_idx, len(candles_15m) - 3):
+def find_entry_15m_causal(
+    candles_15m: list[Candle], liq_level: float, liq_type: str, start_idx: int
+) -> Optional[dict]:
+    for i in range(start_idx, len(candles_15m) - 2):
         c = candles_15m[i]
 
         swept = False
@@ -96,125 +81,137 @@ def find_entry_15m(candles_15m: list[Candle], liq_level: float, liq_type: str, s
         if not swept:
             continue
 
-        for j in range(i + 1, min(i + 15, len(candles_15m))):
+        for j in range(i + 1, min(i + 15, len(candles_15m) - 1)):
             cj = candles_15m[j]
+            past = past_slice(candles_15m, j)
             body = abs(cj.close - cj.open)
-            avg_body = sum(abs(x.close - x.open) for x in candles_15m[max(0, j - 5):j]) / max(1, min(5, j))
-            displaced = body > avg_body * 1.5
-
-            if not displaced:
+            avg_body = sum(abs(x.close - x.open) for x in past[max(0, len(past) - 6) : -1]) / max(
+                1, min(5, len(past) - 1)
+            )
+            if body <= avg_body * 1.5:
                 continue
 
-            mss = detect_mss(candles_15m[max(0, j - 3):j + 3], lookback=3)
-            for ev in mss:
-                direction = None
+            mss_list = mss_events_up_to(candles_15m, j, lookback=3)
+            direction = None
+            for ev in mss_list:
+                if ev["idx"] != j:
+                    continue
                 if liq_type == "swing_low" and ev["direction"] == "bullish":
                     direction = "long"
                 elif liq_type == "swing_high" and ev["direction"] == "bearish":
                     direction = "short"
+            if direction is None:
+                continue
 
-                if direction:
-                    # Entry at FVG retest
-                    fvgs = detect_fvg(candles_15m[max(0, j - 3):j + 5])
-                    for fvg in fvgs:
-                        entry_price = cj.close
-                        local_low = min(x.low for x in candles_15m[max(0, j - 3):j + 3])
-                        local_high = max(x.high for x in candles_15m[max(0, j - 3):j + 3])
+            fvgs = detect_fvg_as_of(candles_15m, j)
+            if not fvgs:
+                continue
 
-                        sl = local_low - (local_low * 0.0005) if direction == "long" else local_high + (local_high * 0.0005)
-                        risk = abs(entry_price - sl)
-                        tp = entry_price + (2 * risk) if direction == "long" else entry_price - (2 * risk)
+            entry_idx = j + 1
+            if entry_idx >= len(candles_15m):
+                continue
+            entry_c = candles_15m[entry_idx]
+            entry_price = entry_c.close
+            past_j = past_slice(candles_15m, j)
+            local_low = min(x.low for x in past_j[max(0, len(past_j) - 4) :])
+            local_high = max(x.high for x in past_j[max(0, len(past_j) - 4) :])
+            sl = (
+                local_low - (local_low * 0.0005)
+                if direction == "long"
+                else local_high + (local_high * 0.0005)
+            )
+            risk = abs(entry_price - sl)
+            tp = entry_price + (2 * risk) if direction == "long" else entry_price - (2 * risk)
 
-                        return {
-                            "entry_idx": j,
-                            "entry_price": entry_price,
-                            "direction": direction,
-                            "sl": sl,
-                            "tp": tp,
-                            "sweep_idx": i,
-                            "description": f"MMXM: {liq_type} {liq_level:.5f} swept + 15m MSS + FVG at {entry_price:.5f}",
-                        }
+            return {
+                "entry_idx": entry_idx,
+                "entry_price": entry_price,
+                "direction": direction,
+                "sl": sl,
+                "tp": tp,
+                "sweep_idx": i,
+                "description": (
+                    f"MMXM: {liq_type} {liq_level:.5f} swept + 15m MSS + FVG at {entry_price:.5f}"
+                ),
+            }
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
-
 def run_strategy(candles_4h: list[Candle], candles_15m: list[Candle], output_path: str):
     trades = []
+    days_4h = group_by_ny_day(candles_4h)
+    h4_accum: list[Candle] = []
 
-    trend = trend_4h(candles_4h)
-    if trend == "neutral":
-        print("No clear 4H trend")
-        save_trades(trades, output_path)
-        return trades
+    for day_4h in days_4h:
+        h4_accum.extend(day_4h)
+        if len(h4_accum) < 6:
+            continue
 
-    events_log = [{
-        "timestamp": to_iso(candles_4h[-1].timestamp),
-        "type": "htf_trend",
-        "trend": trend,
-        "description": f"4H trend: {trend}",
-    }]
+        trend = trend_4h(h4_accum)
+        if trend == "neutral":
+            continue
 
-    liq = find_liquidity_level(candles_4h, trend)
-    if liq is None:
-        save_trades(trades, output_path)
-        return trades
+        liq = find_liquidity_level(h4_accum, trend)
+        if liq is None:
+            continue
 
-    events_log.append({
-        "timestamp": to_iso(candles_4h[liq["idx"]].timestamp),
-        "type": "liquidity_level",
-        "level": round(liq["level"], 5),
-        "description": f"Liquidity {liq['type']} at {liq['level']:.5f}",
-    })
+        day_date = ny_date(day_4h[0].timestamp)
+        day_15m = [c for c in candles_15m if ny_date(c.timestamp) == day_date]
+        if not day_15m:
+            continue
 
-    liq_ts = candles_4h[liq["idx"]].timestamp
-    start_15m = next((i for i, c in enumerate(candles_15m) if c.timestamp >= liq_ts), 0)
+        liq_ts = h4_accum[liq["idx"]].timestamp
+        start_15m = next((i for i, c in enumerate(day_15m) if c.timestamp >= liq_ts), 0)
 
-    result = find_entry_15m(candles_15m, liq["level"], liq["type"], start_15m)
-    if result is None:
-        print("No entry found")
-        save_trades(trades, output_path)
-        return trades
+        result = find_entry_15m_causal(day_15m, liq["level"], liq["type"], start_15m)
+        if result is None:
+            continue
 
-    events_log.append({
-        "timestamp": to_iso(candles_15m[result["sweep_idx"]].timestamp),
-        "type": "liquidity_sweep",
-        "description": f"Liquidity {liq['type']} swept",
-    })
-    events_log.append({
-        "timestamp": to_iso(candles_15m[result["entry_idx"]].timestamp),
-        "type": "entry_trigger",
-        "direction": result["direction"],
-        "description": result["description"],
-    })
+        events_log = [{
+            "timestamp": to_iso(h4_accum[-1].timestamp),
+            "type": "htf_trend",
+            "trend": trend,
+            "description": f"4H trend: {trend}",
+        }]
+        events_log.append({
+            "timestamp": to_iso(h4_accum[liq["idx"]].timestamp),
+            "type": "liquidity_level",
+            "level": round(liq["level"], 5),
+            "description": f"Liquidity {liq['type']} at {liq['level']:.5f}",
+        })
+        events_log.append({
+            "timestamp": to_iso(day_15m[result["sweep_idx"]].timestamp),
+            "type": "liquidity_sweep",
+            "description": f"Liquidity {liq['type']} swept",
+        })
+        events_log.append({
+            "timestamp": to_iso(day_15m[result["entry_idx"]].timestamp),
+            "type": "entry_trigger",
+            "direction": result["direction"],
+            "description": result["description"],
+        })
 
-    trade = {
-        "trade_number": len(trades) + 1,
-        "entry_time": to_iso(candles_15m[result["entry_idx"]].timestamp),
-        "direction": result["direction"],
-        "entry_price": round(result["entry_price"], 5),
-        "stop_loss": round(result["sl"], 5),
-        "take_profit": round(result["tp"], 5),
-        "reason": result["description"],
-        "events": list(events_log),
-    }
-    trades.append(trade)
-
-    entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-    for c in candles_15m:
-        if c.timestamp > entry_ts:
-            if result["direction"] == "long":
-                if c.high >= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.low <= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-            else:
-                if c.low <= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.high >= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-    if "exit_time" not in trade:
-        trade["exit_time"] = to_iso(candles_15m[-1].timestamp)
-        trade["exit_price"] = candles_15m[-1].close
-        trade["outcome"] = "open"
+        entry_c = day_15m[result["entry_idx"]]
+        exit_info = simulate_exits(
+            day_15m,
+            result["entry_idx"],
+            entry_c.timestamp,
+            result["direction"],
+            result["sl"],
+            result["tp"],
+        )
+        trade = {
+            "trade_number": len(trades) + 1,
+            "entry_time": to_iso(entry_c.timestamp),
+            "direction": result["direction"],
+            "entry_price": round(result["entry_price"], 5),
+            "stop_loss": round(result["sl"], 5),
+            "take_profit": round(result["tp"], 5),
+            "reason": result["description"],
+            "events": events_log,
+            **exit_info,
+        }
+        trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

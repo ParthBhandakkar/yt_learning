@@ -229,14 +229,17 @@ def swing_lows(candles: list[Candle]) -> list[int]:
 
 
 def nearest_swing_high_left(candles: list[Candle], idx: int) -> Optional[int]:
-    for i in range(idx - 1, 0, -1):
+    """Swing at i is valid only after bar i+1 has closed (i+1 <= idx)."""
+    upper = min(idx - 1, len(candles) - 2)
+    for i in range(upper, 0, -1):
         if candles[i].high > candles[i - 1].high and candles[i].high > candles[i + 1].high:
             return i
     return None
 
 
 def nearest_swing_low_left(candles: list[Candle], idx: int) -> Optional[int]:
-    for i in range(idx - 1, 0, -1):
+    upper = min(idx - 1, len(candles) - 2)
+    for i in range(upper, 0, -1):
         if candles[i].low < candles[i - 1].low and candles[i].low < candles[i + 1].low:
             return i
     return None
@@ -314,21 +317,27 @@ def is_fvg_mitigated(candles: list[Candle], fvg_idx: int, direction: str, up_to:
 # ---------------------------------------------------------------------------
 
 def detect_ifvg(candles: list[Candle], fvg: dict) -> Optional[dict]:
-    """Return inversion event if price inverts an FVG"""
+    """Return inversion event when price CLOSES past the gap boundary (no wick peeking)."""
     idx = fvg["idx"]
     direction = fvg["direction"]
     for i in range(idx + 1, len(candles)):
         c = candles[i]
-        if direction == "bearish":
-            if c.close > fvg["upper"]:
-                return {"idx": i, "fvg_idx": idx, "direction": "bullish_ifvg", "price": c.close, "boundary": fvg["upper"]}
-            if c.high > fvg["upper"]:
-                return {"idx": i, "fvg_idx": idx, "direction": "bullish_ifvg", "price": c.high, "boundary": fvg["upper"]}
-        else:
-            if c.close < fvg["lower"]:
-                return {"idx": i, "fvg_idx": idx, "direction": "bearish_ifvg", "price": c.close, "boundary": fvg["lower"]}
-            if c.low < fvg["lower"]:
-                return {"idx": i, "fvg_idx": idx, "direction": "bearish_ifvg", "price": c.low, "boundary": fvg["lower"]}
+        if direction == "bearish" and c.close > fvg["upper"]:
+            return {
+                "idx": i,
+                "fvg_idx": idx,
+                "direction": "bullish_ifvg",
+                "price": c.close,
+                "boundary": fvg["upper"],
+            }
+        if direction == "bullish" and c.close < fvg["lower"]:
+            return {
+                "idx": i,
+                "fvg_idx": idx,
+                "direction": "bearish_ifvg",
+                "price": c.close,
+                "boundary": fvg["lower"],
+            }
     return None
 
 

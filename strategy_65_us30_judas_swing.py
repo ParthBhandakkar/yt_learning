@@ -28,6 +28,7 @@ HOW TO FIX:
   2. Convert all session filters to NY time (UTC-4/5), same as other strategies.
   3. At bar j, MSS only on candles[0:j+1]; enter next bar after confirmation.
   4. Per-day loop; record all valid Judas setups across years.
+  FIXED: Per-day NY loop, ny_hour pre-open, mss_events_up_to, past_slice SL, simulate_exits.
 """
 
 import argparse
@@ -40,145 +41,149 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_mss, detect_fvg,
     swing_highs, swing_lows,
     save_trades,
 )
+from causal_backtest import (
+    group_by_ny_day,
+    ny_hour,
+    past_slice,
+    mss_events_up_to,
+    simulate_exits,
+)
 
 
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
+def _ny_minute(ts: int) -> int:
+    dt = datetime.fromtimestamp(ts, tz=timezone.utc)
+    h = (dt.hour - 4) % 24
+    return h * 60 + dt.minute
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
+def _is_pre_open(ts: int) -> bool:
+    return _ny_minute(ts) < 9 * 60 + 30
+
 
 def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
+    days_15m = group_by_ny_day(candles_15m)
+    days_1m = group_by_ny_day(candles_1m)
 
-    # Find pre-open levels (most recent high/low before 9:30 AM)
-    pre_open_15m = [c for c in candles_15m if datetime.fromtimestamp(c.timestamp, tz=timezone.utc).hour < 9 or
-                    (datetime.fromtimestamp(c.timestamp, tz=timezone.utc).hour == 9 and
-                     datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute < 30)]
-
-    if not pre_open_15m:
-        save_trades(trades, output_path)
-        return trades
-
-    sh = swing_highs(pre_open_15m)
-    sl = swing_lows(pre_open_15m)
-
-    if not sh or not sl:
-        save_trades(trades, output_path)
-        return trades
-
-    pre_high = pre_open_15m[sh[-1]].high
-    pre_low = pre_open_15m[sl[-1]].low
-
-    events_log = [{
-        "timestamp": to_iso(pre_open_15m[-1].timestamp),
-        "type": "pre_open_levels",
-        "high": round(pre_high, 5),
-        "low": round(pre_low, 5),
-        "description": f"Pre-9:30 levels: high={pre_high:.5f}, low={pre_low:.5f}",
-    }]
-
-    # After 9:30 AM, watch 1m for sweep + MSS
-    ny_open_ts = None
-    for c in candles_1m:
-        h = ny_hour(c.timestamp)
-        if h > 9 or (h == 9 and datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute >= 30):
-            ny_open_ts = c.timestamp
-            break
-    if ny_open_ts is None:
-        save_trades(trades, output_path)
-        return trades
-
-    start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= ny_open_ts), 0)
-    sweep_found = False
-
-    for i in range(start_1m, min(start_1m + 120, len(candles_1m))):
-        c = candles_1m[i]
-
-        if c.high > pre_high and not sweep_found:
-            sweep_dir = "high_swept"
-            sweep_found = True
-        elif c.low < pre_low and not sweep_found:
-            sweep_dir = "low_swept"
-            sweep_found = True
-        else:
+    for day_idx, day_15m in enumerate(days_15m):
+        if len(day_15m) < 4:
             continue
 
-        events_log.append({
-            "timestamp": to_iso(c.timestamp),
-            "type": "liquidity_sweep",
-            "direction": sweep_dir,
-            "description": f"15m {'high' if 'high' in sweep_dir else 'low'} swept",
-        })
+        day_1m = days_1m[day_idx] if day_idx < len(days_1m) else []
+        if len(day_1m) < 30:
+            continue
 
-        # Look for MSS with displacement
-        for j in range(i + 1, min(i + 30, len(candles_1m))):
-            cj = candles_1m[j]
-            body = abs(cj.close - cj.open)
-            avg_body = sum(abs(x.close - x.open) for x in candles_1m[max(0, j - 5):j]) / max(1, min(5, j))
-            displaced = body > avg_body * 1.5
+        pre_open_15m = [c for c in day_15m if _is_pre_open(c.timestamp)]
+        if not pre_open_15m:
+            continue
 
-            if not displaced:
-                continue
+        sh = swing_highs(pre_open_15m)
+        sl_swings = swing_lows(pre_open_15m)
+        if not sh or not sl_swings:
+            continue
 
-            mss = detect_mss(candles_1m[max(0, j - 3):j + 5], lookback=3)
-            for ev in mss:
-                if sweep_dir == "high_swept" and ev["direction"] == "bearish":
-                    direction = "short"
-                elif sweep_dir == "low_swept" and ev["direction"] == "bullish":
-                    direction = "long"
+        pre_high = pre_open_15m[sh[-1]].high
+        pre_low = pre_open_15m[sl_swings[-1]].low
+
+        events_log = [{
+            "timestamp": to_iso(pre_open_15m[-1].timestamp),
+            "type": "pre_open_levels",
+            "high": round(pre_high, 5),
+            "low": round(pre_low, 5),
+            "description": f"Pre-9:30 levels: high={pre_high:.5f}, low={pre_low:.5f}",
+        }]
+
+        ny_open_idx = None
+        for i, c in enumerate(day_1m):
+            h = ny_hour(c.timestamp)
+            dt = datetime.fromtimestamp(c.timestamp, tz=timezone.utc)
+            if h > 9 or (h == 9 and dt.minute >= 30):
+                ny_open_idx = i
+                break
+        if ny_open_idx is None:
+            continue
+
+        sweep_found = False
+        sweep_dir: Optional[str] = None
+
+        for i in range(ny_open_idx, min(ny_open_idx + 120, len(day_1m))):
+            c = day_1m[i]
+
+            if not sweep_found:
+                if c.high > pre_high:
+                    sweep_dir = "high_swept"
+                    sweep_found = True
+                elif c.low < pre_low:
+                    sweep_dir = "low_swept"
+                    sweep_found = True
                 else:
                     continue
 
-                entry_price = cj.close
-                local_low = min(x.low for x in candles_1m[max(0, j - 3):j + 3])
-                local_high = max(x.high for x in candles_1m[max(0, j - 3):j + 3])
-
-                sl = local_low - (local_low * 0.0005) if direction == "long" else local_high + (local_high * 0.0005)
-                risk = abs(entry_price - sl)
-                tp = entry_price + (2 * risk) if direction == "long" else entry_price - (2 * risk)
-
                 events_log.append({
-                    "timestamp": to_iso(cj.timestamp),
-                    "type": "entry_trigger",
-                    "direction": direction,
-                    "description": f"1M MSS + displacement at {entry_price:.5f}",
+                    "timestamp": to_iso(c.timestamp),
+                    "type": "liquidity_sweep",
+                    "direction": sweep_dir,
+                    "description": f"15m {'high' if 'high' in sweep_dir else 'low'} swept",
                 })
 
-                trade = {
-                    "trade_number": len(trades) + 1,
-                    "entry_time": to_iso(cj.timestamp),
-                    "direction": direction,
-                    "entry_price": round(entry_price, 5),
-                    "stop_loss": round(sl, 5),
-                    "take_profit": round(tp, 5),
-                    "target_level": round(pre_high if direction == "long" else pre_low, 5),
-                    "reason": f"US30 Judas Swing: {sweep_dir} + MSS at {entry_price:.5f}",
-                    "events": list(events_log),
-                }
-                trades.append(trade)
+            for j in range(i + 1, min(i + 30, len(day_1m))):
+                cj = day_1m[j]
+                body = abs(cj.close - cj.open)
+                prior = day_1m[max(0, j - 5):j]
+                avg_body = sum(abs(x.close - x.open) for x in prior) / max(1, len(prior))
+                if body <= avg_body * 1.5:
+                    continue
 
-                # Exit
-                for cx in range(j, len(candles_1m)):
-                    cx_c = candles_1m[cx]
-                    if direction == "long":
-                        if cx_c.high >= tp: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                        elif cx_c.low <= sl: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
+                mss = mss_events_up_to(day_1m, j, lookback=3)
+                for ev in mss:
+                    if ev["idx"] != j:
+                        continue
+                    if sweep_dir == "high_swept" and ev["direction"] == "bearish":
+                        direction = "short"
+                    elif sweep_dir == "low_swept" and ev["direction"] == "bullish":
+                        direction = "long"
                     else:
-                        if cx_c.low <= tp: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                        elif cx_c.high >= sl: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-                if "exit_time" not in trade:
-                    trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-                    trade["exit_price"] = candles_1m[-1].close
-                    trade["outcome"] = "open"
-                break
-        break
+                        continue
+
+                    known = past_slice(day_1m, j)
+                    local_low = min(x.low for x in known)
+                    local_high = max(x.high for x in known)
+                    entry_price = cj.close
+                    sl = (
+                        local_low - (local_low * 0.0005)
+                        if direction == "long"
+                        else local_high + (local_high * 0.0005)
+                    )
+                    risk = abs(entry_price - sl)
+                    tp = entry_price + (2 * risk) if direction == "long" else entry_price - (2 * risk)
+
+                    events_log.append({
+                        "timestamp": to_iso(cj.timestamp),
+                        "type": "entry_trigger",
+                        "direction": direction,
+                        "description": f"1M MSS + displacement at {entry_price:.5f}",
+                    })
+
+                    exit_info = simulate_exits(day_1m, j, cj.timestamp, direction, sl, tp)
+                    trade = {
+                        "trade_number": len(trades) + 1,
+                        "entry_time": to_iso(cj.timestamp),
+                        "direction": direction,
+                        "entry_price": round(entry_price, 5),
+                        "stop_loss": round(sl, 5),
+                        "take_profit": round(tp, 5),
+                        "target_level": round(pre_high if direction == "long" else pre_low, 5),
+                        "reason": f"US30 Judas Swing: {sweep_dir} + MSS at {entry_price:.5f}",
+                        "events": list(events_log),
+                        **exit_info,
+                    }
+                    trades.append(trade)
+                    sweep_found = False
+                    sweep_dir = None
+                    break
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

@@ -15,53 +15,31 @@ Core concepts:
 Usage:
   python strategy_78_easy_ict_judas_swing.py --csv15m 15m.csv --csv5m 5m.csv
 
-BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
----------------------------------------------------------------------------
-HOW THE LEAK HAPPENS (in simple terms):
-  1. get_session_range() scans ALL 15m candles in the file to build Asian
-     session high/low — not reset per calendar day. Ranges can mix days and
-     include data from far in the future relative to an early trade.
-  2. MSS uses slices with i+3 future bars. Often one trade on full history.
-
-HOW TO FIX:
-  1. Group 15m candles by NY calendar day; build Asia range per day only from
-     that day's 8PM–2AM candles (after the session completes).
-  2. At 5m bar i, structure detection only on candles[0:i+1].
-  3. Per-day Judas swing loop; multiple trades across the backtest period.
-  4. Enter on the bar after sweep + MSS confirmation closes.
+FIXED: Causal backtest — group_by_ny_day session ranges (Asia per calendar day);
+5m MSS via mss_events_up_to; entry bar after MSS; simulate_exits for TP/SL.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_mss, detect_fvg,
-    swing_highs, swing_lows,
     save_trades,
 )
+from causal_backtest import group_by_ny_day, ny_hour, past_slice, mss_events_up_to, simulate_exits
 
-
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
-
-
-# ---------------------------------------------------------------------------
-# Session ranges
-# ---------------------------------------------------------------------------
 
 ASIAN = {"name": "asia", "start": 20, "end": 2, "sweep_start": 2, "sweep_end": 3}
 LONDON = {"name": "london", "start": 3, "end": 7, "sweep_start": 7, "sweep_end": 8}
 
 
-def get_session_range(candles_15m: list[Candle], session: dict) -> Optional[dict]:
+def get_session_range(day_candles: list[Candle], session: dict) -> Optional[dict]:
     candles_in = []
-    for c in candles_15m:
+    for c in day_candles:
         h = ny_hour(c.timestamp)
         if session["start"] <= session["end"]:
             if session["start"] <= h < session["end"]:
@@ -74,11 +52,13 @@ def get_session_range(candles_15m: list[Candle], session: dict) -> Optional[dict
         return None
     high = max(c.high for c in candles_in)
     low = min(c.low for c in candles_in)
-    return {"high": high, "low": low}
+    return {"high": high, "low": low, "range_end_ts": candles_in[-1].timestamp}
 
 
-def find_sweep_in_window(candles: list[Candle], session: dict, range_high: float, range_low: float) -> Optional[dict]:
-    for c in candles:
+def find_sweep_in_window(
+    day_candles: list[Candle], session: dict, range_high: float, range_low: float
+) -> Optional[dict]:
+    for c in day_candles:
         h = ny_hour(c.timestamp)
         if session["sweep_start"] <= h < session["sweep_end"]:
             if c.high > range_high:
@@ -88,110 +68,120 @@ def find_sweep_in_window(candles: list[Candle], session: dict, range_high: float
     return None
 
 
-# ---------------------------------------------------------------------------
-# Entry after sweep on 5m
-# ---------------------------------------------------------------------------
-
-def entry_after_sweep(candles_5m: list[Candle], sweep_ts: int, direction: str) -> Optional[dict]:
+def entry_after_sweep_causal(
+    candles_5m: list[Candle], sweep_ts: int, direction: str
+) -> Optional[dict]:
     start_idx = next((i for i, c in enumerate(candles_5m) if c.timestamp >= sweep_ts), 0)
-    for i in range(start_idx, min(start_idx + 20, len(candles_5m))):
-        c = candles_5m[i]
-        mss = detect_mss(candles_5m[max(0, i - 3):i + 3], lookback=3)
-        for ev in mss:
-            trade_dir = None
+    for i in range(start_idx, min(start_idx + 20, len(candles_5m) - 1)):
+        mss_list = mss_events_up_to(candles_5m, i, lookback=3)
+        trade_dir = None
+        for ev in mss_list:
+            if ev["idx"] != i:
+                continue
             if direction == "low_swept" and ev["direction"] == "bullish":
                 trade_dir = "long"
             elif direction == "high_swept" and ev["direction"] == "bearish":
                 trade_dir = "short"
+        if trade_dir is None:
+            continue
 
-            if trade_dir:
-                entry_price = c.close
-                local_low = min(x.low for x in candles_5m[max(0, i - 3):i + 3])
-                local_high = max(x.high for x in candles_5m[max(0, i - 3):i + 3])
+        entry_idx = i + 1
+        if entry_idx >= len(candles_5m):
+            continue
+        entry_c = candles_5m[entry_idx]
+        entry_price = entry_c.close
+        past = past_slice(candles_5m, i)
+        local_low = min(x.low for x in past[max(0, len(past) - 4) :])
+        local_high = max(x.high for x in past[max(0, len(past) - 4) :])
+        sl = (
+            local_low - (local_low * 0.0005)
+            if trade_dir == "long"
+            else local_high + (local_high * 0.0005)
+        )
+        risk = abs(entry_price - sl)
+        tp = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
 
-                sl = local_low - (local_low * 0.0005) if trade_dir == "long" else local_high + (local_high * 0.0005)
-                risk = abs(entry_price - sl)
-                tp = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
-
-                return {
-                    "entry_idx": i,
-                    "entry_price": entry_price,
-                    "direction": trade_dir,
-                    "sl": sl,
-                    "tp": tp,
-                    "description": f"5m MSS {trade_dir} at {entry_price:.5f} after {direction}",
-                }
+        return {
+            "entry_idx": entry_idx,
+            "entry_price": entry_price,
+            "direction": trade_dir,
+            "sl": sl,
+            "tp": tp,
+            "description": f"5m MSS {trade_dir} at {entry_price:.5f} after {direction}",
+        }
     return None
 
-
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
 
 def run_strategy(candles_15m: list[Candle], candles_5m: list[Candle], output_path: str):
     trades = []
 
-    for session in [ASIAN, LONDON]:
-        range_info = get_session_range(candles_15m, session)
-        if range_info is None:
-            continue
+    for day_15m in group_by_ny_day(candles_15m):
+        day_start_ts = day_15m[0].timestamp
+        day_end_ts = day_15m[-1].timestamp
+        day_5m = [c for c in candles_5m if day_start_ts <= c.timestamp <= day_end_ts + 86400]
 
-        events_log = [{
-            "timestamp": to_iso(candles_15m[-1].timestamp),
-            "type": f"{session['name']}_range",
-            "high": round(range_info["high"], 5),
-            "low": round(range_info["low"], 5),
-            "description": f"{session['name'].title()} range: high={range_info['high']:.5f}, low={range_info['low']:.5f}",
-        }]
+        for session in [ASIAN, LONDON]:
+            range_info = get_session_range(day_15m, session)
+            if range_info is None:
+                continue
 
-        sweep = find_sweep_in_window(candles_15m, session, range_info["high"], range_info["low"])
-        if sweep is None:
-            continue
+            events_log = [{
+                "timestamp": to_iso(day_15m[-1].timestamp),
+                "type": f"{session['name']}_range",
+                "high": round(range_info["high"], 5),
+                "low": round(range_info["low"], 5),
+                "description": (
+                    f"{session['name'].title()} range: high={range_info['high']:.5f}, "
+                    f"low={range_info['low']:.5f}"
+                ),
+            }]
 
-        events_log.append({
-            "timestamp": to_iso(sweep["timestamp"]),
-            "type": "liquidity_sweep",
-            "direction": sweep["direction"],
-            "description": f"{session['name'].title()} {sweep['direction']} during sweep window",
-        })
+            sweep = find_sweep_in_window(
+                day_15m, session, range_info["high"], range_info["low"]
+            )
+            if sweep is None:
+                continue
 
-        result = entry_after_sweep(candles_5m, sweep["timestamp"], sweep["direction"])
-        if result is None:
-            continue
+            events_log.append({
+                "timestamp": to_iso(sweep["timestamp"]),
+                "type": "liquidity_sweep",
+                "direction": sweep["direction"],
+                "description": f"{session['name'].title()} {sweep['direction']} during sweep window",
+            })
 
-        events_log.append({
-            "timestamp": to_iso(candles_5m[result["entry_idx"]].timestamp),
-            "type": "entry_trigger",
-            "direction": result["direction"],
-            "description": result["description"],
-        })
+            result = entry_after_sweep_causal(day_5m, sweep["timestamp"], sweep["direction"])
+            if result is None:
+                continue
 
-        trade = {
-            "trade_number": len(trades) + 1,
-            "entry_time": to_iso(candles_5m[result["entry_idx"]].timestamp),
-            "direction": result["direction"],
-            "entry_price": round(result["entry_price"], 5),
-            "stop_loss": round(result["sl"], 5),
-            "take_profit": round(result["tp"], 5),
-            "session": session["name"],
-            "reason": result["description"],
-            "events": list(events_log),
-        }
-        trades.append(trade)
+            events_log.append({
+                "timestamp": to_iso(day_5m[result["entry_idx"]].timestamp),
+                "type": "entry_trigger",
+                "direction": result["direction"],
+                "description": result["description"],
+            })
 
-        entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-        for c in candles_5m:
-            if c.timestamp > entry_ts:
-                if result["direction"] == "long":
-                    if c.high >= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                    elif c.low <= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-                else:
-                    if c.low <= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                    elif c.high >= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-        if "exit_time" not in trade:
-            trade["exit_time"] = to_iso(candles_5m[-1].timestamp)
-            trade["exit_price"] = candles_5m[-1].close
-            trade["outcome"] = "open"
+            entry_c = day_5m[result["entry_idx"]]
+            exit_info = simulate_exits(
+                day_5m,
+                result["entry_idx"],
+                entry_c.timestamp,
+                result["direction"],
+                result["sl"],
+                result["tp"],
+            )
+            trade = {
+                "trade_number": len(trades) + 1,
+                "entry_time": to_iso(entry_c.timestamp),
+                "direction": result["direction"],
+                "entry_price": round(result["entry_price"], 5),
+                "stop_loss": round(result["sl"], 5),
+                "take_profit": round(result["tp"], 5),
+                "session": session["name"],
+                "reason": result["description"],
+                "events": events_log,
+                **exit_info,
+            }
+            trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

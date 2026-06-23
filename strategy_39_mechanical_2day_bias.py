@@ -29,76 +29,40 @@ HOW TO FIX:
   2. At bar j, only pass candles[0:j+1] into detect_mss / detect_cisd.
   3. Enter on the bar after structure confirmation closes.
   4. Run per-day and collect all valid trades across the sample.
+
+FIXED: Rolling 2-day bias per day-3; mss_events_up_to/cisd_events_up_to at bar j;
+past_slice for SL; simulate_exits; all valid day-3 trades collected.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone, timedelta
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_mss, detect_cisd,
     swing_highs, swing_lows,
-    save_trades, resample,
+    save_trades,
+)
+from causal_backtest import (
+    past_slice,
+    mss_events_up_to,
+    cisd_events_up_to,
+    simulate_exits,
 )
 
 
-# ---------------------------------------------------------------------------
-# Group by date
-# ---------------------------------------------------------------------------
-
-def group_by_date(candles: list[Candle]) -> list[list[Candle]]:
-    groups: list[list[Candle]] = []
-    cur: list[Candle] = []
-    cur_date = None
-    for c in candles:
-        d = datetime.fromtimestamp(c.timestamp, tz=timezone.utc).date()
-        if cur_date is None:
-            cur_date = d
-        if d != cur_date:
-            if cur:
-                groups.append(cur)
-            cur = []
-            cur_date = d
-        cur.append(c)
-    if cur:
-        groups.append(cur)
-    return groups
-
-
-# ---------------------------------------------------------------------------
-# Step 1: Analyze two daily candles for bias
-# ---------------------------------------------------------------------------
-
-def determine_2day_bias(daily_candles: list[Candle]) -> tuple:
-    """Returns (bias, day3_open, reference_candles)"""
-    if len(daily_candles) < 2:
-        return "none", None, None
-
-    d1 = daily_candles[-2]  # First candle
-    d2 = daily_candles[-1]  # Second candle
-
-    # Bullish: d2 closes above d1 high
+def determine_2day_bias(d1: Candle, d2: Candle) -> str:
     if d2.close > d1.high:
-        return "bullish", d2.close, (d1, d2)
-
-    # Bearish: d2 closes below d1 low
+        return "bullish"
     if d2.close < d1.low:
-        return "bearish", d2.close, (d1, d2)
+        return "bearish"
+    return "none"
 
-    return "none", None, None
-
-
-# ---------------------------------------------------------------------------
-# Step 2: Mark day 3 open and find pre-open liquidity on 15m
-# ---------------------------------------------------------------------------
 
 def find_pre_open_liquidity(candles_15m: list[Candle], open_ts: int) -> dict:
-    """Find liquidity pools (swing highs/lows) formed before the day's open"""
     before = [c for c in candles_15m if c.timestamp < open_ts]
     pools = {"swing_highs": [], "swing_lows": []}
 
@@ -113,10 +77,6 @@ def find_pre_open_liquidity(candles_15m: list[Candle], open_ts: int) -> dict:
     return pools
 
 
-# ---------------------------------------------------------------------------
-# Step 3: Sweep detection + MSS/CISD on 15m
-# ---------------------------------------------------------------------------
-
 def find_sweep_and_entry(
     candles_15m: list[Candle], pools: dict, bias: str, start_idx: int
 ) -> Optional[dict]:
@@ -124,7 +84,6 @@ def find_sweep_and_entry(
         c = candles_15m[i]
 
         if bias == "bullish":
-            # Wait for sweep of a pre-open low
             for pool in pools["swing_lows"]:
                 if c.low < pool["level"]:
                     sweep_event = {
@@ -133,31 +92,35 @@ def find_sweep_and_entry(
                         "swept_level": pool["level"],
                         "direction": "sell_side_swept",
                     }
-                    # Look for MSS or CISD after sweep
                     for j in range(i + 1, min(i + 10, len(candles_15m))):
-                        mss = detect_mss(candles_15m[max(0, j - 5):j + 3], lookback=3)
-                        for ev in mss:
-                            if ev["direction"] == "bullish":
-                                entry_c = candles_15m[j]
+                        sub = past_slice(candles_15m, j)
+                        for ev in mss_events_up_to(sub, j, lookback=3):
+                            if ev["direction"] == "bullish" and ev["idx"] >= i:
+                                entry_c = candles_15m[ev["idx"]]
                                 return {
-                                    "entry_idx": j,
+                                    "entry_idx": ev["idx"],
                                     "entry_price": entry_c.close,
                                     "direction": "long",
                                     "sweep": sweep_event,
                                     "trigger": "mss",
-                                    "description": f"Swept low {pool['level']:.5f} + bullish MSS at {entry_c.close:.5f}",
+                                    "description": (
+                                        f"Swept low {pool['level']:.5f} + bullish MSS "
+                                        f"at {entry_c.close:.5f}"
+                                    ),
                                 }
-                        cisd = detect_cisd(candles_15m[max(0, j - 5):j + 3], lookback=3)
-                        for ev in cisd:
-                            if ev["direction"] == "bullish":
-                                entry_c = candles_15m[j]
+                        for ev in cisd_events_up_to(sub, j, lookback=3):
+                            if ev["direction"] == "bullish" and ev["idx"] >= i:
+                                entry_c = candles_15m[ev["idx"]]
                                 return {
-                                    "entry_idx": j,
+                                    "entry_idx": ev["idx"],
                                     "entry_price": entry_c.close,
                                     "direction": "long",
                                     "sweep": sweep_event,
                                     "trigger": "cisd",
-                                    "description": f"Swept low {pool['level']:.5f} + bullish CISD at {entry_c.close:.5f}",
+                                    "description": (
+                                        f"Swept low {pool['level']:.5f} + bullish CISD "
+                                        f"at {entry_c.close:.5f}"
+                                    ),
                                 }
                     break
 
@@ -171,150 +134,149 @@ def find_sweep_and_entry(
                         "direction": "buy_side_swept",
                     }
                     for j in range(i + 1, min(i + 10, len(candles_15m))):
-                        mss = detect_mss(candles_15m[max(0, j - 5):j + 3], lookback=3)
-                        for ev in mss:
-                            if ev["direction"] == "bearish":
-                                entry_c = candles_15m[j]
+                        sub = past_slice(candles_15m, j)
+                        for ev in mss_events_up_to(sub, j, lookback=3):
+                            if ev["direction"] == "bearish" and ev["idx"] >= i:
+                                entry_c = candles_15m[ev["idx"]]
                                 return {
-                                    "entry_idx": j,
+                                    "entry_idx": ev["idx"],
                                     "entry_price": entry_c.close,
                                     "direction": "short",
                                     "sweep": sweep_event,
                                     "trigger": "mss",
-                                    "description": f"Swept high {pool['level']:.5f} + bearish MSS at {entry_c.close:.5f}",
+                                    "description": (
+                                        f"Swept high {pool['level']:.5f} + bearish MSS "
+                                        f"at {entry_c.close:.5f}"
+                                    ),
                                 }
-                        cisd = detect_cisd(candles_15m[max(0, j - 5):j + 3], lookback=3)
-                        for ev in cisd:
-                            if ev["direction"] == "bearish":
-                                entry_c = candles_15m[j]
+                        for ev in cisd_events_up_to(sub, j, lookback=3):
+                            if ev["direction"] == "bearish" and ev["idx"] >= i:
+                                entry_c = candles_15m[ev["idx"]]
                                 return {
-                                    "entry_idx": j,
+                                    "entry_idx": ev["idx"],
                                     "entry_price": entry_c.close,
                                     "direction": "short",
                                     "sweep": sweep_event,
                                     "trigger": "cisd",
-                                    "description": f"Swept high {pool['level']:.5f} + bearish CISD at {entry_c.close:.5f}",
+                                    "description": (
+                                        f"Swept high {pool['level']:.5f} + bearish CISD "
+                                        f"at {entry_c.close:.5f}"
+                                    ),
                                 }
                     break
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
-
 def run_strategy(candles_daily: list[Candle], candles_15m: list[Candle], output_path: str):
     trades = []
 
-    bias, day3_open, ref = determine_2day_bias(candles_daily)
-    if bias == "none" or day3_open is None:
-        print("No clear 2-day bias")
-        save_trades(trades, output_path)
-        return trades
+    for day_idx in range(2, len(candles_daily)):
+        d1 = candles_daily[day_idx - 2]
+        d2 = candles_daily[day_idx - 1]
+        d3 = candles_daily[day_idx]
 
-    d1, d2 = ref
-    day3_ts = d2.timestamp + 86400  # approximate next day
+        bias = determine_2day_bias(d1, d2)
+        if bias == "none":
+            continue
 
-    events_log = [
-        {
-            "timestamp": to_iso(d1.timestamp),
-            "type": "day1_candle",
-            "open": round(d1.open, 5),
-            "high": round(d1.high, 5),
-            "low": round(d1.low, 5),
-            "close": round(d1.close, 5),
-            "description": f"Day 1: {d1.open:.5f} / {d1.high:.5f} / {d1.low:.5f} / {d1.close:.5f}",
-        },
-        {
-            "timestamp": to_iso(d2.timestamp),
-            "type": "day2_candle",
-            "open": round(d2.open, 5),
-            "high": round(d2.high, 5),
-            "low": round(d2.low, 5),
-            "close": round(d2.close, 5),
-            "description": f"Day 2: {d2.open:.5f} / {d2.high:.5f} / {d2.low:.5f} / {d2.close:.5f}",
-        },
-        {
+        day3_ts = d3.timestamp
+
+        events_log = [
+            {
+                "timestamp": to_iso(d1.timestamp),
+                "type": "day1_candle",
+                "open": round(d1.open, 5),
+                "high": round(d1.high, 5),
+                "low": round(d1.low, 5),
+                "close": round(d1.close, 5),
+                "description": (
+                    f"Day 1: {d1.open:.5f} / {d1.high:.5f} / {d1.low:.5f} / {d1.close:.5f}"
+                ),
+            },
+            {
+                "timestamp": to_iso(d2.timestamp),
+                "type": "day2_candle",
+                "open": round(d2.open, 5),
+                "high": round(d2.high, 5),
+                "low": round(d2.low, 5),
+                "close": round(d2.close, 5),
+                "description": (
+                    f"Day 2: {d2.open:.5f} / {d2.high:.5f} / {d2.low:.5f} / {d2.close:.5f}"
+                ),
+            },
+            {
+                "timestamp": to_iso(day3_ts),
+                "type": "bias_determined",
+                "bias": bias,
+                "description": (
+                    f"{bias.title()} bias for day 3 (d2 close {d2.close:.5f} vs d1 "
+                    f"{'high' if bias == 'bullish' else 'low'} "
+                    f"{d1.high if bias == 'bullish' else d1.low:.5f})"
+                ),
+            },
+        ]
+
+        pools = find_pre_open_liquidity(candles_15m, day3_ts)
+        events_log.append({
             "timestamp": to_iso(day3_ts),
-            "type": "bias_determined",
-            "bias": bias,
-            "description": f"{bias.title()} bias for day 3 (d2 close {d2.close:.5f} vs d1 {'high' if bias == 'bullish' else 'low'} {d1.high if bias == 'bullish' else d1.low:.5f})",
-        },
-    ]
+            "type": "pre_open_liquidity",
+            "pools": {
+                "highs": [round(p["level"], 5) for p in pools["swing_highs"]],
+                "lows": [round(p["level"], 5) for p in pools["swing_lows"]],
+            },
+            "description": "Pre-open liquidity pools mapped",
+        })
 
-    # Find pre-open liquidity on 15m
-    pools = find_pre_open_liquidity(candles_15m, day3_ts)
-    events_log.append({
-        "timestamp": to_iso(candles_15m[-1].timestamp),
-        "type": "pre_open_liquidity",
-        "pools": {
-            "highs": [round(p["level"], 5) for p in pools["swing_highs"]],
-            "lows": [round(p["level"], 5) for p in pools["swing_lows"]],
-        },
-        "description": f"Pre-open liquidity pools mapped",
-    })
+        start_idx = next((i for i, c in enumerate(candles_15m) if c.timestamp >= day3_ts), 0)
+        result = find_sweep_and_entry(candles_15m, pools, bias, start_idx)
+        if result is None:
+            continue
 
-    start_idx = next((i for i, c in enumerate(candles_15m) if c.timestamp >= day3_ts), 0)
-    result = find_sweep_and_entry(candles_15m, pools, bias, start_idx)
-    if result is None:
-        print("No sweep + entry found")
-        save_trades(trades, output_path)
-        return trades
+        entry_idx = result["entry_idx"]
+        entry_c = candles_15m[entry_idx]
+        events_log.append({
+            "timestamp": to_iso(candles_15m[result["sweep"]["idx"]].timestamp),
+            "type": "liquidity_sweep",
+            "direction": result["sweep"]["direction"],
+            "swept_level": round(result["sweep"]["swept_level"], 5),
+            "description": f"Liquidity sweep at {result['sweep']['swept_level']:.5f}",
+        })
+        events_log.append({
+            "timestamp": to_iso(entry_c.timestamp),
+            "type": "entry_trigger",
+            "trigger": result["trigger"],
+            "description": result["description"],
+        })
 
-    entry_c = candles_15m[result["entry_idx"]]
-    events_log.append({
-        "timestamp": to_iso(candles_15m[result["sweep"]["idx"]].timestamp),
-        "type": "liquidity_sweep",
-        "direction": result["sweep"]["direction"],
-        "swept_level": round(result["sweep"]["swept_level"], 5),
-        "description": f"Liquidity sweep at {result['sweep']['swept_level']:.5f}",
-    })
-    events_log.append({
-        "timestamp": to_iso(entry_c.timestamp),
-        "type": "entry_trigger",
-        "trigger": result["trigger"],
-        "description": result["description"],
-    })
+        trade_dir = result["direction"]
+        entry_price = result["entry_price"]
+        past = past_slice(candles_15m, entry_idx)
+        local_low = min(c.low for c in past[max(0, len(past) - 6):])
+        local_high = max(c.high for c in past[max(0, len(past) - 6):])
 
-    trade_dir = result["direction"]
-    entry_price = result["entry_price"]
-    local_low = min(c.low for c in candles_15m[max(0, result["entry_idx"] - 3):result["entry_idx"] + 3])
-    local_high = max(c.high for c in candles_15m[max(0, result["entry_idx"] - 3):result["entry_idx"] + 3])
+        if trade_dir == "long":
+            sl = local_low - (local_low * 0.0005)
+        else:
+            sl = local_high + (local_high * 0.0005)
 
-    if trade_dir == "long":
-        sl = local_low - (local_low * 0.0005)
-    else:
-        sl = local_high + (local_high * 0.0005)
+        risk = abs(entry_price - sl)
+        tp = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
 
-    risk = abs(entry_price - sl)
-    tp = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
-
-    trade = {
-        "trade_number": len(trades) + 1,
-        "entry_time": to_iso(entry_c.timestamp),
-        "direction": trade_dir,
-        "entry_price": round(entry_price, 5),
-        "stop_loss": round(sl, 5),
-        "take_profit": round(tp, 5),
-        "reason": f"2-Day Bias: {bias} + pre-open sweep + {result['trigger']}",
-        "events": list(events_log),
-    }
-    trades.append(trade)
-
-    # Exit check
-    entry_ts = entry_c.timestamp
-    for c in candles_15m:
-        if c.timestamp > entry_ts:
-            if trade_dir == "long":
-                if c.high >= tp: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                elif c.low <= sl: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-            else:
-                if c.low <= tp: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                elif c.high >= sl: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-    if "exit_time" not in trade:
-        trade["exit_time"] = to_iso(candles_15m[-1].timestamp)
-        trade["exit_price"] = candles_15m[-1].close
-        trade["outcome"] = "open"
+        trade = {
+            "trade_number": len(trades) + 1,
+            "entry_time": to_iso(entry_c.timestamp),
+            "direction": trade_dir,
+            "entry_price": round(entry_price, 5),
+            "stop_loss": round(sl, 5),
+            "take_profit": round(tp, 5),
+            "reason": f"2-Day Bias: {bias} + pre-open sweep + {result['trigger']}",
+            "events": list(events_log),
+        }
+        exit_info = simulate_exits(
+            candles_15m, entry_idx, entry_c.timestamp, trade_dir, sl, tp,
+        )
+        trade.update(exit_info)
+        trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

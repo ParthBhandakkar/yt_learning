@@ -30,6 +30,9 @@ HOW TO FIX:
   2. Confirm a level is unswept by scanning only past candles up to i.
   3. Wait for swing/FVG +1 bar confirmation; enter on the next bar after MSS.
   4. Use close-only inversion signals.
+
+FIXED: Per-day session loops; past_slice/mss_events_up_to/detect_fvg_as_of/ifvg_up_to;
+unswept levels verified causally; simulate_exits; entry on signal bar close.
 """
 
 import argparse
@@ -42,25 +45,26 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    swing_highs, swing_lows, nearest_swing_high_left, nearest_swing_low_left,
-    detect_fvg, detect_ifvg, detect_mss,
-    resample, save_trades,
+    swing_highs, swing_lows,
+    save_trades,
+)
+from causal_backtest import (
+    group_by_ny_day,
+    ny_hour,
+    ny_date,
+    past_slice,
+    detect_fvg_as_of,
+    ifvg_up_to,
+    mss_events_up_to,
+    simulate_exits,
 )
 
 
-# ---------------------------------------------------------------------------
-# Session anchors
-# ---------------------------------------------------------------------------
-
 SESSION_ANCHORS = {
-    "asia": 20,     # 8:00 PM NY
-    "london": 4,    # 4:00 AM NY
-    "newyork": 8,   # 8:00 AM NY
+    "asia": 20,
+    "london": 4,
+    "newyork": 8,
 }
-
-
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
 
 
 def find_session_candle_idx(candles_1h: list[Candle], target_hour: int) -> Optional[int]:
@@ -70,46 +74,39 @@ def find_session_candle_idx(candles_1h: list[Candle], target_hour: int) -> Optio
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 2: Find closest unswept 5M swing high/low to the left of 1H open
-# ---------------------------------------------------------------------------
-
-def find_unswept_5m_levels(
-    candles_5m: list[Candle], open_ts: int
-) -> dict:
-    """Find the closest 5m swing high and low that are unswept before the 1H open"""
-    # Get 5m candles before the 1H open
+def find_unswept_5m_levels(candles_5m: list[Candle], open_ts: int, as_of_ts: int) -> dict:
+    """Closest unswept 5m swing high/low before open, verified up to as_of_ts."""
     before_open = [c for c in candles_5m if c.timestamp < open_ts]
     if len(before_open) < 10:
         return {"high": None, "low": None, "high_idx": None, "low_idx": None}
 
     sh = swing_highs(before_open)
     sl = swing_lows(before_open)
-
     result = {"high": None, "low": None, "high_idx": None, "low_idx": None}
+
     if sh:
-        # Closest swing high to the open
-        result["high"] = before_open[sh[-1]].high
-        result["high_idx"] = sh[-1]
+        level = before_open[sh[-1]].high
+        swept = any(c.high > level for c in candles_5m if open_ts <= c.timestamp <= as_of_ts)
+        if not swept:
+            result["high"] = level
+            result["high_idx"] = sh[-1]
+
     if sl:
-        result["low"] = before_open[sl[-1]].low
-        result["low_idx"] = sl[-1]
+        level = before_open[sl[-1]].low
+        swept = any(c.low < level for c in candles_5m if open_ts <= c.timestamp <= as_of_ts)
+        if not swept:
+            result["low"] = level
+            result["low_idx"] = sl[-1]
 
     return result
 
 
-# ---------------------------------------------------------------------------
-# Step 3: Fibonacci standard deviation projections
-# ---------------------------------------------------------------------------
-
 def fib_std_projection(high: float, low: float, level: float) -> float:
-    """Standard deviation projection: -2.0, -2.5, -4.0"""
     return low + (high - low) * level
 
 
 def find_swing_for_fib(candles_5m: list[Candle], open_idx_5m: int) -> Optional[dict]:
-    """Find the structural swing that broke right before open for fib measurement"""
-    scan = candles_5m[max(0, open_idx_5m - 10):open_idx_5m]
+    scan = past_slice(candles_5m, open_idx_5m)[-10:]
     if len(scan) < 3:
         return None
     sh = swing_highs(scan)
@@ -123,183 +120,174 @@ def find_swing_for_fib(candles_5m: list[Candle], open_idx_5m: int) -> Optional[d
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
+def _structure_at_bar(candles_1m: list[Candle], i: int, direction: str) -> tuple[bool, bool]:
+    """Return (mss_found, ifvg_found) using only data through bar i."""
+    sub = past_slice(candles_1m, i)
+    mss_found = any(ev["direction"] == direction for ev in mss_events_up_to(sub, i, lookback=3))
+    ifvg_found = False
+    for fvg in detect_fvg_as_of(sub, i):
+        inv = ifvg_up_to(sub, fvg, i)
+        if inv and (
+            (direction == "bullish" and inv["direction"] == "bullish_ifvg")
+            or (direction == "bearish" and inv["direction"] == "bearish_ifvg")
+        ):
+            ifvg_found = True
+            break
+    return mss_found, ifvg_found
+
 
 def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
+    days_1h = group_by_ny_day(candles_1h)
 
-    for anchor_name, anchor_hour in SESSION_ANCHORS.items():
-        session_candle_idx = find_session_candle_idx(candles_1h, anchor_hour)
-        if session_candle_idx is None or session_candle_idx >= len(candles_1h) - 1:
+    for day_1h in days_1h:
+        if not day_1h:
             continue
 
-        session_candle = candles_1h[session_candle_idx]
-        open_price = session_candle.open
-        open_ts = session_candle.timestamp
+        for anchor_name, anchor_hour in SESSION_ANCHORS.items():
+            session_candle_idx = find_session_candle_idx(day_1h, anchor_hour)
+            if session_candle_idx is None:
+                continue
 
-        events_log = []
-        events_log.append({
-            "timestamp": to_iso(open_ts),
-            "type": "session_candle_open",
-            "session": anchor_name,
-            "open_price": round(open_price, 5),
-            "description": f"{anchor_name.title()} session 1H candle opened at {open_price:.5f}",
-        })
+            session_candle = day_1h[session_candle_idx]
+            open_ts = session_candle.timestamp
 
-        # Step 2: Find 5M structural boundaries
-        levels = find_unswept_5m_levels(candles_5m, open_ts)
-        if levels["high"] is None or levels["low"] is None:
-            continue
+            events_log = [{
+                "timestamp": to_iso(open_ts),
+                "type": "session_candle_open",
+                "session": anchor_name,
+                "open_price": round(session_candle.open, 5),
+                "description": f"{anchor_name.title()} session 1H candle opened at {session_candle.open:.5f}",
+            }]
 
-        events_log.append({
-            "timestamp": to_iso(open_ts),
-            "type": "structural_boundaries",
-            "swing_high": round(levels["high"], 5),
-            "swing_low": round(levels["low"], 5),
-            "description": f"Unswept 5M swing high: {levels['high']:.5f}, swing low: {levels['low']:.5f}",
-        })
+            open_idx_5m = next((i for i, c in enumerate(candles_5m) if c.timestamp >= open_ts), 0)
+            fib_source = find_swing_for_fib(candles_5m, open_idx_5m)
+            if fib_source is None:
+                continue
 
-        # Step 3: Fib std projection
-        open_idx_5m = next((i for i, c in enumerate(candles_5m) if c.timestamp >= open_ts), 0)
-        fib_source = find_swing_for_fib(candles_5m, open_idx_5m)
-        if fib_source is None:
-            continue
+            fib_high = fib_source["swing_high"]
+            fib_low = fib_source["swing_low"]
+            fib_target_2_0 = fib_std_projection(fib_high, fib_low, -2.0)
+            fib_target_2_5 = fib_std_projection(fib_high, fib_low, -2.5)
 
-        fib_high = fib_source["swing_high"]
-        fib_low = fib_source["swing_low"]
+            events_log.append({
+                "timestamp": to_iso(candles_5m[max(0, open_idx_5m - 1)].timestamp),
+                "type": "fib_projection",
+                "swing_high": round(fib_high, 5),
+                "swing_low": round(fib_low, 5),
+                "fib_2_0": round(fib_target_2_0, 5),
+                "fib_2_5": round(fib_target_2_5, 5),
+                "description": f"Fib std projection: -2.0={fib_target_2_0:.5f}, -2.5={fib_target_2_5:.5f}",
+            })
 
-        fib_target_2_0 = fib_std_projection(fib_high, fib_low, -2.0)
-        fib_target_2_5 = fib_std_projection(fib_high, fib_low, -2.5)
+            start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= open_ts), 0)
+            day_trade = None
 
-        events_log.append({
-            "timestamp": to_iso(candles_5m[max(0, open_idx_5m - 1)].timestamp),
-            "type": "fib_projection",
-            "swing_high": round(fib_high, 5),
-            "swing_low": round(fib_low, 5),
-            "fib_2_0": round(fib_target_2_0, 5),
-            "fib_2_5": round(fib_target_2_5, 5),
-            "description": f"Fib std projection: -2.0={fib_target_2_0:.5f}, -2.5={fib_target_2_5:.5f}",
-        })
-
-        # Watch 1M chart for sweep of 5M level + price into fib zone
-        start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= open_ts), 0)
-        entry_found = False
-
-        for i in range(start_1m, min(start_1m + 60, len(candles_1m) - 5)):
-            c = candles_1m[i]
-
-            # Check if 5M swing high was swept (for bearish setup)
-            high_swept = c.high > levels["high"]
-            low_swept = c.low < levels["low"]
-
-            # Check if price is in fib target zone
-            if low_swept and fib_target_2_5 <= c.low <= fib_target_2_0:
-                # Bearish sweep → looking for long (Power of 3 accumulation → distribution up)
-                # Check for 1M MSS or FVG inversion
-                mss_events = detect_mss(candles_1m[max(0, i - 5):i + 10], lookback=3)
-                mss_found = any(ev["direction"] == "bullish" for ev in mss_events)
-
-                fvgs = detect_fvg(candles_1m[max(0, i - 5):i + 5])
-                ifvg_found = None
-                for fvg in fvgs:
-                    inv = detect_ifvg(candles_1m[max(0, i - 5):i + 10], fvg)
-                    if inv:
-                        ifvg_found = inv
-                        break
-
-                if mss_found or ifvg_found:
-                    entry_candle = candles_1m[i + 1] if i + 1 < len(candles_1m) else c
-                    entry_price = entry_candle.close
-                    sl = min(c.low for c in candles_1m[max(0, i - 3):i + 3]) - 0.0005
-                    risk = abs(entry_price - sl)
-                    tp = entry_price + (2 * risk)
-
-                    events_log.append({
-                        "timestamp": to_iso(entry_candle.timestamp),
-                        "type": "entry_trigger",
-                        "direction": "long",
-                        "trigger": "mss" if mss_found else "ifvg",
-                        "description": f"1M MSS/iFVG at fib zone after low sweep - entry at {entry_price:.5f}",
-                    })
-
-                    trade = {
-                        "trade_number": len(trades) + 1,
-                        "entry_time": to_iso(entry_candle.timestamp),
-                        "direction": "long",
-                        "entry_price": round(entry_price, 5),
-                        "stop_loss": round(sl, 5),
-                        "take_profit": round(tp, 5),
-                        "session": anchor_name,
-                        "reason": f"{anchor_name} session: 5M swing low swept into -2.0/-2.5 fib zone + 1M MSS/iFVG",
-                        "events": list(events_log),
-                    }
-                    trades.append(trade)
-                    entry_found = True
+            for i in range(start_1m, min(start_1m + 60, len(candles_1m))):
+                c = candles_1m[i]
+                if ny_date(c.timestamp) != ny_date(open_ts):
                     break
 
-            elif high_swept and fib_target_2_0 <= c.high <= fib_target_2_5:
-                mss_events = detect_mss(candles_1m[max(0, i - 5):i + 10], lookback=3)
-                mss_found = any(ev["direction"] == "bearish" for ev in mss_events)
+                levels = find_unswept_5m_levels(candles_5m, open_ts, c.timestamp)
+                if levels["high"] is None or levels["low"] is None:
+                    continue
 
-                fvgs = detect_fvg(candles_1m[max(0, i - 5):i + 5])
-                ifvg_found = None
-                for fvg in fvgs:
-                    inv = detect_ifvg(candles_1m[max(0, i - 5):i + 10], fvg)
-                    if inv:
-                        ifvg_found = inv
-                        break
-
-                if mss_found or ifvg_found:
-                    entry_candle = candles_1m[i + 1] if i + 1 < len(candles_1m) else c
-                    entry_price = entry_candle.close
-                    sl = max(c.high for c in candles_1m[max(0, i - 3):i + 3]) + 0.0005
-                    risk = abs(entry_price - sl)
-                    tp = entry_price - (2 * risk)
-
+                if i == start_1m:
                     events_log.append({
-                        "timestamp": to_iso(entry_candle.timestamp),
-                        "type": "entry_trigger",
-                        "direction": "short",
-                        "description": f"1M MSS/iFVG at fib zone after high sweep - entry at {entry_price:.5f}",
+                        "timestamp": to_iso(open_ts),
+                        "type": "structural_boundaries",
+                        "swing_high": round(levels["high"], 5),
+                        "swing_low": round(levels["low"], 5),
+                        "description": (
+                            f"Unswept 5M swing high: {levels['high']:.5f}, "
+                            f"swing low: {levels['low']:.5f}"
+                        ),
                     })
 
-                    trade = {
-                        "trade_number": len(trades) + 1,
-                        "entry_time": to_iso(entry_candle.timestamp),
-                        "direction": "short",
-                        "entry_price": round(entry_price, 5),
-                        "stop_loss": round(sl, 5),
-                        "take_profit": round(tp, 5),
-                        "session": anchor_name,
-                        "reason": f"{anchor_name} session: 5M swing high swept into fib zone + 1M MSS/iFVG",
-                        "events": list(events_log),
-                    }
-                    trades.append(trade)
-                    entry_found = True
-                    break
+                low_swept = c.low < levels["low"]
+                high_swept = c.high > levels["high"]
 
-        if entry_found:
-            # Check exit
-            trade = trades[-1]
-            entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-            for c in candles_1m:
-                if c.timestamp > entry_ts:
-                    if trade["direction"] == "long":
-                        if c.high >= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["take_profit"]; trade["outcome"] = "win"; break
-                        elif c.low <= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["stop_loss"]; trade["outcome"] = "loss"; break
-                    else:
-                        if c.low <= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["take_profit"]; trade["outcome"] = "win"; break
-                        elif c.high >= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["stop_loss"]; trade["outcome"] = "loss"; break
-            if "exit_time" not in trade:
-                trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-                trade["exit_price"] = candles_1m[-1].close
-                trade["outcome"] = "open"
+                if low_swept and fib_target_2_5 <= c.low <= fib_target_2_0:
+                    mss_found, ifvg_found = _structure_at_bar(candles_1m, i, "bullish")
+                    if mss_found or ifvg_found:
+                        entry_candle = c
+                        entry_price = entry_candle.close
+                        past = past_slice(candles_1m, i)
+                        sl = min(x.low for x in past[max(0, len(past) - 6):]) - 0.0005
+                        risk = abs(entry_price - sl)
+                        tp = entry_price + (2 * risk)
+
+                        events_log.append({
+                            "timestamp": to_iso(entry_candle.timestamp),
+                            "type": "entry_trigger",
+                            "direction": "long",
+                            "trigger": "mss" if mss_found else "ifvg",
+                            "description": (
+                                f"1M MSS/iFVG at fib zone after low sweep - entry at {entry_price:.5f}"
+                            ),
+                        })
+
+                        day_trade = {
+                            "trade_number": len(trades) + 1,
+                            "entry_time": to_iso(entry_candle.timestamp),
+                            "direction": "long",
+                            "entry_price": round(entry_price, 5),
+                            "stop_loss": round(sl, 5),
+                            "take_profit": round(tp, 5),
+                            "session": anchor_name,
+                            "reason": (
+                                f"{anchor_name} session: 5M swing low swept into "
+                                f"-2.0/-2.5 fib zone + 1M MSS/iFVG"
+                            ),
+                            "events": list(events_log),
+                            "_entry_idx": i,
+                        }
+                        break
+
+                elif high_swept and fib_target_2_0 <= c.high <= fib_target_2_5:
+                    mss_found, ifvg_found = _structure_at_bar(candles_1m, i, "bearish")
+                    if mss_found or ifvg_found:
+                        entry_candle = c
+                        entry_price = entry_candle.close
+                        past = past_slice(candles_1m, i)
+                        sl = max(x.high for x in past[max(0, len(past) - 6):]) + 0.0005
+                        risk = abs(entry_price - sl)
+                        tp = entry_price - (2 * risk)
+
+                        events_log.append({
+                            "timestamp": to_iso(entry_candle.timestamp),
+                            "type": "entry_trigger",
+                            "direction": "short",
+                            "description": (
+                                f"1M MSS/iFVG at fib zone after high sweep - entry at {entry_price:.5f}"
+                            ),
+                        })
+
+                        day_trade = {
+                            "trade_number": len(trades) + 1,
+                            "entry_time": to_iso(entry_candle.timestamp),
+                            "direction": "short",
+                            "entry_price": round(entry_price, 5),
+                            "stop_loss": round(sl, 5),
+                            "take_profit": round(tp, 5),
+                            "session": anchor_name,
+                            "reason": f"{anchor_name} session: 5M swing high swept into fib zone + 1M MSS/iFVG",
+                            "events": list(events_log),
+                            "_entry_idx": i,
+                        }
+                        break
+
+            if day_trade is None:
+                continue
+
+            entry_idx = day_trade.pop("_entry_idx")
+            exit_info = simulate_exits(
+                candles_1m, entry_idx, candles_1m[entry_idx].timestamp,
+                "long" if day_trade["direction"] == "long" else "short",
+                day_trade["stop_loss"], day_trade["take_profit"],
+            )
+            day_trade.update(exit_info)
+            trades.append(day_trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

@@ -30,86 +30,67 @@ HOW TO FIX:
   2. Only consider 15m FVGs that formed before 10AM on that same day.
   3. Loop per day; record all valid PO3 setups, not just the first in the file.
   4. Close-only iFVG; enter on the bar after MSS/inversion closes.
+
+FIXED: Per-NY-day loop with that day's 2AM/6AM/10AM candles; 15m FVGs before 10AM
+only; mss_events_up_to/ifvg_up_to/detect_fvg_as_of; past_slice for SL; simulate_exits.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_fvg, detect_ifvg, detect_mss,
     swing_highs, swing_lows,
-    resample, save_trades,
+    save_trades,
+)
+from causal_backtest import (
+    ny_hour,
+    ny_date,
+    past_slice,
+    detect_fvg_as_of,
+    ifvg_up_to,
+    mss_events_up_to,
+    simulate_exits,
 )
 
 
-# ---------------------------------------------------------------------------
-# NY time helpers
-# ---------------------------------------------------------------------------
-
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
-
-
-def ny_date(ts: int):
-    dt = datetime.fromtimestamp(ts, tz=timezone.utc) - timedelta(hours=4)
-    return dt.date()
-
-
-from datetime import timedelta
-
-
-# ---------------------------------------------------------------------------
-# Step 1: Establish daily bias from 4H 2AM and 6AM candles
-# ---------------------------------------------------------------------------
-
-def get_4h_candles_by_ny_hour(candles_4h: list[Candle], hour: int) -> Optional[Candle]:
+def get_4h_candle_on_day(candles_4h: list[Candle], day, hour: int) -> Optional[Candle]:
     for c in reversed(candles_4h):
-        if ny_hour(c.timestamp) == hour:
+        if ny_date(c.timestamp) == day and ny_hour(c.timestamp) == hour:
             return c
     return None
 
 
-def determine_bias(candles_4h: list[Candle]) -> tuple:
-    c2am = get_4h_candles_by_ny_hour(candles_4h, 2)
-    c6am = get_4h_candles_by_ny_hour(candles_4h, 6)
-
-    if c2am is None or c6am is None:
-        return "neutral", None
-
-    bias = "neutral"
-    # Bullish: 6AM closes above 2AM high
+def determine_bias(c2am: Candle, c6am: Candle) -> str:
     if c6am.close > c2am.high:
         bias = "bullish"
-    # Bearish: 6AM closes below 2AM low
     elif c6am.close < c2am.low:
         bias = "bearish"
-    # Rejection scenarios
     elif c6am.high > c2am.high and c6am.close < c2am.high:
         bias = "bearish"
     elif c6am.low < c2am.low and c6am.close > c2am.low:
         bias = "bullish"
+    else:
+        bias = "neutral"
 
-    # No-trade: wicked both sides
     if c6am.high > c2am.high and c6am.low < c2am.low:
         bias = "notrade"
+    return bias
 
-    return bias, {"c2am": c2am, "c6am": c6am}
 
-
-# ---------------------------------------------------------------------------
-# Step 2 & 3: 10AM open & 15m FVG mapping
-# ---------------------------------------------------------------------------
-
-def find_15m_fvg_for_direction(candles_15m: list[Candle], open_price: float, bias: str) -> Optional[dict]:
-    """Find 15m FVG below open (for long) or above open (for short)"""
-    fvgs = detect_fvg(candles_15m)
-    for fvg in fvgs:
+def find_15m_fvg_for_direction(
+    candles_15m: list[Candle], open_price: float, bias: str, before_ts: int
+) -> Optional[dict]:
+    subset = [c for c in candles_15m if c.timestamp < before_ts]
+    if len(subset) < 3:
+        return None
+    as_of_idx = len(subset) - 1
+    fvgs = detect_fvg_as_of(subset, as_of_idx)
+    for fvg in reversed(fvgs):
         if bias == "bullish" and fvg["direction"] == "bullish" and fvg["upper"] < open_price:
             return fvg
         if bias == "bearish" and fvg["direction"] == "bearish" and fvg["lower"] > open_price:
@@ -117,12 +98,7 @@ def find_15m_fvg_for_direction(candles_15m: list[Candle], open_price: float, bia
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 4: Fibonacci std deviation -2.0 to -2.5
-# ---------------------------------------------------------------------------
-
 def compute_fib_std_targets(candles_15m: list[Candle], open_ts: int) -> Optional[dict]:
-    """Find last swing high/low before open for fib measurement"""
     before = [c for c in candles_15m if c.timestamp < open_ts]
     if len(before) < 5:
         return None
@@ -140,120 +116,117 @@ def compute_fib_std_targets(candles_15m: list[Candle], open_ts: int) -> Optional
     }
 
 
-# ---------------------------------------------------------------------------
-# Step 5: 1m entry confirmation
-# ---------------------------------------------------------------------------
-
 def find_1m_entry(candles_1m: list[Candle], start_idx: int, bias: str) -> Optional[dict]:
-    mss_events = detect_mss(candles_1m[start_idx:start_idx + 30], lookback=5)
-    for ev in mss_events:
-        ev["idx"] += start_idx
-        if (bias == "bullish" and ev["direction"] == "bullish") or \
-           (bias == "bearish" and ev["direction"] == "bearish"):
-            entry_c = candles_1m[ev["idx"]]
-            return {
-                "type": "mss_entry",
-                "entry_idx": ev["idx"],
-                "entry_price": entry_c.close,
-                "description": f"1M MSS {ev['direction']} at {entry_c.close:.5f}",
-            }
+    end_idx = min(start_idx + 30, len(candles_1m) - 1)
+    for j in range(start_idx, end_idx + 1):
+        sub = past_slice(candles_1m, j)
+        for ev in mss_events_up_to(sub, j, lookback=5):
+            if ev["idx"] < start_idx:
+                continue
+            if (bias == "bullish" and ev["direction"] == "bullish") or (
+                bias == "bearish" and ev["direction"] == "bearish"
+            ):
+                entry_c = candles_1m[ev["idx"]]
+                return {
+                    "type": "mss_entry",
+                    "entry_idx": ev["idx"],
+                    "entry_price": entry_c.close,
+                    "description": f"1M MSS {ev['direction']} at {entry_c.close:.5f}",
+                }
 
-    fvgs = detect_fvg(candles_1m[start_idx:start_idx + 30])
-    for fvg in fvgs:
-        fvg["idx"] += start_idx
-        inv = detect_ifvg(candles_1m[start_idx:start_idx + 40], fvg)
-        if inv:
-            inv["idx"] += start_idx
-            entry_c = candles_1m[inv["idx"]]
-            return {
-                "type": "ifvg_entry",
-                "entry_idx": inv["idx"],
-                "entry_price": entry_c.close,
-                "description": f"1M iFVG entry at {entry_c.close:.5f}",
-            }
+        for fvg in detect_fvg_as_of(sub, j):
+            if fvg["idx"] < start_idx:
+                continue
+            inv = ifvg_up_to(sub, fvg, j)
+            if inv:
+                entry_c = candles_1m[inv["idx"]]
+                return {
+                    "type": "ifvg_entry",
+                    "entry_idx": inv["idx"],
+                    "entry_price": entry_c.close,
+                    "description": f"1M iFVG entry at {entry_c.close:.5f}",
+                }
     return None
 
-
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
 
 def run_strategy(
     candles_4h: list[Candle], candles_15m: list[Candle], candles_1m: list[Candle], output_path: str
 ):
     trades = []
+    unique_days = sorted({ny_date(c.timestamp) for c in candles_4h})
 
-    bias, candles_info = determine_bias(candles_4h)
-    if bias == "neutral" or bias == "notrade":
-        print(f"No trade bias: {bias}")
-        save_trades(trades, output_path)
-        return trades
+    for day in unique_days:
+        c2am = get_4h_candle_on_day(candles_4h, day, 2)
+        c6am = get_4h_candle_on_day(candles_4h, day, 6)
+        c10am = get_4h_candle_on_day(candles_4h, day, 10)
+        if c2am is None or c6am is None or c10am is None:
+            continue
 
-    events_log = []
-    c6am = candles_info["c6am"]
-    events_log.append({
-        "timestamp": to_iso(c6am.timestamp),
-        "type": "daily_bias",
-        "bias": bias,
-        "description": f"Daily bias: {bias} (6AM close vs 2AM candle)",
-    })
+        bias = determine_bias(c2am, c6am)
+        if bias in ("neutral", "notrade"):
+            continue
 
-    # Find 10AM candle
-    c10am = get_4h_candles_by_ny_hour(candles_4h, 10)
-    if c10am is None:
-        save_trades(trades, output_path)
-        return trades
+        events_log = [
+            {
+                "timestamp": to_iso(c6am.timestamp),
+                "type": "daily_bias",
+                "bias": bias,
+                "description": f"Daily bias: {bias} (6AM close vs 2AM candle)",
+            },
+            {
+                "timestamp": to_iso(c10am.timestamp),
+                "type": "po3_baseline",
+                "open_price": round(c10am.open, 5),
+                "description": f"10AM PO3 baseline open: {c10am.open:.5f}",
+            },
+        ]
 
-    open_price_10am = c10am.open
-    open_ts_10am = c10am.timestamp
+        open_price_10am = c10am.open
+        open_ts_10am = c10am.timestamp
 
-    events_log.append({
-        "timestamp": to_iso(open_ts_10am),
-        "type": "po3_baseline",
-        "open_price": round(open_price_10am, 5),
-        "description": f"10AM PO3 baseline open: {open_price_10am:.5f}",
-    })
+        fvg = find_15m_fvg_for_direction(candles_15m, open_price_10am, bias, open_ts_10am)
+        if fvg is None:
+            continue
 
-    # Step 3: 15m FVG mapping
-    fvg = find_15m_fvg_for_direction(candles_15m, open_price_10am, bias)
-    if fvg is None:
-        print("No suitable 15m FVG for bias direction")
-        save_trades(trades, output_path)
-        return trades
-
-    events_log.append({
-        "timestamp": to_iso(candles_15m[fvg["idx"]].timestamp),
-        "type": "fvg_mapped",
-        "direction": fvg["direction"],
-        "upper": round(fvg["upper"], 5),
-        "lower": round(fvg["lower"], 5),
-        "description": f"15m {fvg['direction']} FVG: {fvg['lower']:.5f}-{fvg['upper']:.5f}",
-    })
-
-    # Step 4: Fib std dev targets
-    fib_targets = compute_fib_std_targets(candles_15m, open_ts_10am)
-    if fib_targets:
         events_log.append({
-            "timestamp": to_iso(open_ts_10am),
-            "type": "fib_std_projection",
-            "swing_high": round(fib_targets["swing_high"], 5),
-            "swing_low": round(fib_targets["swing_low"], 5),
-            "neg_2_0": round(fib_targets["neg_2_0"], 5),
-            "neg_2_5": round(fib_targets["neg_2_5"], 5),
-            "description": f"Fib std: -2.0={fib_targets['neg_2_0']:.5f}, -2.5={fib_targets['neg_2_5']:.5f}",
+            "timestamp": to_iso(candles_15m[fvg["idx"]].timestamp),
+            "type": "fvg_mapped",
+            "direction": fvg["direction"],
+            "upper": round(fvg["upper"], 5),
+            "lower": round(fvg["lower"], 5),
+            "description": f"15m {fvg['direction']} FVG: {fvg['lower']:.5f}-{fvg['upper']:.5f}",
         })
 
-    # Wait for manipulation leg to reach into the FVG / fib zone
-    start_15m = next((i for i, c in enumerate(candles_15m) if c.timestamp >= open_ts_10am), 0)
-    entry_found = False
+        fib_targets = compute_fib_std_targets(candles_15m, open_ts_10am)
+        if fib_targets:
+            events_log.append({
+                "timestamp": to_iso(open_ts_10am),
+                "type": "fib_std_projection",
+                "swing_high": round(fib_targets["swing_high"], 5),
+                "swing_low": round(fib_targets["swing_low"], 5),
+                "neg_2_0": round(fib_targets["neg_2_0"], 5),
+                "neg_2_5": round(fib_targets["neg_2_5"], 5),
+                "description": (
+                    f"Fib std: -2.0={fib_targets['neg_2_0']:.5f}, "
+                    f"-2.5={fib_targets['neg_2_5']:.5f}"
+                ),
+            })
 
-    for i in range(start_15m, len(candles_15m)):
-        c = candles_15m[i]
-        # Check if price entered the FVG
-        in_fvg = (bias == "bullish" and c.low < fvg["upper"] and c.high > fvg["lower"]) or \
-                 (bias == "bearish" and c.high > fvg["lower"] and c.low < fvg["upper"])
+        start_15m = next((i for i, c in enumerate(candles_15m) if c.timestamp >= open_ts_10am), 0)
+        day_trade = None
 
-        if in_fvg:
+        for i in range(start_15m, len(candles_15m)):
+            c = candles_15m[i]
+            if ny_date(c.timestamp) != day:
+                break
+
+            in_fvg = (
+                (bias == "bullish" and c.low < fvg["upper"] and c.high > fvg["lower"])
+                or (bias == "bearish" and c.high > fvg["lower"] and c.low < fvg["upper"])
+            )
+            if not in_fvg:
+                continue
+
             events_log.append({
                 "timestamp": to_iso(c.timestamp),
                 "type": "price_in_fvg",
@@ -265,7 +238,8 @@ def run_strategy(
             if entry is None:
                 continue
 
-            entry_c = candles_1m[entry["entry_idx"]]
+            entry_idx = entry["entry_idx"]
+            entry_c = candles_1m[entry_idx]
             events_log.append({
                 "timestamp": to_iso(entry_c.timestamp),
                 "type": "entry_trigger",
@@ -273,8 +247,9 @@ def run_strategy(
                 "description": entry["description"],
             })
 
-            local_low = min(x.low for x in candles_1m[max(0, start_1m - 5):start_1m + 10])
-            local_high = max(x.high for x in candles_1m[max(0, start_1m - 5):start_1m + 10])
+            past = past_slice(candles_1m, entry_idx)
+            local_low = min(x.low for x in past[max(0, len(past) - 15):])
+            local_high = max(x.high for x in past[max(0, len(past) - 15):])
 
             if bias == "bullish":
                 sl = local_low - (local_low * 0.0005)
@@ -283,7 +258,7 @@ def run_strategy(
                 sl = local_high + (local_high * 0.0005)
                 tp = entry["entry_price"] - 2 * abs(entry["entry_price"] - sl)
 
-            trade = {
+            day_trade = {
                 "trade_number": len(trades) + 1,
                 "entry_time": to_iso(entry_c.timestamp),
                 "direction": bias,
@@ -292,26 +267,21 @@ def run_strategy(
                 "take_profit": round(tp, 5),
                 "reason": f"10AM PO3: {bias} bias + 15m FVG + {entry['type']}",
                 "events": list(events_log),
+                "_entry_idx": entry_idx,
             }
-            trades.append(trade)
-            entry_found = True
             break
 
-    if entry_found:
-        trade = trades[-1]
-        entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-        for c in candles_1m:
-            if c.timestamp > entry_ts:
-                if bias == "bullish":
-                    if c.high >= tp: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                    elif c.low <= sl: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-                else:
-                    if c.low <= tp: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                    elif c.high >= sl: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-        if "exit_time" not in trade:
-            trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-            trade["exit_price"] = candles_1m[-1].close
-            trade["outcome"] = "open"
+        if day_trade is None:
+            continue
+
+        entry_idx = day_trade.pop("_entry_idx")
+        exit_info = simulate_exits(
+            candles_1m, entry_idx, candles_1m[entry_idx].timestamp,
+            "long" if bias == "bullish" else "short",
+            day_trade["stop_loss"], day_trade["take_profit"],
+        )
+        day_trade.update(exit_info)
+        trades.append(day_trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

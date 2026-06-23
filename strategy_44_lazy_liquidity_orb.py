@@ -20,6 +20,9 @@ Usage:
 
 BACKTEST INTEGRITY NOTICE (severity: MINOR — relatively honest; small fill issue)
 ---------------------------------------------------------------------------
+FIXED: limit_retest entries use find_limit_fill after the breakout bar (skip if
+no retest); entry_time/price come from the fill bar; exits use simulate_exits.
+
 HOW THE LEAK HAPPENS (in simple terms):
   Per-day ORB logic is mostly sound: 3AM anchor is a completed candle, breakout
   uses body close after the anchor, and exits check bars AFTER entry time.
@@ -45,6 +48,7 @@ from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     save_trades,
 )
+from causal_backtest import find_limit_fill, simulate_exits
 
 
 def ny_hour(ts: int) -> int:
@@ -173,9 +177,10 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
             continue
 
         entry_info = determine_entry(result, day_candles)
+        breakout_idx = result["entry_idx"]
 
         events_log.append({
-            "timestamp": to_iso(day_candles[result["entry_idx"]].timestamp),
+            "timestamp": to_iso(day_candles[breakout_idx].timestamp),
             "type": "breakout_detected",
             "breakout_type": result["type"],
             "description": result["description"],
@@ -192,12 +197,26 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
         else:
             sl_adjusted = sl + (sl * 0.0005)
 
-        entry_price = entry_info["entry_price"]
+        if entry_info["entry_type"] == "limit_retest":
+            fill = find_limit_fill(
+                day_candles,
+                breakout_idx,
+                entry_info["entry_price"],
+                trade_dir,
+            )
+            if fill is None:
+                continue
+            entry_idx, entry_price = fill
+        else:
+            entry_idx = breakout_idx
+            entry_price = entry_info["entry_price"]
+
+        entry_candle = day_candles[entry_idx]
         risk = abs(entry_price - sl_adjusted)
         tp = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
 
         events_log.append({
-            "timestamp": to_iso(day_candles[result["entry_idx"]].timestamp),
+            "timestamp": to_iso(entry_candle.timestamp),
             "type": "entry_executed",
             "entry_type": entry_info["entry_type"],
             "entry_price": round(entry_price, 5),
@@ -206,7 +225,7 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
 
         trade = {
             "trade_number": len(trades) + 1,
-            "entry_time": to_iso(day_candles[result["entry_idx"]].timestamp),
+            "entry_time": to_iso(entry_candle.timestamp),
             "direction": trade_dir,
             "entry_price": round(entry_price, 5),
             "stop_loss": round(sl_adjusted, 5),
@@ -214,22 +233,16 @@ def run_strategy(candles_15m: list[Candle], output_path: str):
             "reason": f"ORB: 3AM anchor {result['type']} via {entry_info['entry_type']}",
             "events": list(events_log),
         }
+        exit_info = simulate_exits(
+            day_candles,
+            entry_idx,
+            entry_candle.timestamp,
+            trade_dir,
+            trade["stop_loss"],
+            trade["take_profit"],
+        )
+        trade.update(exit_info)
         trades.append(trade)
-
-        # Exit check
-        entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-        for c in day_candles:
-            if c.timestamp > entry_ts:
-                if trade_dir == "long":
-                    if c.high >= tp: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                    elif c.low <= sl_adjusted: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = sl_adjusted; trade["outcome"] = "loss"; break
-                else:
-                    if c.low <= tp: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                    elif c.high >= sl_adjusted: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = sl_adjusted; trade["outcome"] = "loss"; break
-        if "exit_time" not in trade:
-            trade["exit_time"] = to_iso(day_candles[-1].timestamp)
-            trade["exit_price"] = day_candles[-1].close
-            trade["outcome"] = "open"
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

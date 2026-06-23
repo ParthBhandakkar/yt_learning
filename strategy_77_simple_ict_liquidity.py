@@ -14,41 +14,31 @@ Core concepts:
 Usage:
   python strategy_77_simple_ict_liquidity.py --csv4h 4h.csv --csv5m 5m.csv
 
-BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
----------------------------------------------------------------------------
-HOW THE LEAK HAPPENS (in simple terms):
-  1. "Liquidity" swing is taken from the last swing on the entire 4H file —
-     at the trade date you would not know future swings yet.
-  2. Only one trade on the full dataset (first sweep + MSS).
-  3. MSS detected on slices with j+3 future 5m bars included.
-
-HOW TO FIX:
-  1. For each day, find the most recent confirmed 4H swing using only 4H bars
-     that closed before the current session.
-  2. Per-day loop on 5m; collect all sweep + MSS trades, not just first.
-  3. Confirm swings with +1 bar lag; MSS only on past candles at bar j.
-  4. Enter on the bar after MSS close at the liquidity sweep.
+FIXED: Causal backtest — per-day loop; 4H swings from bars closed before session;
+5m MSS via mss_events_up_to and FVG via detect_fvg_as_of; simulate_exits for TP/SL.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_mss, detect_fvg,
     swing_highs, swing_lows,
     save_trades,
 )
+from causal_backtest import (
+    group_by_ny_day,
+    ny_date,
+    past_slice,
+    mss_events_up_to,
+    detect_fvg_as_of,
+    simulate_exits,
+)
 
-
-# ---------------------------------------------------------------------------
-# Step 1: Find swing high/low on 4H (3-candle fractal)
-# ---------------------------------------------------------------------------
 
 def find_4h_swing_liquidity(candles_4h: list[Candle]) -> Optional[dict]:
     if len(candles_4h) < 3:
@@ -58,139 +48,153 @@ def find_4h_swing_liquidity(candles_4h: list[Candle]) -> Optional[dict]:
 
     if sh:
         idx = sh[-1]
+        if idx + 1 >= len(candles_4h):
+            return None
         liquid_high = candles_4h[idx].high
-        liquid_low = candles_4h[idx].low  # Third candle
+        liquid_low = candles_4h[idx].low
         return {"type": "swing_high", "idx": idx, "liquidity_levels": (liquid_low, liquid_high)}
     if sl:
         idx = sl[-1]
+        if idx + 1 >= len(candles_4h):
+            return None
         liquid_high = candles_4h[idx].high
         liquid_low = candles_4h[idx].low
         return {"type": "swing_low", "idx": idx, "liquidity_levels": (liquid_low, liquid_high)}
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 3: Sweep + 5m MSS + entry
-# ---------------------------------------------------------------------------
-
-def find_entry_5m(
+def find_entry_5m_causal(
     candles_5m: list[Candle], liquidity: dict, start_ts: int
 ) -> Optional[dict]:
     start_idx = next((i for i, c in enumerate(candles_5m) if c.timestamp >= start_ts), 0)
     liq_low, liq_high = liquidity["liquidity_levels"]
 
-    for i in range(start_idx, len(candles_5m) - 3):
+    for i in range(start_idx, len(candles_5m) - 2):
         c = candles_5m[i]
-
         swept_high = c.high > liq_high
         swept_low = c.low < liq_low
 
         if not swept_high and not swept_low:
             continue
 
-        for j in range(i + 1, min(i + 15, len(candles_5m))):
-            cj = candles_5m[j]
-            mss = detect_mss(candles_5m[max(0, j - 3):j + 3], lookback=3)
-            for ev in mss:
-                direction = None
+        for j in range(i + 1, min(i + 15, len(candles_5m) - 1)):
+            mss_list = mss_events_up_to(candles_5m, j, lookback=3)
+            direction = None
+            for ev in mss_list:
+                if ev["idx"] != j:
+                    continue
                 if swept_low and ev["direction"] == "bullish":
                     direction = "long"
                 elif swept_high and ev["direction"] == "bearish":
                     direction = "short"
+            if direction is None:
+                continue
 
-                if direction:
-                    fvgs = detect_fvg(candles_5m[max(0, j - 3):j + 3])
-                    entry_price = cj.close
-                    local_low = min(x.low for x in candles_5m[max(0, j - 3):j + 3])
-                    local_high = max(x.high for x in candles_5m[max(0, j - 3):j + 3])
+            fvgs = detect_fvg_as_of(candles_5m, j)
+            if not fvgs:
+                continue
 
-                    sl = local_low - (local_low * 0.0005) if direction == "long" else local_high + (local_high * 0.0005)
-                    risk = abs(entry_price - sl)
-                    tp = entry_price + (2 * risk) if direction == "long" else entry_price - (2 * risk)
+            entry_idx = j + 1
+            if entry_idx >= len(candles_5m):
+                continue
+            entry_c = candles_5m[entry_idx]
+            entry_price = entry_c.close
+            past = past_slice(candles_5m, j)
+            local_low = min(x.low for x in past[max(0, len(past) - 4) :])
+            local_high = max(x.high for x in past[max(0, len(past) - 4) :])
+            sl = (
+                local_low - (local_low * 0.0005)
+                if direction == "long"
+                else local_high + (local_high * 0.0005)
+            )
+            risk = abs(entry_price - sl)
+            tp = entry_price + (2 * risk) if direction == "long" else entry_price - (2 * risk)
 
-                    return {
-                        "entry_idx": j,
-                        "entry_price": entry_price,
-                        "direction": direction,
-                        "sl": sl,
-                        "tp": tp,
-                        "sweep_idx": i,
-                        "swept_level": liq_low if swept_low else liq_high,
-                        "description": f"4H liquidity {liq_low if swept_low else liq_high:.5f} swept + 5m MSS at {entry_price:.5f}",
-                    }
+            return {
+                "entry_idx": entry_idx,
+                "entry_price": entry_price,
+                "direction": direction,
+                "sl": sl,
+                "tp": tp,
+                "sweep_idx": i,
+                "swept_level": liq_low if swept_low else liq_high,
+                "description": (
+                    f"4H liquidity {liq_low if swept_low else liq_high:.5f} swept "
+                    f"+ 5m MSS at {entry_price:.5f}"
+                ),
+            }
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
-
 def run_strategy(candles_4h: list[Candle], candles_5m: list[Candle], output_path: str):
     trades = []
+    days_5m = group_by_ny_day(candles_5m)
+    h4_accum: list[Candle] = []
+    h4_by_day = group_by_ny_day(candles_4h)
+    day_idx = 0
 
-    liquidity = find_4h_swing_liquidity(candles_4h)
-    if liquidity is None:
-        print("No 4H swing found")
-        save_trades(trades, output_path)
-        return trades
+    for day_5m in days_5m:
+        day_date = ny_date(day_5m[0].timestamp)
+        while day_idx < len(h4_by_day) and ny_date(h4_by_day[day_idx][0].timestamp) <= day_date:
+            h4_accum.extend(h4_by_day[day_idx])
+            day_idx += 1
 
-    liq_ts = candles_4h[liquidity["idx"]].timestamp
-    liq_low, liq_high = liquidity["liquidity_levels"]
+        liquidity = find_4h_swing_liquidity(h4_accum)
+        if liquidity is None:
+            continue
 
-    events_log = [{
-        "timestamp": to_iso(liq_ts),
-        "type": "liquidity_levels_marked",
-        "high": round(liq_high, 5),
-        "low": round(liq_low, 5),
-        "description": f"4H {liquidity['type']}: liquidity high={liq_high:.5f}, low={liq_low:.5f}",
-    }]
+        liq_ts = h4_accum[liquidity["idx"]].timestamp
+        liq_low, liq_high = liquidity["liquidity_levels"]
+        next_4h_ts = liq_ts + (4 * 3600)
 
-    # Wait for next 4H candle
-    next_4h_ts = liq_ts + (4 * 3600)
-    result = find_entry_5m(candles_5m, liquidity, next_4h_ts)
-    if result is None:
-        print("No sweep + entry found in next 4H candle")
-        save_trades(trades, output_path)
-        return trades
+        events_log = [{
+            "timestamp": to_iso(liq_ts),
+            "type": "liquidity_levels_marked",
+            "high": round(liq_high, 5),
+            "low": round(liq_low, 5),
+            "description": (
+                f"4H {liquidity['type']}: liquidity high={liq_high:.5f}, low={liq_low:.5f}"
+            ),
+        }]
 
-    events_log.append({
-        "timestamp": to_iso(candles_5m[result["sweep_idx"]].timestamp),
-        "type": "liquidity_sweep",
-        "swept_level": round(result["swept_level"], 5),
-        "description": f"Liquidity level {result['swept_level']:.5f} swept",
-    })
-    events_log.append({
-        "timestamp": to_iso(candles_5m[result["entry_idx"]].timestamp),
-        "type": "entry_trigger",
-        "direction": result["direction"],
-        "description": result["description"],
-    })
+        result = find_entry_5m_causal(day_5m, liquidity, next_4h_ts)
+        if result is None:
+            continue
 
-    trade = {
-        "trade_number": len(trades) + 1,
-        "entry_time": to_iso(candles_5m[result["entry_idx"]].timestamp),
-        "direction": result["direction"],
-        "entry_price": round(result["entry_price"], 5),
-        "stop_loss": round(result["sl"], 5),
-        "take_profit": round(result["tp"], 5),
-        "reason": result["description"],
-        "events": list(events_log),
-    }
-    trades.append(trade)
+        events_log.append({
+            "timestamp": to_iso(day_5m[result["sweep_idx"]].timestamp),
+            "type": "liquidity_sweep",
+            "swept_level": round(result["swept_level"], 5),
+            "description": f"Liquidity level {result['swept_level']:.5f} swept",
+        })
+        events_log.append({
+            "timestamp": to_iso(day_5m[result["entry_idx"]].timestamp),
+            "type": "entry_trigger",
+            "direction": result["direction"],
+            "description": result["description"],
+        })
 
-    entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-    for c in candles_5m:
-        if c.timestamp > entry_ts:
-            if result["direction"] == "long":
-                if c.high >= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.low <= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-            else:
-                if c.low <= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.high >= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-    if "exit_time" not in trade:
-        trade["exit_time"] = to_iso(candles_5m[-1].timestamp)
-        trade["exit_price"] = candles_5m[-1].close
-        trade["outcome"] = "open"
+        entry_c = day_5m[result["entry_idx"]]
+        exit_info = simulate_exits(
+            day_5m,
+            result["entry_idx"],
+            entry_c.timestamp,
+            result["direction"],
+            result["sl"],
+            result["tp"],
+        )
+        trade = {
+            "trade_number": len(trades) + 1,
+            "entry_time": to_iso(entry_c.timestamp),
+            "direction": result["direction"],
+            "entry_price": round(result["entry_price"], 5),
+            "stop_loss": round(result["sl"], 5),
+            "take_profit": round(result["tp"], 5),
+            "reason": result["description"],
+            "events": events_log,
+            **exit_info,
+        }
+        trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

@@ -29,58 +29,34 @@ HOW TO FIX:
   2. Only allow OB entries at index i + lookahead (after confirmation bars).
   3. Use close-only iFVG (ignore wick touches) or enter on the bar after close.
   4. Run a per-day loop; do not mix overnight session boundaries incorrectly.
+  FIXED: Prior-day VP, order_block_entry_idx, ifvg_up_to/mss_events_up_to, simulate_exits.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone, timedelta
+from datetime import datetime, timezone
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    compute_volume_profile, VolumeProfile,
-    detect_fvg, detect_ifvg, detect_mss, detect_order_blocks, detect_cisd,
-    detect_breaker_blocks,
-    swing_highs, swing_lows,
-    candles_for_time_range, save_trades,
+    compute_volume_profile,
+    detect_order_blocks, detect_breaker_blocks, detect_cisd,
+    save_trades,
     resample,
 )
-
-
-# ---------------------------------------------------------------------------
-# Profile grouping helpers with NY timezone awareness
-# ---------------------------------------------------------------------------
-
-def ny_hour(ts: int) -> int:
-    """Return hour in New York time (UTC-4)"""
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
-
-
-def ny_date(ts: int):
-    dt = datetime.fromtimestamp(ts, tz=timezone.utc) - timedelta(hours=4)
-    return dt.date()
-
-
-def group_ny_days(candles: list[Candle]) -> list[list[Candle]]:
-    groups: list[list[Candle]] = []
-    cur: list[Candle] = []
-    cur_date = None
-    for c in candles:
-        d = ny_date(c.timestamp)
-        if cur_date is None:
-            cur_date = d
-        if d != cur_date:
-            if cur:
-                groups.append(cur)
-            cur = []
-            cur_date = d
-        cur.append(c)
-    if cur:
-        groups.append(cur)
-    return groups
+from causal_backtest import (
+    group_by_ny_day,
+    ny_hour,
+    past_slice,
+    detect_fvg_as_of,
+    ifvg_up_to,
+    mss_events_up_to,
+    order_block_entry_idx,
+    simulate_exits,
+)
 
 
 def get_overnight_candles(day_candles: list[Candle]) -> list[Candle]:
@@ -88,7 +64,8 @@ def get_overnight_candles(day_candles: list[Candle]) -> list[Candle]:
     overnight = []
     for c in day_candles:
         h = ny_hour(c.timestamp)
-        if h < 9 or (h == 9 and datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute < 30):
+        dt = datetime.fromtimestamp(c.timestamp, tz=timezone.utc)
+        if h < 9 or (h == 9 and dt.minute < 30):
             overnight.append(c)
         if h >= 18:
             overnight.append(c)
@@ -100,22 +77,18 @@ def get_ny_session_candles(day_candles: list[Candle]) -> list[Candle]:
     session = []
     for c in day_candles:
         h = ny_hour(c.timestamp)
-        if h > 9 or (h == 9 and datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute >= 30):
+        dt = datetime.fromtimestamp(c.timestamp, tz=timezone.utc)
+        if h > 9 or (h == 9 and dt.minute >= 30):
             session.append(c)
     return session
 
 
-# ---------------------------------------------------------------------------
-# 5-minute level validation
-# ---------------------------------------------------------------------------
-
-def validate_level_on_5m(candles_5m: list[Candle], level: float, start_idx: int) -> Optional[dict]:
-    """Check for failed auction or breakout at a macro level on 5m chart"""
-    for i in range(start_idx, len(candles_5m) - 2):
+def validate_level_on_5m(candles_5m: list[Candle], level: float, start_idx: int, as_of_idx: int) -> Optional[dict]:
+    """Check for failed auction at a macro level on 5m chart (causal up to as_of_idx)."""
+    end = min(as_of_idx, len(candles_5m) - 2)
+    for i in range(start_idx, end):
         c0 = candles_5m[i]
-
-        # Failed auction short: close above level, next candle close below
-        if c0.close > level and i + 1 < len(candles_5m):
+        if c0.close > level and i + 1 <= as_of_idx:
             c1 = candles_5m[i + 1]
             if c1.close < level:
                 return {
@@ -125,9 +98,7 @@ def validate_level_on_5m(candles_5m: list[Candle], level: float, start_idx: int)
                     "entry_price": c1.close,
                     "description": f"5m failed auction short at level {level:.5f}",
                 }
-
-        # Failed auction long: close below level, next candle close above
-        if c0.close < level and i + 1 < len(candles_5m):
+        if c0.close < level and i + 1 <= as_of_idx:
             c1 = candles_5m[i + 1]
             if c1.close > level:
                 return {
@@ -137,91 +108,104 @@ def validate_level_on_5m(candles_5m: list[Candle], level: float, start_idx: int)
                     "entry_price": c1.close,
                     "description": f"5m failed auction long at level {level:.5f}",
                 }
-
     return None
 
 
-# ---------------------------------------------------------------------------
-# 1-minute ICT entry triggers
-# ---------------------------------------------------------------------------
+def find_ict_entry_1m(
+    candles_1m: list[Candle], start_idx: int, as_of_idx: int, direction: str
+) -> Optional[dict]:
+    """Find ICT entry trigger using only data up to as_of_idx."""
+    for j in range(start_idx, min(as_of_idx + 1, len(candles_1m))):
+        known = past_slice(candles_1m, j)
 
-def find_ict_entry_1m(candles_1m: list[Candle], start_idx: int, direction: str) -> Optional[dict]:
-    """Find one of the ICT entry triggers on 1m chart"""
-    # Option 1: CISD
-    cisd_events = detect_cisd(candles_1m[start_idx:start_idx + 20], lookback=5)
-    # Offset to account for slice
-    for ev in cisd_events:
-        ev["idx"] += start_idx
-
-    # Option 2: MSS + FVG
-    fvgs = detect_fvg(candles_1m[start_idx:start_idx + 20])
-    for fvg in fvgs:
-        fvg["idx"] += start_idx
-        inv = detect_ifvg(candles_1m, fvg)
-        if inv:
-            return {
-                "type": "ifvg_entry",
-                "entry_idx": inv["idx"],
-                "entry_price": candles_1m[inv["idx"]].close,
-                "direction": inv["direction"],
-                "fvg": fvg,
-                "description": f"1m iFVG entry at {candles_1m[inv['idx']].close:.5f}",
-            }
-
-    mss_events = detect_mss(candles_1m[start_idx:start_idx + 20], lookback=5)
-    for ev in mss_events:
-        ev["idx"] += start_idx
-        # Check for an FVG near the MSS
-        for fvg in fvgs:
-            if abs(fvg["idx"] - ev["idx"]) <= 3:
+        cisd_events = detect_cisd(known, lookback=5)
+        for ev in cisd_events:
+            if ev["idx"] != j or ev["idx"] < start_idx:
+                continue
+            if direction == "long" and ev["direction"] == "bullish":
                 return {
-                    "type": "mss_fvg_entry",
-                    "entry_idx": ev["idx"],
-                    "entry_price": candles_1m[ev["idx"]].close,
-                    "direction": ev["direction"],
-                    "description": f"1m MSS + FVG entry at {candles_1m[ev['idx']].close:.5f}",
+                    "type": "cisd_entry",
+                    "entry_idx": j,
+                    "entry_price": candles_1m[j].close,
+                    "direction": "bullish",
+                    "description": f"1m CISD entry at {candles_1m[j].close:.5f}",
+                }
+            if direction == "short" and ev["direction"] == "bearish":
+                return {
+                    "type": "cisd_entry",
+                    "entry_idx": j,
+                    "entry_price": candles_1m[j].close,
+                    "direction": "bearish",
+                    "description": f"1m CISD entry at {candles_1m[j].close:.5f}",
                 }
 
-    # Option 3: Breaker block
-    breakers = detect_breaker_blocks(candles_1m[start_idx:start_idx + 30], lookahead=3)
-    for b in breakers:
-        b["idx"] += start_idx
-        entry_price = candles_1m[b["breaker_idx"]].close
-        return {
-            "type": "breaker_block_entry",
-            "entry_idx": b["breaker_idx"],
-            "entry_price": entry_price,
-            "direction": "bullish" if b["direction"] == "bullish" else "bearish",
-            "description": f"1m breaker block entry at {entry_price:.5f}",
-        }
+        fvgs = detect_fvg_as_of(candles_1m, j)
+        for fvg in fvgs:
+            if fvg["idx"] < start_idx:
+                continue
+            inv = ifvg_up_to(candles_1m, fvg, j)
+            if inv and inv["idx"] == j:
+                trade_dir = "bullish" if "bullish" in inv["direction"] else "bearish"
+                if (direction == "long" and trade_dir == "bullish") or (
+                    direction == "short" and trade_dir == "bearish"
+                ):
+                    return {
+                        "type": "ifvg_entry",
+                        "entry_idx": j,
+                        "entry_price": candles_1m[j].close,
+                        "direction": trade_dir,
+                        "fvg": fvg,
+                        "description": f"1m iFVG entry at {candles_1m[j].close:.5f}",
+                    }
 
-    # Option 4: Order block
-    obs = detect_order_blocks(candles_1m[start_idx:start_idx + 30], lookahead=3)
-    for ob in obs:
-        ob["idx"] += start_idx
-        entry_price = candles_1m[ob["idx"]].close
-        return {
-            "type": "order_block_entry",
-            "entry_idx": ob["idx"],
-            "entry_price": entry_price,
-            "direction": ob["direction"],
-            "description": f"1m order block entry at {entry_price:.5f}",
-        }
+        mss_events = mss_events_up_to(candles_1m, j, lookback=5)
+        for ev in mss_events:
+            if ev["idx"] != j or ev["idx"] < start_idx:
+                continue
+            for fvg in fvgs:
+                if abs(fvg["idx"] - ev["idx"]) <= 3:
+                    if (direction == "long" and ev["direction"] == "bullish") or (
+                        direction == "short" and ev["direction"] == "bearish"
+                    ):
+                        return {
+                            "type": "mss_fvg_entry",
+                            "entry_idx": j,
+                            "entry_price": candles_1m[j].close,
+                            "direction": ev["direction"],
+                            "description": f"1m MSS + FVG entry at {candles_1m[j].close:.5f}",
+                        }
+
+        breakers = detect_breaker_blocks(known, lookahead=3)
+        for b in breakers:
+            if b["breaker_idx"] == j and b["breaker_idx"] >= start_idx:
+                return {
+                    "type": "breaker_block_entry",
+                    "entry_idx": b["breaker_idx"],
+                    "entry_price": candles_1m[b["breaker_idx"]].close,
+                    "direction": b["direction"],
+                    "description": f"1m breaker block entry at {candles_1m[b['breaker_idx']].close:.5f}",
+                }
+
+        obs = detect_order_blocks(known, lookahead=3)
+        for ob in obs:
+            entry_idx = order_block_entry_idx(ob["idx"], 3)
+            if entry_idx == j and entry_idx >= start_idx:
+                return {
+                    "type": "order_block_entry",
+                    "entry_idx": entry_idx,
+                    "entry_price": candles_1m[entry_idx].close,
+                    "direction": ob["direction"],
+                    "description": f"1m order block entry at {candles_1m[entry_idx].close:.5f}",
+                }
 
     return None
 
-
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
 
 def run_strategy(candles_1m: list[Candle], output_path: str):
     trades = []
-
-    # Resample to 5m for macro analysis
     candles_5m = resample(candles_1m, 5)
-    days = group_ny_days(candles_1m)
-    days_5m = group_ny_days(candles_5m)
+    days = group_by_ny_day(candles_1m)
+    days_5m = group_by_ny_day(candles_5m)
 
     for day_idx, day_candles in enumerate(days):
         if len(day_candles) < 50:
@@ -233,10 +217,12 @@ def run_strategy(candles_1m: list[Candle], output_path: str):
 
         events_log = []
 
-        # Previous Day's Volume Profile (use day_5m data from day-1, but we approximate)
-        prev_day_vp = compute_volume_profile(day_5m[:max(1, len(day_5m) // 4)])
+        if day_idx > 0:
+            prev_day_5m = days_5m[day_idx - 1]
+            prev_day_vp = compute_volume_profile(prev_day_5m)
+        else:
+            prev_day_vp = compute_volume_profile(day_5m[:max(1, len(day_5m) // 4)])
 
-        # Overnight profile
         overnight_candles = get_overnight_candles(day_candles)
         overnight_5m = resample(overnight_candles, 5) if overnight_candles else []
         overnight_vp = compute_volume_profile(overnight_5m) if overnight_5m else prev_day_vp
@@ -257,114 +243,92 @@ def run_strategy(candles_1m: list[Candle], output_path: str):
             "description": f"Macro levels mapped for day {day_idx + 1}",
         })
 
-        # Find NY session start index in 5m data
         ny_candles = get_ny_session_candles(day_candles)
         if not ny_candles:
             continue
 
         ny_start_ts = ny_candles[0].timestamp
         start_5m = next((i for i, c in enumerate(day_5m) if c.timestamp >= ny_start_ts), 0)
+        day_traded = False
 
-        # Check each macro level for failed auction / breakout on 5m
-        for level_name, level_val in macro_levels.items():
-            if level_val <= 0:
-                continue
+        for as_of_5m in range(start_5m, len(day_5m)):
+            if day_traded:
+                break
 
-            result = validate_level_on_5m(day_5m, level_val, start_5m)
-            if result is None:
-                continue
+            for level_name, level_val in macro_levels.items():
+                if level_val <= 0:
+                    continue
 
-            events_log.append({
-                "timestamp": to_iso(day_5m[result["idx"]].timestamp),
-                "type": "macro_level_setup",
-                "level": level_name,
-                "level_value": level_val,
-                "setup_type": result["type"],
-                "description": result["description"],
-            })
+                result = validate_level_on_5m(day_5m, level_val, start_5m, as_of_5m)
+                if result is None:
+                    continue
 
-            # Drop to 1m for ICT entry trigger
-            entry_5m_ts = day_5m[result["idx"]].timestamp
-            start_1m = next((i for i, c in enumerate(day_candles) if c.timestamp >= entry_5m_ts), 0)
+                events_log.append({
+                    "timestamp": to_iso(day_5m[result["idx"]].timestamp),
+                    "type": "macro_level_setup",
+                    "level": level_name,
+                    "level_value": level_val,
+                    "setup_type": result["type"],
+                    "description": result["description"],
+                })
 
-            direction = "long" if "long" in result["type"] else "short"
-            ict_entry = find_ict_entry_1m(day_candles, start_1m, direction)
-            if ict_entry is None:
-                continue
+                entry_5m_ts = day_5m[result["idx"]].timestamp
+                start_1m = next((i for i, c in enumerate(day_candles) if c.timestamp >= entry_5m_ts), 0)
+                direction = "long" if "long" in result["type"] else "short"
 
-            entry_candle = day_candles[ict_entry["entry_idx"]]
-            entry_price = ict_entry["entry_price"]
-            entry_ts = entry_candle.timestamp
+                ict_entry = None
+                for as_of_1m in range(start_1m, min(start_1m + 30, len(day_candles))):
+                    ict_entry = find_ict_entry_1m(day_candles, start_1m, as_of_1m, direction)
+                    if ict_entry is not None:
+                        break
 
-            events_log.append({
-                "timestamp": to_iso(entry_ts),
-                "type": "ict_entry_trigger",
-                "entry_type": ict_entry["type"],
-                "description": ict_entry["description"],
-            })
+                if ict_entry is None:
+                    continue
 
-            # Risk management: SL behind swing
-            swings_h = swing_highs(day_candles[max(0, start_1m - 5):start_1m + 10])
-            swings_l = swing_lows(day_candles[max(0, start_1m - 5):start_1m + 10])
-            local_high = max(day_candles[max(0, start_1m - 5):start_1m + 10], key=lambda x: x.high).high
-            local_low = min(day_candles[max(0, start_1m - 5):start_1m + 10], key=lambda x: x.low).low
+                entry_idx = ict_entry["entry_idx"]
+                entry_candle = day_candles[entry_idx]
+                entry_price = ict_entry["entry_price"]
+                entry_ts = entry_candle.timestamp
 
-            if ict_entry["direction"] in ("bullish", "long"):
-                sl = local_low - (local_low * 0.0005)
-            else:
-                sl = local_high + (local_high * 0.0005)
+                events_log.append({
+                    "timestamp": to_iso(entry_ts),
+                    "type": "ict_entry_trigger",
+                    "entry_type": ict_entry["type"],
+                    "description": ict_entry["description"],
+                })
 
-            risk = abs(entry_price - sl)
-            tp = entry_price + (2 * risk) if ict_entry["direction"] in ("bullish", "long") else entry_price - (2 * risk)
+                known_at_entry = past_slice(day_candles, entry_idx)
+                local_high = max(c.high for c in known_at_entry)
+                local_low = min(c.low for c in known_at_entry)
 
-            trade = {
-                "trade_number": len(trades) + 1,
-                "entry_time": to_iso(entry_ts),
-                "direction": "long" if ict_entry["direction"] in ("bullish", "long") else "short",
-                "entry_price": round(entry_price, 5),
-                "stop_loss": round(sl, 5),
-                "take_profit": round(tp, 5),
-                "macro_level_used": level_name,
-                "ict_entry_type": ict_entry["type"],
-                "reason": f"5m {result['type']} at {level_name} + 1m {ict_entry['type']}",
-                "events": list(events_log),
-            }
-            trades.append(trade)
-            break  # One trade per day for this strategy
+                if ict_entry["direction"] in ("bullish", "long"):
+                    sl = local_low - (local_low * 0.0005)
+                    trade_dir = "long"
+                else:
+                    sl = local_high + (local_high * 0.0005)
+                    trade_dir = "short"
 
-        # Check exits
-        for trade in trades:
-            if "exit_time" in trade:
-                continue
-            entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-            for c in day_candles:
-                if c.timestamp > entry_ts:
-                    if trade["direction"] == "long":
-                        if c.high >= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["take_profit"]
-                            trade["outcome"] = "win"
-                            break
-                        elif c.low <= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["stop_loss"]
-                            trade["outcome"] = "loss"
-                            break
-                    else:
-                        if c.low <= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["take_profit"]
-                            trade["outcome"] = "win"
-                            break
-                        elif c.high >= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp)
-                            trade["exit_price"] = trade["stop_loss"]
-                            trade["outcome"] = "loss"
-                            break
-            if "exit_time" not in trade:
-                trade["exit_time"] = to_iso(day_candles[-1].timestamp)
-                trade["exit_price"] = day_candles[-1].close
-                trade["outcome"] = "open"
+                risk = abs(entry_price - sl)
+                tp = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
+
+                exit_info = simulate_exits(day_candles, entry_idx, entry_ts, trade_dir, sl, tp)
+
+                trade = {
+                    "trade_number": len(trades) + 1,
+                    "entry_time": to_iso(entry_ts),
+                    "direction": trade_dir,
+                    "entry_price": round(entry_price, 5),
+                    "stop_loss": round(sl, 5),
+                    "take_profit": round(tp, 5),
+                    "macro_level_used": level_name,
+                    "ict_entry_type": ict_entry["type"],
+                    "reason": f"5m {result['type']} at {level_name} + 1m {ict_entry['type']}",
+                    "events": list(events_log),
+                    **exit_info,
+                }
+                trades.append(trade)
+                day_traded = True
+                break
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")
@@ -381,7 +345,6 @@ def main():
     meta = parse_csv_filename(args.csv)
     output = args.output or f"strategy_05_results_{meta['symbol']}_{meta['timeframe']}.json"
 
-    # Resample to 1m if data is higher timeframe
     if meta["timeframe"] not in ("1m",):
         print(f"Warning: Best results require 1m data, got {meta['timeframe']}")
     run_strategy(candles, output)

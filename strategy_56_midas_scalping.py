@@ -16,20 +16,8 @@ Core concepts:
 Usage:
   python strategy_56_midas_scalping.py --csv15m 15m_data.csv --csv1m 1m_data.csv
 
-BACKTEST INTEGRITY NOTICE (severity: MAJOR — results are overstated)
----------------------------------------------------------------------------
-HOW THE LEAK HAPPENS (in simple terms):
-  1. Picks one session from the entire dataset and one trade (first match) —
-     not a daily walk-forward backtest.
-  2. MSS is detected on candles[i-3:i+5], which includes up to 5 future 1m bars
-     when evaluating bar i.
-  3. Entry is on the same displacement bar used to confirm structure.
-
-HOW TO FIX:
-  1. Loop each trading day / session separately; take all valid Midas setups.
-  2. At bar i, only use candles[0:i+1] for MSS/displacement checks.
-  3. Enter on the bar after displacement + MSS confirmation closes.
-  4. Verify pre-session "unswept" levels using only candles before the open.
+FIXED: Causal backtest — per-day session loop (8PM/9PM each NY day); MSS via
+mss_events_up_to; entry bar after displacement+MSS close; simulate_exits for TP/SL.
 """
 
 import argparse
@@ -42,19 +30,11 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_mss, detect_fvg,
     swing_highs, swing_lows,
     save_trades,
 )
+from causal_backtest import group_by_ny_day, ny_hour, past_slice, mss_events_up_to, simulate_exits
 
-
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
-
-
-# ---------------------------------------------------------------------------
-# Find nearest unswept swing high/low before a given time
-# ---------------------------------------------------------------------------
 
 def nearest_unswept_levels(candles_15m: list[Candle], before_ts: int) -> dict:
     before = [c for c in candles_15m if c.timestamp < before_ts]
@@ -72,10 +52,6 @@ def nearest_unswept_levels(candles_15m: list[Candle], before_ts: int) -> dict:
     return result
 
 
-# ---------------------------------------------------------------------------
-# Session check: 8:00 PM or 9:00 PM model
-# ---------------------------------------------------------------------------
-
 def get_session_windows() -> list[dict]:
     return [
         {"name": "8PM", "hour": 20, "window_end_hour": 21},
@@ -83,13 +59,12 @@ def get_session_windows() -> list[dict]:
     ]
 
 
-# ---------------------------------------------------------------------------
-# Monitor sweep + 1m entry
-# ---------------------------------------------------------------------------
-
-def monitor_session(
-    candles_15m: list[Candle], candles_1m: list[Candle],
-    levels: dict, session_open_ts: int, session_name: str
+def monitor_session_causal(
+    candles_15m: list[Candle],
+    candles_1m: list[Candle],
+    levels: dict,
+    session_open_ts: int,
+    session_name: str,
 ) -> Optional[dict]:
     events_log = [{
         "timestamp": to_iso(session_open_ts),
@@ -97,10 +72,13 @@ def monitor_session(
         "session": session_name,
         "unswept_high": round(levels["high"], 5) if levels["high"] else None,
         "unswept_low": round(levels["low"], 5) if levels["low"] else None,
-        "description": f"{session_name}: unswept high={levels['high']:.5f}, low={levels['low']:.5f}",
+        "description": (
+            f"{session_name}: unswept high={levels['high']:.5f}, low={levels['low']:.5f}"
+            if levels["high"] and levels["low"]
+            else f"{session_name}: levels marked"
+        ),
     }]
 
-    # Find sweep on 15m
     start_15m = next((i for i, c in enumerate(candles_15m) if c.timestamp >= session_open_ts), 0)
     sweep_idx = None
     sweep_dir = None
@@ -126,127 +104,104 @@ def monitor_session(
         "description": f"15m {'high' if 'high' in sweep_dir else 'low'} swept",
     })
 
-    # Drop to 1m after sweep
     sweep_ts = candles_15m[sweep_idx].timestamp
     start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= sweep_ts), 0)
 
-    for i in range(start_1m, min(start_1m + 60, len(candles_1m))):
+    for i in range(start_1m, min(start_1m + 60, len(candles_1m) - 1)):
         c = candles_1m[i]
-        # Check for displacement: large body candle
+        past = past_slice(candles_1m, i)
         body = abs(c.close - c.open)
-        avg_body = sum(abs(x.close - x.open) for x in candles_1m[max(0, i - 5):i]) / max(1, min(5, i))
-        displaced = body > avg_body * 1.5
-
-        if not displaced:
+        avg_body = sum(abs(x.close - x.open) for x in past[max(0, len(past) - 6) : -1]) / max(
+            1, min(5, len(past) - 1)
+        )
+        if body <= avg_body * 1.5:
             continue
 
-        # Check MSS
-        mss = detect_mss(candles_1m[max(0, i - 3):i + 5], lookback=3)
-        has_mss = False
+        mss_list = mss_events_up_to(candles_1m, i, lookback=3)
         mss_dir = None
-        for ev in mss:
+        for ev in mss_list:
+            if ev["idx"] != i:
+                continue
             if sweep_dir == "high_swept" and ev["direction"] == "bearish":
-                has_mss = True
                 mss_dir = "short"
             elif sweep_dir == "low_swept" and ev["direction"] == "bullish":
-                has_mss = True
                 mss_dir = "long"
+        if mss_dir is None:
+            continue
 
-        if has_mss:
-            entry_c = candles_1m[i]
-            local_low = min(x.low for x in candles_1m[max(0, i - 3):i + 3])
-            local_high = max(x.high for x in candles_1m[max(0, i - 3):i + 3])
+        entry_idx = i + 1
+        entry_c = candles_1m[entry_idx]
+        past_entry = past_slice(candles_1m, i)
+        local_low = min(x.low for x in past_entry[max(0, len(past_entry) - 4) :])
+        local_high = max(x.high for x in past_entry[max(0, len(past_entry) - 4) :])
+        sl = local_low - (local_low * 0.0005) if mss_dir == "long" else local_high + (local_high * 0.0005)
+        risk = abs(entry_c.close - sl)
+        tp = entry_c.close + (2 * risk) if mss_dir == "long" else entry_c.close - (2 * risk)
 
-            sl = local_low - (local_low * 0.0005) if mss_dir == "long" else local_high + (local_high * 0.0005)
-            risk = abs(entry_c.close - sl)
-            tp = entry_c.close + (2 * risk) if mss_dir == "long" else entry_c.close - (2 * risk)
-
-            events_log.append({
-                "timestamp": to_iso(entry_c.timestamp),
-                "type": "entry_trigger",
-                "direction": mss_dir,
-                "description": f"1M MSS + displacement at {entry_c.close:.5f}",
-            })
-
-            return {
-                "entry_idx": i,
-                "entry_price": entry_c.close,
-                "direction": mss_dir,
-                "sl": sl,
-                "tp": tp,
-                "events": events_log,
-            }
+        events_log.append({
+            "timestamp": to_iso(entry_c.timestamp),
+            "type": "entry_trigger",
+            "direction": mss_dir,
+            "description": f"1M MSS + displacement at {entry_c.close:.5f}",
+        })
+        return {
+            "entry_idx": entry_idx,
+            "entry_price": entry_c.close,
+            "direction": mss_dir,
+            "sl": sl,
+            "tp": tp,
+            "events": events_log,
+        }
     return None
 
-
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
 
 def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
     sessions = get_session_windows()
-    active_session = None
 
-    for c in candles_15m:
-        h = ny_hour(c.timestamp)
+    for day_15m in group_by_ny_day(candles_15m):
         for sess in sessions:
-            if sess["hour"] == h:
-                active_session = sess
-                break
-    if active_session is None:
-        print("No session window found")
-        save_trades(trades, output_path)
-        return trades
+            session_open_ts = None
+            for c in day_15m:
+                dt = datetime.fromtimestamp(c.timestamp, tz=timezone.utc)
+                if ny_hour(c.timestamp) == sess["hour"] and dt.minute == 0:
+                    session_open_ts = c.timestamp
+                    break
+            if session_open_ts is None:
+                continue
 
-    # Find session times
-    open_hour = active_session["hour"]
-    for c in candles_15m:
-        if ny_hour(c.timestamp) == open_hour and datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute == 0:
-            session_open_ts = c.timestamp
-            break
-    else:
-        save_trades(trades, output_path)
-        return trades
+            levels = nearest_unswept_levels(candles_15m, session_open_ts)
+            if levels["high"] is None and levels["low"] is None:
+                continue
 
-    levels = nearest_unswept_levels(candles_15m, session_open_ts)
-    if levels["high"] is None and levels["low"] is None:
-        save_trades(trades, output_path)
-        return trades
+            result = monitor_session_causal(
+                candles_15m, candles_1m, levels, session_open_ts, sess["name"]
+            )
+            if result is None:
+                continue
 
-    result = monitor_session(candles_15m, candles_1m, levels, session_open_ts, active_session["name"])
-    if result is None:
-        print("No trade setup found")
-        save_trades(trades, output_path)
-        return trades
-
-    trade = {
-        "trade_number": len(trades) + 1,
-        "entry_time": to_iso(candles_1m[result["entry_idx"]].timestamp),
-        "direction": result["direction"],
-        "entry_price": round(result["entry_price"], 5),
-        "stop_loss": round(result["sl"], 5),
-        "take_profit": round(result["tp"], 5),
-        "session": active_session["name"],
-        "reason": f"Midas {active_session['name']}: sweep + MSS + displacement",
-        "events": result["events"],
-    }
-    trades.append(trade)
-
-    # Exit
-    entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-    for c in candles_1m:
-        if c.timestamp > entry_ts:
-            if trade["direction"] == "long":
-                if c.high >= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.low <= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-            else:
-                if c.low <= result["tp"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["tp"]; trade["outcome"] = "win"; break
-                elif c.high >= result["sl"]: trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = result["sl"]; trade["outcome"] = "loss"; break
-    if "exit_time" not in trade:
-        trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-        trade["exit_price"] = candles_1m[-1].close
-        trade["outcome"] = "open"
+            entry_c = candles_1m[result["entry_idx"]]
+            exit_info = simulate_exits(
+                candles_1m,
+                result["entry_idx"],
+                entry_c.timestamp,
+                result["direction"],
+                result["sl"],
+                result["tp"],
+            )
+            trade = {
+                "trade_number": len(trades) + 1,
+                "entry_time": to_iso(entry_c.timestamp),
+                "direction": result["direction"],
+                "entry_price": round(result["entry_price"], 5),
+                "stop_loss": round(result["sl"], 5),
+                "take_profit": round(result["tp"], 5),
+                "session": sess["name"],
+                "reason": f"Midas {sess['name']}: sweep + MSS + displacement",
+                "events": result["events"],
+                **exit_info,
+            }
+            trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

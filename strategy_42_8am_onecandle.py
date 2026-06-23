@@ -29,6 +29,9 @@ HOW TO FIX:
   2. At minute j, use only past 1m candles for MSS/FVG detection.
   3. Close-only inversion; enter on next bar after MSS inside the range.
   4. Allow multiple days of trades instead of break on first match.
+
+FIXED: Per-NY-day 8AM range; mss_events_up_to/detect_fvg_as_of/ifvg_up_to at bar j;
+past_slice for SL; simulate_exits (1:2 partial target); one trade per day max.
 """
 
 import argparse
@@ -39,50 +42,38 @@ from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core import (
-    Candle, load_csv, to_iso, parse_csv_filename,
-    detect_fvg, detect_ifvg, detect_mss,
-    swing_highs, swing_lows,
-    save_trades,
+from core import Candle, load_csv, to_iso, parse_csv_filename, save_trades
+from causal_backtest import (
+    group_by_ny_day,
+    ny_hour,
+    ny_date,
+    past_slice,
+    detect_fvg_as_of,
+    ifvg_up_to,
+    mss_events_up_to,
+    simulate_exits,
 )
 
 
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
-
-
-def ny_minutes(ts: int) -> int:
-    dt = datetime.fromtimestamp(ts, tz=timezone.utc)
-    return ((dt.hour - 4) % 24) * 60 + dt.minute
-
-
-# ---------------------------------------------------------------------------
-# Step 1: Find 8AM candle
-# ---------------------------------------------------------------------------
-
-def find_8am_candle(candles_1h: list[Candle]) -> Optional[Candle]:
-    for c in reversed(candles_1h):
+def find_8am_candle(day_1h: list[Candle]) -> Optional[Candle]:
+    for c in day_1h:
         if ny_hour(c.timestamp) == 8 and datetime.fromtimestamp(c.timestamp, tz=timezone.utc).minute == 0:
             return c
     return None
 
 
-# ---------------------------------------------------------------------------
-# Step 2-4: Monitor sweep + 1M structure shift + range re-entry
-# ---------------------------------------------------------------------------
-
 def monitor_sweep_and_entry(
-    candles_1m: list[Candle], range_high: float, range_low: float, open_ts: int, range_ts: int
+    candles_1m: list[Candle], range_high: float, range_low: float, range_ts: int, day
 ) -> Optional[dict]:
-    """Wait for sweep outside range, then MSS + close back inside"""
+    """Wait for sweep outside range, then MSS + close back inside (causal)."""
     start_idx = next((i for i, c in enumerate(candles_1m) if c.timestamp >= range_ts), 0)
 
-    # Wait for 9:30 AM
     real_start = start_idx
     for i in range(start_idx, len(candles_1m)):
-        if ny_hour(candles_1m[i].timestamp) > 9 or \
-           (ny_hour(candles_1m[i].timestamp) == 9 and
-            datetime.fromtimestamp(candles_1m[i].timestamp, tz=timezone.utc).minute >= 30):
+        if ny_date(candles_1m[i].timestamp) != day:
+            break
+        h = ny_hour(candles_1m[i].timestamp)
+        if h > 9 or (h == 9 and datetime.fromtimestamp(candles_1m[i].timestamp, tz=timezone.utc).minute >= 30):
             real_start = i
             break
 
@@ -90,9 +81,10 @@ def monitor_sweep_and_entry(
     sweep_direction = None
 
     for i in range(real_start, min(real_start + 120, len(candles_1m))):
+        if ny_date(candles_1m[i].timestamp) != day:
+            break
         c = candles_1m[i]
 
-        # Detect sweep
         if c.high > range_high and sweep_idx is None:
             sweep_idx = i
             sweep_direction = "high_swept"
@@ -101,11 +93,11 @@ def monitor_sweep_and_entry(
             sweep_direction = "low_swept"
 
         if sweep_idx is not None:
-            # After sweep, look for MSS + close back inside range
             for j in range(i + 1, min(i + 30, len(candles_1m))):
+                if ny_date(candles_1m[j].timestamp) != day:
+                    break
                 cj = candles_1m[j]
 
-                # Check close back inside range
                 if sweep_direction == "high_swept" and cj.close < range_high:
                     inside = True
                 elif sweep_direction == "low_swept" and cj.close > range_low:
@@ -113,11 +105,10 @@ def monitor_sweep_and_entry(
                 else:
                     continue
 
-                # Check MSS
-                mss = detect_mss(candles_1m[max(0, j - 5):j + 3], lookback=3)
+                sub = past_slice(candles_1m, j)
                 has_mss = False
                 mss_dir = None
-                for ev in mss:
+                for ev in mss_events_up_to(sub, j, lookback=3):
                     if sweep_direction == "high_swept" and ev["direction"] == "bearish":
                         has_mss = True
                         mss_dir = "short"
@@ -125,136 +116,117 @@ def monitor_sweep_and_entry(
                         has_mss = True
                         mss_dir = "long"
 
-                if has_mss:
-                    # Find entry via FVG/breaker/OB
-                    fvgs = detect_fvg(candles_1m[max(0, j - 3):j + 5])
-                    for fvg in fvgs:
-                        inv = detect_ifvg(candles_1m[max(0, j - 3):j + 10], fvg)
-                        if inv:
-                            entry_c = candles_1m[j]
-                            return {
-                                "entry_idx": j,
-                                "entry_price": entry_c.close,
-                                "direction": mss_dir,
-                                "sweep_direction": sweep_direction,
-                                "sweep_idx": sweep_idx,
-                                "description": f"{mss_dir.title()} entry at {entry_c.close:.5f} after {sweep_direction} + MSS + range re-entry",
-                            }
+                if not has_mss:
+                    continue
 
-                    # Alternative: order block entry
-                    entry_c = candles_1m[j]
-                    return {
-                        "entry_idx": j,
-                        "entry_price": entry_c.close,
-                        "direction": mss_dir,
-                        "sweep_direction": sweep_direction,
-                        "sweep_idx": sweep_idx,
-                        "description": f"{mss_dir.title()} entry at {entry_c.close:.5f} after sweep + MSS (OB)",
-                    }
+                for fvg in detect_fvg_as_of(sub, j):
+                    inv = ifvg_up_to(sub, fvg, j)
+                    if inv:
+                        entry_c = cj
+                        return {
+                            "entry_idx": j,
+                            "entry_price": entry_c.close,
+                            "direction": mss_dir,
+                            "sweep_direction": sweep_direction,
+                            "sweep_idx": sweep_idx,
+                            "description": (
+                                f"{mss_dir.title()} entry at {entry_c.close:.5f} after "
+                                f"{sweep_direction} + MSS + range re-entry (iFVG)"
+                            ),
+                        }
+
+                entry_c = cj
+                return {
+                    "entry_idx": j,
+                    "entry_price": entry_c.close,
+                    "direction": mss_dir,
+                    "sweep_direction": sweep_direction,
+                    "sweep_idx": sweep_idx,
+                    "description": (
+                        f"{mss_dir.title()} entry at {entry_c.close:.5f} after "
+                        f"sweep + MSS (OB)"
+                    ),
+                }
     return None
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
-
 def run_strategy(candles_1h: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
+    days_1h = group_by_ny_day(candles_1h)
 
-    c8am = find_8am_candle(candles_1h)
-    if c8am is None:
-        print("No 8AM NY candle found")
-        save_trades(trades, output_path)
-        return trades
+    for day_1h in days_1h:
+        if not day_1h:
+            continue
+        day = ny_date(day_1h[0].timestamp)
 
-    range_high = c8am.high
-    range_low = c8am.low
-    range_ts = c8am.timestamp
+        c8am = find_8am_candle(day_1h)
+        if c8am is None:
+            continue
 
-    events_log = [
-        {
+        range_high = c8am.high
+        range_low = c8am.low
+        range_ts = c8am.timestamp
+
+        events_log = [{
             "timestamp": to_iso(range_ts),
             "type": "range_defined",
             "range_high": round(range_high, 5),
             "range_low": round(range_low, 5),
             "description": f"8AM range: high={range_high:.5f}, low={range_low:.5f}",
-        },
-    ]
+        }]
 
-    result = monitor_sweep_and_entry(candles_1m, range_high, range_low, c8am.open, range_ts)
-    if result is None:
-        print("No sweep + entry found before range expiry")
-        save_trades(trades, output_path)
-        return trades
+        result = monitor_sweep_and_entry(candles_1m, range_high, range_low, range_ts, day)
+        if result is None:
+            continue
 
-    events_log.append({
-        "timestamp": to_iso(candles_1m[result["sweep_idx"]].timestamp),
-        "type": "liquidity_sweep",
-        "direction": result["sweep_direction"],
-        "description": f"Price swept 8AM range {'high' if 'high' in result['sweep_direction'] else 'low'}",
-    })
+        events_log.append({
+            "timestamp": to_iso(candles_1m[result["sweep_idx"]].timestamp),
+            "type": "liquidity_sweep",
+            "direction": result["sweep_direction"],
+            "description": (
+                f"Price swept 8AM range {'high' if 'high' in result['sweep_direction'] else 'low'}"
+            ),
+        })
 
-    entry_c = candles_1m[result["entry_idx"]]
-    events_log.append({
-        "timestamp": to_iso(entry_c.timestamp),
-        "type": "entry_trigger",
-        "direction": result["direction"],
-        "description": result["description"],
-    })
+        entry_idx = result["entry_idx"]
+        entry_c = candles_1m[entry_idx]
+        events_log.append({
+            "timestamp": to_iso(entry_c.timestamp),
+            "type": "entry_trigger",
+            "direction": result["direction"],
+            "description": result["description"],
+        })
 
-    trade_dir = result["direction"]
-    entry_price = result["entry_price"]
-    local_low = min(c.low for c in candles_1m[max(0, result["entry_idx"] - 5):result["entry_idx"] + 3])
-    local_high = max(c.high for c in candles_1m[max(0, result["entry_idx"] - 5):result["entry_idx"] + 3])
+        trade_dir = result["direction"]
+        entry_price = result["entry_price"]
+        past = past_slice(candles_1m, entry_idx)
+        local_low = min(c.low for c in past[max(0, len(past) - 8):])
+        local_high = max(c.high for c in past[max(0, len(past) - 8):])
 
-    sl = local_low - (local_low * 0.0005) if trade_dir == "long" else local_high + (local_high * 0.0005)
-    risk = abs(entry_price - sl)
-    tp1 = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
-    tp2 = range_high if trade_dir == "long" else range_low
+        sl = local_low - (local_low * 0.0005) if trade_dir == "long" else local_high + (local_high * 0.0005)
+        risk = abs(entry_price - sl)
+        tp1 = entry_price + (2 * risk) if trade_dir == "long" else entry_price - (2 * risk)
+        tp2 = range_high if trade_dir == "long" else range_low
 
-    trade = {
-        "trade_number": len(trades) + 1,
-        "entry_time": to_iso(entry_c.timestamp),
-        "direction": trade_dir,
-        "entry_price": round(entry_price, 5),
-        "stop_loss": round(sl, 5),
-        "take_profit_1_2": round(tp1, 5),
-        "take_profit_range_extreme": round(tp2, 5),
-        "reason": f"8AM range sweep + 1M MSS + range re-entry",
-        "events": list(events_log),
-    }
-    trades.append(trade)
+        trade = {
+            "trade_number": len(trades) + 1,
+            "entry_time": to_iso(entry_c.timestamp),
+            "direction": trade_dir,
+            "entry_price": round(entry_price, 5),
+            "stop_loss": round(sl, 5),
+            "take_profit_1_2": round(tp1, 5),
+            "take_profit_range_extreme": round(tp2, 5),
+            "reason": "8AM range sweep + 1M MSS + range re-entry",
+            "events": list(events_log),
+        }
 
-    # Exit check
-    entry_ts = entry_c.timestamp
-    for c in candles_1m:
-        if c.timestamp > entry_ts:
-            if trade_dir == "long":
-                if c.high >= tp1:
-                    trade["exit_time"] = to_iso(c.timestamp)
-                    trade["exit_price"] = tp1
-                    trade["outcome"] = "partial_win"
-                    break
-                elif c.low <= sl:
-                    trade["exit_time"] = to_iso(c.timestamp)
-                    trade["exit_price"] = sl
-                    trade["outcome"] = "loss"
-                    break
-            else:
-                if c.low <= tp1:
-                    trade["exit_time"] = to_iso(c.timestamp)
-                    trade["exit_price"] = tp1
-                    trade["outcome"] = "partial_win"
-                    break
-                elif c.high >= sl:
-                    trade["exit_time"] = to_iso(c.timestamp)
-                    trade["exit_price"] = sl
-                    trade["outcome"] = "loss"
-                    break
-    if "exit_time" not in trade:
-        trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-        trade["exit_price"] = candles_1m[-1].close
-        trade["outcome"] = "open"
+        exit_info = simulate_exits(
+            candles_1m, entry_idx, entry_c.timestamp, trade_dir, sl, tp1,
+        )
+        trade.update(exit_info)
+        if trade.get("outcome") == "win":
+            trade["outcome"] = "partial_win"
+        trades.append(trade)
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

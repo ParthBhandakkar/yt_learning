@@ -18,6 +18,10 @@ Usage:
 
 BACKTEST INTEGRITY NOTICE (severity: MINOR — one of the more honest scripts)
 ---------------------------------------------------------------------------
+FIXED: failed auction/breakout entries remain at i+1; POC invalidation counts
+only on bars that closed before entry; days processed chronologically; exits use
+simulate_exits (including breakout trades).
+
 HOW THE LEAK HAPPENS (in simple terms):
   Similar to strategy 04: Asia-session profile is built from completed session
   candles, and entries use the next bar's close after a reclaim/breakout signal.
@@ -44,6 +48,7 @@ from core import (
     detect_fvg, resample,
     candles_for_time_range, save_trades,
 )
+from causal_backtest import simulate_exits
 
 
 # ---------------------------------------------------------------------------
@@ -65,7 +70,16 @@ def group_ny_days(candles):
     for c in candles:
         d = ny_date(c.timestamp)
         groups[d].append(c)
-    return list(groups.values())
+    return [groups[d] for d in sorted(groups)]
+
+
+def _poc_mitigated_before_entry(candles, start_idx, entry_idx, poc_level) -> bool:
+    """POC invalidation: only count touches on bars that closed before entry."""
+    for i in range(start_idx, entry_idx):
+        c = candles[i]
+        if c.low <= poc_level <= c.high:
+            return True
+    return False
 
 
 from datetime import timedelta
@@ -113,10 +127,13 @@ def failed_auction_setup(candles: list[Candle], vp, start_idx: int) -> Optional[
 
         # Long: close below VAL → reclaim above VAL
         if c0.close < vp.val and c1.close > vp.val:
+            entry_idx = i + 1
+            if _poc_mitigated_before_entry(candles, start_idx, entry_idx, vp.poc):
+                continue
             sweep_low = min(c0.low, c1.low)
             return {
                 "type": "long_failed_auction",
-                "entry_idx": i + 1,
+                "entry_idx": entry_idx,
                 "entry_price": c1.close,
                 "stop_loss": sweep_low - (sweep_low * 0.0005),
                 "target_poc": vp.poc,
@@ -126,10 +143,13 @@ def failed_auction_setup(candles: list[Candle], vp, start_idx: int) -> Optional[
 
         # Short: close above VAH → reclaim below VAH
         if c0.close > vp.vah and c1.close < vp.vah:
+            entry_idx = i + 1
+            if _poc_mitigated_before_entry(candles, start_idx, entry_idx, vp.poc):
+                continue
             sweep_high = max(c0.high, c1.high)
             return {
                 "type": "short_failed_auction",
-                "entry_idx": i + 1,
+                "entry_idx": entry_idx,
                 "entry_price": c1.close,
                 "stop_loss": sweep_high + (sweep_high * 0.0005),
                 "target_poc": vp.poc,
@@ -246,6 +266,15 @@ def run_strategy(candles_5m: list[Candle], output_path: str):
                 "reason": fa["description"],
                 "events": list(events_log),
             }
+            exit_info = simulate_exits(
+                day_candles,
+                fa["entry_idx"],
+                entry_candle.timestamp,
+                direction,
+                trade["stop_loss"],
+                trade["take_profit"],
+            )
+            trade.update(exit_info)
             trades.append(trade)
             trades_taken += 1
             directions_taken.add(direction)
@@ -280,29 +309,16 @@ def run_strategy(candles_5m: list[Candle], output_path: str):
                         "reason": bo["description"],
                         "events": list(events_log),
                     }
+                    exit_info = simulate_exits(
+                        day_candles,
+                        bo["entry_idx"],
+                        entry_candle.timestamp,
+                        direction,
+                        trade["stop_loss"],
+                        trade["take_profit"],
+                    )
+                    trade.update(exit_info)
                     trades.append(trade)
-
-        # Check exits
-        for trade in trades[-trades_taken:] if trades_taken > 0 else []:
-            if "exit_time" in trade:
-                continue
-            entry_ts = datetime.fromisoformat(trade["entry_time"]).timestamp()
-            for c in day_candles:
-                if c.timestamp > entry_ts:
-                    if trade["direction"] == "long":
-                        if c.high >= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["take_profit"]; trade["outcome"] = "win"; break
-                        elif c.low <= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["stop_loss"]; trade["outcome"] = "loss"; break
-                    else:
-                        if c.low <= trade["take_profit"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["take_profit"]; trade["outcome"] = "win"; break
-                        elif c.high >= trade["stop_loss"]:
-                            trade["exit_time"] = to_iso(c.timestamp); trade["exit_price"] = trade["stop_loss"]; trade["outcome"] = "loss"; break
-            if "exit_time" not in trade:
-                trade["exit_time"] = to_iso(day_candles[-1].timestamp)
-                trade["exit_price"] = day_candles[-1].close
-                trade["outcome"] = "open"
 
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")

@@ -31,59 +31,39 @@ HOW TO FIX:
   2. Compute SL from candles[max(0,i-3):i+1] only (no future bars).
   3. Confirm FVG on past data only; enter on bar after fib confirmation close.
   4. Verify limit/FVG entry price was reachable on that bar or the next.
+  FIXED: detect_fvg_as_of, past_slice SL, simulate_exits after entry bar.
 """
 
 import argparse
 import sys
 import os
-from datetime import datetime, timezone, timedelta
-from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    detect_fvg, swing_highs, swing_lows,
-    resample, save_trades,
+    save_trades,
+)
+from causal_backtest import (
+    group_by_ny_day,
+    ny_hour,
+    past_slice,
+    detect_fvg_as_of,
+    simulate_exits,
 )
 
-
-def ny_hour(ts: int) -> int:
-    return (datetime.fromtimestamp(ts, tz=timezone.utc).hour - 4) % 24
-
-
-# ---------------------------------------------------------------------------
-# Fib 0.79
-# ---------------------------------------------------------------------------
 
 FIB_079 = 0.79
 
 
-# ---------------------------------------------------------------------------
-# Main strategy
-# ---------------------------------------------------------------------------
-
 def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
-
-    # Process each day
-    days_15m: list[list[Candle]] = []
-    cur: list[Candle] = []
-    cur_date = None
-    for c in candles_15m:
-        d = (datetime.fromtimestamp(c.timestamp, tz=timezone.utc) - timedelta(hours=4)).date()
-        if cur_date is None: cur_date = d
-        if d != cur_date:
-            if cur: days_15m.append(cur)
-            cur = []; cur_date = d
-        cur.append(c)
-    if cur: days_15m.append(cur)
+    days_15m = group_by_ny_day(candles_15m)
 
     for day_candles_15m in days_15m:
         if len(day_candles_15m) < 12:
             continue
 
-        # Step 1: Define London session (03:00-07:00 NY) range
         london = [c for c in day_candles_15m if 3 <= ny_hour(c.timestamp) < 7]
         if len(london) < 4:
             continue
@@ -99,10 +79,12 @@ def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_pat
             "description": f"London session range: high={session_high:.5f}, low={session_low:.5f}",
         }]
 
-        # Step 2: Wait for sweep
         sweep_idx = None
         sweep_dir = None
-        london_end_idx = next((i for i, c in enumerate(day_candles_15m) if c.timestamp >= london[-1].timestamp), len(day_candles_15m) - 1)
+        london_end_idx = next(
+            (i for i, c in enumerate(day_candles_15m) if c.timestamp >= london[-1].timestamp),
+            len(day_candles_15m) - 1,
+        )
 
         for i in range(london_end_idx, len(day_candles_15m)):
             c = day_candles_15m[i]
@@ -125,7 +107,6 @@ def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_pat
             "description": f"Session {'high' if 'high' in sweep_dir else 'low'} swept",
         })
 
-        # Step 2: Apply Fib 0.79
         if sweep_dir == "high_swept":
             fib_level = session_high - (session_high - session_low) * FIB_079
             expected_direction = "short"
@@ -143,87 +124,68 @@ def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_pat
             "description": f"0.79 Fib level: {fib_level:.5f}, expecting {expected_direction} to {target:.5f}",
         })
 
-        # Step 3: Check 1m for close past 0.79 + FVG entry
         sweep_ts = day_candles_15m[sweep_idx].timestamp
         start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= sweep_ts), 0)
 
         for i in range(start_1m, min(start_1m + 60, len(candles_1m))):
             c = candles_1m[i]
+            known = past_slice(candles_1m, i)
+            fvgs = detect_fvg_as_of(candles_1m, i)
 
-            if expected_direction == "long" and c.close > fib_level:
+            if expected_direction == "long" and c.close > fib_level and fvgs:
                 events_log.append({
                     "timestamp": to_iso(c.timestamp),
                     "type": "fib_confirmation",
                     "description": f"1m candle closed {c.close:.5f} above 0.79 Fib {fib_level:.5f}",
                 })
-                # Find FVG entry
-                fvgs = detect_fvg(candles_1m[max(0, i - 5):i + 5])
-                for fvg in fvgs:
-                    entry_c = candles_1m[i]
-                    sl = min(x.low for x in candles_1m[max(0, i - 3):i + 3]) - 0.0005
-                    risk = abs(c.close - sl)
-                    tp = c.close + (1.5 * risk)
+                sl_slice = known[max(0, len(known) - 4):]
+                sl = min(x.low for x in sl_slice) - 0.0005
+                entry_price = c.close
+                risk = abs(entry_price - sl)
+                tp = entry_price + (1.5 * risk)
 
-                    trade = {
-                        "trade_number": len(trades) + 1,
-                        "entry_time": to_iso(entry_c.timestamp),
-                        "direction": "long",
-                        "entry_price": round(c.close, 5),
-                        "stop_loss": round(sl, 5),
-                        "take_profit": round(tp, 5),
-                        "target_liquidity": round(target, 5),
-                        "reason": f"Draw on liquidity: low swept + 0.79 fib + FVG entry",
-                        "events": list(events_log),
-                    }
-                    trades.append(trade)
-
-                    # Exit check
-                    for cx in range(i, len(candles_1m)):
-                        cx_c = candles_1m[cx]
-                        if cx_c.high >= tp: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                        elif cx_c.low <= sl: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-                    if "exit_time" not in trade:
-                        trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-                        trade["exit_price"] = candles_1m[-1].close
-                        trade["outcome"] = "open"
-                    break
+                exit_info = simulate_exits(candles_1m, i, c.timestamp, "long", sl, tp)
+                trade = {
+                    "trade_number": len(trades) + 1,
+                    "entry_time": to_iso(c.timestamp),
+                    "direction": "long",
+                    "entry_price": round(entry_price, 5),
+                    "stop_loss": round(sl, 5),
+                    "take_profit": round(tp, 5),
+                    "target_liquidity": round(target, 5),
+                    "reason": "Draw on liquidity: low swept + 0.79 fib + FVG entry",
+                    "events": list(events_log),
+                    **exit_info,
+                }
+                trades.append(trade)
                 break
 
-            elif expected_direction == "short" and c.close < fib_level:
+            elif expected_direction == "short" and c.close < fib_level and fvgs:
                 events_log.append({
                     "timestamp": to_iso(c.timestamp),
                     "type": "fib_confirmation",
                     "description": f"1m candle closed {c.close:.5f} below 0.79 Fib {fib_level:.5f}",
                 })
-                fvgs = detect_fvg(candles_1m[max(0, i - 5):i + 5])
-                for fvg in fvgs:
-                    entry_c = candles_1m[i]
-                    sl = max(x.high for x in candles_1m[max(0, i - 3):i + 3]) + 0.0005
-                    risk = abs(c.close - sl)
-                    tp = c.close - (1.5 * risk)
+                sl_slice = known[max(0, len(known) - 4):]
+                sl = max(x.high for x in sl_slice) + 0.0005
+                entry_price = c.close
+                risk = abs(entry_price - sl)
+                tp = entry_price - (1.5 * risk)
 
-                    trade = {
-                        "trade_number": len(trades) + 1,
-                        "entry_time": to_iso(entry_c.timestamp),
-                        "direction": "short",
-                        "entry_price": round(c.close, 5),
-                        "stop_loss": round(sl, 5),
-                        "take_profit": round(tp, 5),
-                        "target_liquidity": round(target, 5),
-                        "reason": f"Draw on liquidity: high swept + 0.79 fib + FVG entry",
-                        "events": list(events_log),
-                    }
-                    trades.append(trade)
-
-                    for cx in range(i, len(candles_1m)):
-                        cx_c = candles_1m[cx]
-                        if cx_c.low <= tp: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = tp; trade["outcome"] = "win"; break
-                        elif cx_c.high >= sl: trade["exit_time"] = to_iso(cx_c.timestamp); trade["exit_price"] = sl; trade["outcome"] = "loss"; break
-                    if "exit_time" not in trade:
-                        trade["exit_time"] = to_iso(candles_1m[-1].timestamp)
-                        trade["exit_price"] = candles_1m[-1].close
-                        trade["outcome"] = "open"
-                    break
+                exit_info = simulate_exits(candles_1m, i, c.timestamp, "short", sl, tp)
+                trade = {
+                    "trade_number": len(trades) + 1,
+                    "entry_time": to_iso(c.timestamp),
+                    "direction": "short",
+                    "entry_price": round(entry_price, 5),
+                    "stop_loss": round(sl, 5),
+                    "take_profit": round(tp, 5),
+                    "target_liquidity": round(target, 5),
+                    "reason": "Draw on liquidity: high swept + 0.79 fib + FVG entry",
+                    "events": list(events_log),
+                    **exit_info,
+                }
+                trades.append(trade)
                 break
 
     save_trades(trades, output_path)

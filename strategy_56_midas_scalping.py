@@ -31,7 +31,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, index_at_or_after,
 )
 from causal_backtest import group_by_ny_day, ny_hour, past_slice, mss_events_up_to, simulate_exits
 
@@ -79,7 +79,7 @@ def monitor_session_causal(
         ),
     }]
 
-    start_15m = next((i for i, c in enumerate(candles_15m) if c.timestamp >= session_open_ts), 0)
+    start_15m = index_at_or_after(candles_15m, session_open_ts)
     sweep_idx = None
     sweep_dir = None
 
@@ -105,7 +105,7 @@ def monitor_session_causal(
     })
 
     sweep_ts = candles_15m[sweep_idx].timestamp
-    start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= sweep_ts), 0)
+    start_1m = index_at_or_after(candles_1m, sweep_ts)
 
     for i in range(start_1m, min(start_1m + 60, len(candles_1m) - 1)):
         c = candles_1m[i]

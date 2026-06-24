@@ -6,10 +6,23 @@ Provides pure functions operating on OHLCV data loaded from CSV.
 import csv
 import json
 import math
+import os
 import re
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import NamedTuple, Optional
+
+import numpy as np
+
+from fast_core import (
+    arrays_from_candles,
+    detect_mss_arrays,
+    index_at_or_after_ts,
+    resample_arrays,
+    simulate_exits_arrays,
+    swing_high_indices,
+    swing_low_indices,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -137,14 +150,24 @@ def _parse_volume(row: dict[str, str], cols: dict[str, Optional[str]]) -> int:
     return int(float(raw))
 
 
+def emit_progress(phase: str, pct: int, message: str = "") -> None:
+    """Emit a machine-readable progress line for the dashboard backtest runner."""
+    if os.environ.get("BT_PROGRESS") != "1":
+        return
+    safe = message.replace("\n", " ").strip()
+    print(f"BT_PROGRESS {phase} {max(0, min(100, pct))} {safe}", flush=True)
+
+
 def load_csv(path: str) -> list[Candle]:
     candles: list[Candle] = []
+    report = os.environ.get("BT_PROGRESS") == "1"
+    label = Path(path).name
     with open(path, "r", encoding="utf-8-sig") as f:
         reader = csv.DictReader(f)
         if not reader.fieldnames:
             return candles
         cols = detect_csv_columns(list(reader.fieldnames))
-        for row in reader:
+        for row_num, row in enumerate(reader, 1):
             ts, time_utc = _parse_timestamp(row, cols)
             candles.append(Candle(
                 time_utc=time_utc,
@@ -155,6 +178,10 @@ def load_csv(path: str) -> list[Candle]:
                 close=float(row[cols["close"]]),  # type: ignore[index]
                 volume=_parse_volume(row, cols),
             ))
+            if report and row_num % 100000 == 0:
+                emit_progress("load_csv", min(24, row_num // 100000), f"Loading {label}: {row_num:,} rows")
+    if report:
+        emit_progress("load_csv", 25, f"Loaded {label}: {len(candles):,} candles")
     return candles
 
 
@@ -162,11 +189,74 @@ def to_iso(ts: int) -> str:
     return datetime.fromtimestamp(ts, tz=timezone.utc).isoformat()
 
 
+class CandleSeries:
+    """Cached NumPy OHLCV arrays for fast index lookups and Numba kernels."""
+
+    __slots__ = ("candles", "ts", "open", "high", "low", "close", "volume")
+
+    def __init__(self, candles: list[Candle]):
+        self.candles = candles
+        if candles:
+            self.ts, self.open, self.high, self.low, self.close, self.volume = arrays_from_candles(candles)
+        else:
+            empty_i = np.empty(0, dtype=np.int64)
+            empty_f = np.empty(0, dtype=np.float64)
+            self.ts = empty_i
+            self.open = empty_f
+            self.high = empty_f
+            self.low = empty_f
+            self.close = empty_f
+            self.volume = empty_i
+
+    def at_or_after(self, ts: int) -> int:
+        return index_at_or_after_ts(self.ts, ts)
+
+    def at_exact(self, ts: int) -> int:
+        idx = self.at_or_after(ts)
+        if idx < len(self.candles) and self.candles[idx].timestamp == ts:
+            return idx
+        return -1
+
+
+def candle_series(candles: list[Candle]) -> CandleSeries:
+    return CandleSeries(candles)
+
+
+def index_at_or_after(candles: list[Candle], ts: int) -> int:
+    """First index where candle timestamp >= ts (O(log n))."""
+    lo, hi = 0, len(candles)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if candles[mid].timestamp < ts:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+
+def index_through_ts(candles: list[Candle], ts: int) -> int:
+    """Exclusive end index for candles with timestamp <= ts."""
+    lo, hi = 0, len(candles)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if candles[mid].timestamp <= ts:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+
+def advance_index_at_or_after(candles: list[Candle], ts: int, start: int = 0) -> int:
+    """Monotonic timestamp search — O(1) amortized when ts only increases."""
+    i = max(0, start)
+    while i < len(candles) and candles[i].timestamp < ts:
+        i += 1
+    return i
+
+
 def find_candle_idx(candles: list[Candle], ts: int) -> int:
-    for i, c in enumerate(candles):
-        if c.timestamp >= ts:
-            return i
-    return len(candles) - 1
+    idx = index_at_or_after(candles, ts)
+    return idx if idx < len(candles) else len(candles) - 1
 
 
 # ---------------------------------------------------------------------------
@@ -176,36 +266,20 @@ def find_candle_idx(candles: list[Candle], ts: int) -> int:
 def resample(candles: list[Candle], minutes: int) -> list[Candle]:
     if not candles:
         return []
-    grouped: list[Candle] = []
-    secs = minutes * 60
-    start_ts = candles[0].timestamp
-    group: list[Candle] = []
-    for c in candles:
-        if c.timestamp < start_ts + secs:
-            group.append(c)
-        else:
-            if group:
-                grouped.append(_merge_group(group))
-            start_ts = start_ts + secs
-            while c.timestamp >= start_ts + secs:
-                start_ts += secs
-            group = [c]
-    if group:
-        grouped.append(_merge_group(group))
-    return grouped
-
-
-def _merge_group(group: list[Candle]) -> Candle:
-    ot = group[0].open
-    cl = group[-1].close
-    h = max(c.high for c in group)
-    lw = min(c.low for c in group)
-    v = sum(c.volume for c in group)
-    return Candle(
-        time_utc=group[0].time_utc,
-        timestamp=group[0].timestamp,
-        open=ot, high=h, low=lw, close=cl, volume=v,
-    )
+    ts, o, h, l, c, v = arrays_from_candles(candles)
+    r_ts, r_o, r_h, r_l, r_c, r_v = resample_arrays(ts, o, h, l, c, v, minutes)
+    out: list[Candle] = []
+    for i in range(len(r_ts)):
+        out.append(Candle(
+            time_utc=to_iso(int(r_ts[i])),
+            timestamp=int(r_ts[i]),
+            open=float(r_o[i]),
+            high=float(r_h[i]),
+            low=float(r_l[i]),
+            close=float(r_c[i]),
+            volume=int(r_v[i]),
+        ))
+    return out
 
 
 # ---------------------------------------------------------------------------
@@ -213,19 +287,17 @@ def _merge_group(group: list[Candle]) -> Candle:
 # ---------------------------------------------------------------------------
 
 def swing_highs(candles: list[Candle]) -> list[int]:
-    idxs = []
-    for i in range(1, len(candles) - 1):
-        if candles[i].high > candles[i - 1].high and candles[i].high > candles[i + 1].high:
-            idxs.append(i)
-    return idxs
+    if not candles:
+        return []
+    _, _, h, _, _, _ = arrays_from_candles(candles)
+    return [int(i) for i in swing_high_indices(h)]
 
 
 def swing_lows(candles: list[Candle]) -> list[int]:
-    idxs = []
-    for i in range(1, len(candles) - 1):
-        if candles[i].low < candles[i - 1].low and candles[i].low < candles[i + 1].low:
-            idxs.append(i)
-    return idxs
+    if not candles:
+        return []
+    _, _, _, l, _, _ = arrays_from_candles(candles)
+    return [int(i) for i in swing_low_indices(l)]
 
 
 def nearest_swing_high_left(candles: list[Candle], idx: int) -> Optional[int]:
@@ -251,17 +323,10 @@ def nearest_swing_low_left(candles: list[Candle], idx: int) -> Optional[int]:
 
 def detect_mss(candles: list[Candle], lookback: int = 5) -> list[dict]:
     """Return list of MSS events: {idx, direction, swing_idx, swing_type}"""
-    events = []
-    for i in range(lookback, len(candles)):
-        swing = nearest_swing_high_left(candles, i)
-        if swing is not None:
-            if candles[i].close > candles[swing].high:
-                events.append({"idx": i, "direction": "bullish", "swing_idx": swing, "swing_type": "high"})
-        swing = nearest_swing_low_left(candles, i)
-        if swing is not None:
-            if candles[i].close < candles[swing].low:
-                events.append({"idx": i, "direction": "bearish", "swing_idx": swing, "swing_type": "low"})
-    return events
+    if len(candles) <= lookback:
+        return []
+    _, _, h, l, _, c = arrays_from_candles(candles)
+    return detect_mss_arrays(c, h, l, lookback)
 
 
 # ---------------------------------------------------------------------------
@@ -437,47 +502,79 @@ class VolumeProfile(NamedTuple):
     total_volume: int
 
 
-def compute_volume_profile(candles: list[Candle], value_area_pct: float = 0.70) -> VolumeProfile:
-    if not candles:
+def compute_volume_profile(
+    candles: list[Candle],
+    value_area_pct: float = 0.70,
+    num_bins: int = 48,
+    end_idx: Optional[int] = None,
+) -> VolumeProfile:
+    """Build VAH/VAL/POC from fixed session bins (works for forex and gold)."""
+    if end_idx is not None:
+        if end_idx < 0 or not candles:
+            return VolumeProfile(0, 0, 0, 0)
+        last = min(end_idx, len(candles) - 1)
+        candle_list = [candles[i] for i in range(last + 1)]
+    else:
+        if not candles:
+            return VolumeProfile(0, 0, 0, 0)
+        candle_list = candles
+
+    if not candle_list:
         return VolumeProfile(0, 0, 0, 0)
-    total_vol = sum(c.volume for c in candles)
+
+    total_vol = sum(c.volume for c in candle_list)
+    session_lo = min(c.low for c in candle_list)
+    session_hi = max(c.high for c in candle_list)
+    session_rng = session_hi - session_lo
+
     if total_vol == 0:
-        return VolumeProfile(
-            vah=max(c.high for c in candles),
-            val=min(c.low for c in candles),
-            poc=0,
-            total_volume=0,
-        )
-    # Build price bins (rounded to 5th decimal for forex)
-    price_bins: dict[float, int] = {}
-    for c in candles:
-        # Approximate volume distribution across the range
-        rng = c.high - c.low
-        if rng == 0:
-            key = round(c.close, 5)
-            price_bins[key] = price_bins.get(key, 0) + c.volume
-        else:
-            # Distribute volume across price levels
-            steps = max(1, int(rng / 0.0001))
-            for s in range(steps + 1):
-                price = c.low + (rng * s / steps)
-                key = round(price, 5)
-                price_bins[key] = price_bins.get(key, 0) + c.volume // (steps + 1)
-    if not price_bins:
-        flat = [c.close for c in candles]
+        mid = candle_list[len(candle_list) // 2].close
+        return VolumeProfile(session_hi, session_lo, mid, 0)
+
+    if session_rng == 0:
+        flat = round(session_lo, 5)
+        return VolumeProfile(session_hi, session_lo, flat, total_vol)
+
+    bin_size = session_rng / num_bins
+    bins = [0] * num_bins
+
+    for c in candle_list:
+        if c.high <= c.low:
+            idx = min(num_bins - 1, max(0, int((c.close - session_lo) / bin_size)))
+            bins[idx] += c.volume
+            continue
+
+        start_bin = max(0, int((c.low - session_lo) / bin_size))
+        end_bin = min(num_bins - 1, int((c.high - session_lo) / bin_size))
+        span = end_bin - start_bin + 1
+        base = c.volume // span
+        extra = c.volume - base * span
+        for offset in range(span):
+            bins[start_bin + offset] += base + (1 if offset < extra else 0)
+
+    if not any(bins):
+        flat = [c.close for c in candle_list]
         return VolumeProfile(max(flat), min(flat), flat[len(flat) // 2], total_vol)
-    prices = sorted(price_bins.keys())
-    poc = max(price_bins, key=price_bins.get)
-    # Find value area (70% of volume around POC)
-    sorted_by_vol = sorted(price_bins.items(), key=lambda x: x[1], reverse=True)
+
+    bin_prices = [round(session_lo + (i + 0.5) * bin_size, 5) for i in range(num_bins)]
+    poc_idx = max(range(num_bins), key=lambda i: bins[i])
+    poc = bin_prices[poc_idx]
+
+    sorted_by_vol = sorted(enumerate(bins), key=lambda x: x[1], reverse=True)
     target_vol = total_vol * value_area_pct
     cum_vol = 0
-    va_prices = []
-    for price, vol in sorted_by_vol:
+    va_prices: list[float] = []
+    for idx, vol in sorted_by_vol:
+        if vol <= 0:
+            continue
         cum_vol += vol
-        va_prices.append(price)
+        va_prices.append(bin_prices[idx])
         if cum_vol >= target_vol:
             break
+
+    if not va_prices:
+        va_prices = [poc]
+
     return VolumeProfile(
         vah=max(va_prices),
         val=min(va_prices),
@@ -491,7 +588,11 @@ def compute_volume_profile(candles: list[Candle], value_area_pct: float = 0.70) 
 # ---------------------------------------------------------------------------
 
 def candles_for_time_range(candles: list[Candle], start_ts: int, end_ts: int) -> list[Candle]:
-    return [c for c in candles if start_ts <= c.timestamp < end_ts]
+    if not candles:
+        return []
+    start = index_at_or_after(candles, start_ts)
+    end = index_at_or_after(candles, end_ts)
+    return candles[start:end]
 
 
 # ---------------------------------------------------------------------------
@@ -552,9 +653,9 @@ def trade_pnl_pips(trade: dict) -> float:
     ref = float(entry)
     pip_size = infer_pip_size(ref)
     direction = (trade.get("direction") or "").lower()
-    if direction == "long":
+    if direction in ("long", "bullish"):
         raw = float(exit_p) - ref
-    elif direction == "short":
+    elif direction in ("short", "bearish"):
         raw = ref - float(exit_p)
     else:
         return 0.0
@@ -564,7 +665,17 @@ def trade_pnl_pips(trade: dict) -> float:
 def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
     """Fill missing pnl_pips on each trade from entry/exit prices."""
     for trade in trades:
-        if trade.get("pnl_pips") is None:
+        stored = trade.get("pnl_pips")
+        entry = trade.get("entry_price")
+        exit_p = trade.get("exit_price")
+        needs_compute = stored is None or (
+            stored == 0
+            and entry is not None
+            and exit_p is not None
+            and float(entry) != float(exit_p)
+        )
+        if needs_compute:
+            trade.pop("pnl_pips", None)
             trade["pnl_pips"] = trade_pnl_pips(trade)
     return trades
 

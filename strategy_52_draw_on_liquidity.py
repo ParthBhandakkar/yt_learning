@@ -42,7 +42,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    save_trades,
+    save_trades, index_at_or_after,
 )
 from causal_backtest import (
     group_by_ny_day,
@@ -125,7 +125,7 @@ def run_strategy(candles_15m: list[Candle], candles_1m: list[Candle], output_pat
         })
 
         sweep_ts = day_candles_15m[sweep_idx].timestamp
-        start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= sweep_ts), 0)
+        start_1m = index_at_or_after(candles_1m, sweep_ts)
 
         for i in range(start_1m, min(start_1m + 60, len(candles_1m))):
             c = candles_1m[i]

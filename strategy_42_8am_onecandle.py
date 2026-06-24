@@ -42,7 +42,7 @@ from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
-from core import Candle, load_csv, to_iso, parse_csv_filename, save_trades
+from core import Candle, load_csv, to_iso, parse_csv_filename, save_trades, index_at_or_after
 from causal_backtest import (
     group_by_ny_day,
     ny_hour,
@@ -66,7 +66,7 @@ def monitor_sweep_and_entry(
     candles_1m: list[Candle], range_high: float, range_low: float, range_ts: int, day
 ) -> Optional[dict]:
     """Wait for sweep outside range, then MSS + close back inside (causal)."""
-    start_idx = next((i for i, c in enumerate(candles_1m) if c.timestamp >= range_ts), 0)
+    start_idx = index_at_or_after(candles_1m, range_ts)
 
     real_start = start_idx
     for i in range(start_idx, len(candles_1m)):

@@ -46,7 +46,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, index_at_or_after,
 )
 from causal_backtest import (
     group_by_ny_day,
@@ -160,7 +160,7 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m:
                 "description": f"{anchor_name.title()} session 1H candle opened at {session_candle.open:.5f}",
             }]
 
-            open_idx_5m = next((i for i, c in enumerate(candles_5m) if c.timestamp >= open_ts), 0)
+            open_idx_5m = index_at_or_after(candles_5m, open_ts)
             fib_source = find_swing_for_fib(candles_5m, open_idx_5m)
             if fib_source is None:
                 continue
@@ -180,7 +180,7 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m:
                 "description": f"Fib std projection: -2.0={fib_target_2_0:.5f}, -2.5={fib_target_2_5:.5f}",
             })
 
-            start_1m = next((i for i, c in enumerate(candles_1m) if c.timestamp >= open_ts), 0)
+            start_1m = index_at_or_after(candles_1m, open_ts)
             day_trade = None
 
             for i in range(start_1m, min(start_1m + 60, len(candles_1m))):

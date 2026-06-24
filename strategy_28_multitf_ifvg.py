@@ -45,7 +45,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, index_at_or_after, candle_series,
 )
 from causal_backtest import (
     group_by_ny_day,
@@ -105,7 +105,7 @@ def find_post_open_displacement_fvg(
         return None
 
     ny_ts = candles_1m[ny_idx].timestamp
-    start_5m = next((i for i, c in enumerate(candles_5m) if c.timestamp >= ny_ts), 0)
+    start_5m = index_at_or_after(candles_5m, ny_ts)
     tf_as_of = len(candles_5m) - 1
 
     displaced = False
@@ -169,6 +169,7 @@ def find_highest_tf_ifvg(
 
 def run_strategy(candles_1h: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
+    cs_1m = candle_series(candles_1m)
     days = group_by_ny_day(candles_1m)
 
     for day_candles in days:
@@ -207,7 +208,9 @@ def run_strategy(candles_1h: list[Candle], candles_1m: list[Candle], output_path
 
         for i in range(ny_idx + 10, len(day_candles)):
             as_of_ts = day_candles[i].timestamp
-            global_i = next((g for g, c in enumerate(candles_1m) if c.timestamp == as_of_ts), i)
+            global_i = cs_1m.at_exact(as_of_ts)
+            if global_i < 0:
+                global_i = i
 
             if htf_fvg is None:
                 htf_fvg = find_post_open_displacement_fvg(day_candles, ny_idx, i, direction)

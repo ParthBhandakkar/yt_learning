@@ -52,9 +52,7 @@ from core import (
 )
 from causal_backtest import (
     group_by_ny_day,
-    past_slice,
-    compute_vwap,
-    absorption_at_level_causal,
+    absorption_at_bar,
     simulate_exits,
 )
 
@@ -83,13 +81,23 @@ def run_strategy(candles_1m: list[Candle], output_path: str):
         pending_short_abs: Optional[dict] = None
         pending_long_abs: Optional[dict] = None
         day_traded = False
+        running_high = day_candles[0].high
+        running_low = day_candles[0].low
+        cum_vol = 0
+        cum_tp_vol = 0.0
 
-        for i in range(30, len(day_candles)):
-            known = past_slice(day_candles, i)
-            vp = compute_volume_profile(known)
-            vwap = compute_vwap(known)
-            running_high = max(c.high for c in known)
-            running_low = min(c.low for c in known)
+        for i in range(len(day_candles)):
+            c = day_candles[i]
+            running_high = max(running_high, c.high)
+            running_low = min(running_low, c.low)
+            cum_vol += c.volume
+            cum_tp_vol += (c.high + c.low + c.close) / 3 * c.volume
+
+            if i < 30:
+                continue
+
+            vwap = cum_tp_vol / cum_vol if cum_vol else c.close
+            vp = compute_volume_profile(day_candles, end_idx=i)
 
             if i == 30:
                 events_log.append({
@@ -103,26 +111,26 @@ def run_strategy(candles_1m: list[Candle], output_path: str):
                 })
 
             if vp.poc > 0:
-                for ab in absorption_at_level_causal(known, vp.poc, "bullish", window=3):
-                    if ab["idx"] == i:
-                        pending_short_abs = ab
-                        events_log.append({
-                            "timestamp": to_iso(day_candles[i].timestamp),
-                            "type": ab["type"],
-                            "description": ab["description"],
-                            "level": ab["level"],
-                        })
+                ab = absorption_at_bar(day_candles, i, vp.poc, "bullish", window=3)
+                if ab:
+                    pending_short_abs = ab
+                    events_log.append({
+                        "timestamp": to_iso(day_candles[i].timestamp),
+                        "type": ab["type"],
+                        "description": ab["description"],
+                        "level": ab["level"],
+                    })
 
             if vp.val > 0:
-                for ab in absorption_at_level_causal(known, vp.val, "bearish", window=3):
-                    if ab["idx"] == i:
-                        pending_long_abs = ab
-                        events_log.append({
-                            "timestamp": to_iso(day_candles[i].timestamp),
-                            "type": ab["type"],
-                            "description": ab["description"],
-                            "level": ab["level"],
-                        })
+                ab = absorption_at_bar(day_candles, i, vp.val, "bearish", window=3)
+                if ab:
+                    pending_long_abs = ab
+                    events_log.append({
+                        "timestamp": to_iso(day_candles[i].timestamp),
+                        "type": ab["type"],
+                        "description": ab["description"],
+                        "level": ab["level"],
+                    })
 
             if pending_short_abs and i > pending_short_abs["idx"] + 1:
                 if detect_order_inversion(day_candles, pending_short_abs["level"], "bearish", i):

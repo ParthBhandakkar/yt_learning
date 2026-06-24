@@ -44,7 +44,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, index_at_or_after,
 )
 from causal_backtest import (
     past_slice,
@@ -227,7 +227,7 @@ def run_strategy(candles_daily: list[Candle], candles_15m: list[Candle], output_
             "description": "Pre-open liquidity pools mapped",
         })
 
-        start_idx = next((i for i, c in enumerate(candles_15m) if c.timestamp >= day3_ts), 0)
+        start_idx = index_at_or_after(candles_15m, day3_ts)
         result = find_sweep_and_entry(candles_15m, pools, bias, start_idx)
         if result is None:
             continue

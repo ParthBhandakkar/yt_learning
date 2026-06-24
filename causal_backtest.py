@@ -8,14 +8,18 @@ from typing import Optional
 
 from core import (
     Candle,
+    advance_index_at_or_after,
     compute_volume_profile,
     detect_cisd,
     detect_fvg,
     detect_ifvg,
     detect_mss,
+    index_at_or_after,
+    index_through_ts,
     resample,
     to_iso,
 )
+from fast_core import arrays_from_candles, simulate_exits_arrays
 
 
 def ny_hour(ts: int) -> int:
@@ -56,6 +60,48 @@ def past_slice(candles: list[Candle], end_idx: int) -> list[Candle]:
     return candles[: max(0, end_idx) + 1]
 
 
+def index_at_or_after_timestamps(timestamps: list[int], ts: int) -> int:
+    lo, hi = 0, len(timestamps)
+    while lo < hi:
+        mid = (lo + hi) // 2
+        if timestamps[mid] < ts:
+            lo = mid + 1
+        else:
+            hi = mid
+    return lo
+
+
+def detect_fvgs_in_window(
+    candles: list[Candle], start_idx: int, end_idx: int
+) -> list[dict]:
+    """FVGs whose middle bar is in [start_idx, end_idx) and confirmed within end_idx."""
+    fvgs: list[dict] = []
+    last_i = min(end_idx - 2, len(candles) - 2)
+    for i in range(max(1, start_idx), last_i + 1):
+        if i + 1 >= end_idx:
+            continue
+        prev, nxt = candles[i - 1], candles[i + 1]
+        gap_low = nxt.low - prev.high
+        if gap_low > 0:
+            fvgs.append({
+                "idx": i,
+                "direction": "bullish",
+                "upper": nxt.low,
+                "lower": prev.high,
+                "gap": gap_low,
+            })
+        gap_high = prev.low - nxt.high
+        if gap_high > 0:
+            fvgs.append({
+                "idx": i,
+                "direction": "bearish",
+                "upper": prev.low,
+                "lower": nxt.high,
+                "gap": gap_high,
+            })
+    return fvgs
+
+
 def detect_fvg_as_of(candles: list[Candle], as_of_idx: int) -> list[dict]:
     """FVG at middle bar i only when bar i+1 has closed (as_of_idx >= i+1)."""
     fvgs = []
@@ -86,7 +132,8 @@ def detect_fvg_as_of(candles: list[Candle], as_of_idx: int) -> list[dict]:
 
 def resample_as_of(candles: list[Candle], minutes: int, as_of_ts: int) -> list[Candle]:
     """Completed HTF bars only, using 1m data up to as_of_ts."""
-    subset = [c for c in candles if c.timestamp <= as_of_ts]
+    end = index_through_ts(candles, as_of_ts)
+    subset = candles[:end]
     if not subset:
         return []
     bars = resample(subset, minutes)
@@ -127,25 +174,17 @@ def simulate_exits(
     tp: float,
 ) -> dict:
     """TP/SL on bars strictly after the entry bar closes."""
-    for j in range(entry_idx + 1, len(candles)):
-        c = candles[j]
-        if c.timestamp <= entry_ts:
-            continue
-        if direction == "long":
-            if c.high >= tp:
-                return {"exit_time": to_iso(c.timestamp), "exit_price": tp, "outcome": "win"}
-            if c.low <= sl:
-                return {"exit_time": to_iso(c.timestamp), "exit_price": sl, "outcome": "loss"}
-        else:
-            if c.low <= tp:
-                return {"exit_time": to_iso(c.timestamp), "exit_price": tp, "outcome": "win"}
-            if c.high >= sl:
-                return {"exit_time": to_iso(c.timestamp), "exit_price": sl, "outcome": "loss"}
-    last = candles[-1]
+    if not candles:
+        return {"exit_time": "", "exit_price": 0.0, "outcome": "open"}
+    _, _, h, l, c, ts = arrays_from_candles(candles)
+    exit_idx, exit_price, code = simulate_exits_arrays(
+        h, l, c, ts, entry_idx, entry_ts, direction, sl, tp
+    )
+    outcome = "win" if code == 1 else "loss" if code == -1 else "open"
     return {
-        "exit_time": to_iso(last.timestamp),
-        "exit_price": last.close,
-        "outcome": "open",
+        "exit_time": to_iso(int(ts[exit_idx])),
+        "exit_price": float(exit_price),
+        "outcome": outcome,
     }
 
 
@@ -162,6 +201,43 @@ def find_limit_fill(
             return j, limit_price
         if direction == "short" and c.high >= limit_price:
             return j, limit_price
+    return None
+
+
+def absorption_at_bar(
+    candles: list[Candle],
+    bar_idx: int,
+    level: float,
+    direction: str,
+    window: int = 3,
+) -> Optional[dict]:
+    """Check absorption at a single bar only (O(window), no full-history rescan)."""
+    if bar_idx < window or bar_idx >= len(candles):
+        return None
+    cluster = candles[bar_idx - window : bar_idx + 1]
+    avg_vol = sum(c.volume for c in cluster) / len(cluster)
+    if direction == "bullish":
+        near = sum(1 for c in cluster if abs(c.high - level) / max(level, 1e-9) < 0.0005)
+        stalled = candles[bar_idx].close < level * 1.0005
+        if near >= 2 and avg_vol > 100 and stalled:
+            return {
+                "idx": bar_idx,
+                "type": "buyer_absorption",
+                "level": level,
+                "avg_volume": avg_vol,
+                "description": f"Buyer absorption at {level:.5f} (causal)",
+            }
+    else:
+        near = sum(1 for c in cluster if abs(c.low - level) / max(level, 1e-9) < 0.0005)
+        stalled = candles[bar_idx].close > level * 0.9995
+        if near >= 2 and avg_vol > 100 and stalled:
+            return {
+                "idx": bar_idx,
+                "type": "seller_absorption",
+                "level": level,
+                "avg_volume": avg_vol,
+                "description": f"Seller absorption at {level:.5f} (causal)",
+            }
     return None
 
 
@@ -208,7 +284,5 @@ def order_block_entry_idx(ob_idx: int, lookahead: int = 3) -> int:
 
 def map_tf_bar_to_1m_idx(tf_bar: Candle, candles_1m: list[Candle]) -> int:
     """Find 1m index at or after HTF bar open timestamp."""
-    for i, c in enumerate(candles_1m):
-        if c.timestamp >= tf_bar.timestamp:
-            return i
-    return len(candles_1m) - 1
+    idx = index_at_or_after(candles_1m, tf_bar.timestamp)
+    return idx if idx < len(candles_1m) else len(candles_1m) - 1

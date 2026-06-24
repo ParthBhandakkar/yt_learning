@@ -3,15 +3,18 @@ Server for the standalone strategy dashboard.
 Auto-discovers strategy scripts, accepts CSV uploads, runs backtests, returns results.
 """
 import json
+import math
 import os
 import re
 import subprocess
 import sys
 import tempfile
+import threading
+import time
 import uuid
 from datetime import datetime
 from pathlib import Path
-from typing import Optional
+from typing import Any, Optional
 
 import gdown
 import uvicorn
@@ -23,6 +26,12 @@ from pydantic import BaseModel
 STRATEGIES_DIR = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(STRATEGIES_DIR))
 from core import enrich_trades_pnl, load_csv, trade_pnl_pips
+from data_library import (
+    DEFAULT_SYMBOL,
+    library_status,
+    prepare_library_csv_window,
+    resolve_strategy_data,
+)
 
 STATIC_DIR = Path(__file__).resolve().parent / "static"
 OUT_DIR = Path(__file__).resolve().parent / "out"
@@ -38,6 +47,10 @@ DELAYED_IMPORTS: dict[str, dict] = {}
 CHART_SESSIONS: dict[str, dict] = {}
 CHART_TF_ORDER = ["1m", "5m", "15m", "1h", "4h", "daily"]
 CHART_WINDOW_SIZE = 150
+BACKTEST_TIMEOUT_SEC = int(os.environ.get("YT_BACKTEST_TIMEOUT_SEC", "1800"))
+DEFAULT_LIBRARY_MAX_DAYS = int(os.environ.get("YT_BACKTEST_MAX_DAYS", "365"))
+BACKTEST_JOBS: dict[str, dict] = {}
+JOBS_LOCK = threading.Lock()
 
 # ---------------------------------------------------------------------------
 # Strategy discovery
@@ -314,6 +327,19 @@ async def locate_chart_time(session_id: str, ts: int):
     return {"start": start, "total": session["total"]}
 
 
+def sanitize_for_json(obj: Any) -> Any:
+    """Replace inf/nan floats so Starlette JSON responses do not crash."""
+    if isinstance(obj, float):
+        if math.isnan(obj) or math.isinf(obj):
+            return None
+        return obj
+    if isinstance(obj, dict):
+        return {k: sanitize_for_json(v) for k, v in obj.items()}
+    if isinstance(obj, list):
+        return [sanitize_for_json(v) for v in obj]
+    return obj
+
+
 def compute_stats(trades: list) -> dict:
     default = lambda: {"total_trades": 0, "winning_trades": 0, "losing_trades": 0, "open_trades": 0,
         "win_rate": 0, "total_pnl_pips": 0, "profit_factor": 0, "avg_win_pips": 0, "avg_loss_pips": 0,
@@ -332,7 +358,12 @@ def compute_stats(trades: list) -> dict:
     total_pnl = sum(trade_pnl_pips(t) for t in trades)
     gross_profit = sum(trade_pnl_pips(t) for t in wins)
     gross_loss = abs(sum(trade_pnl_pips(t) for t in losses))
-    profit_factor = round(gross_profit / gross_loss, 2) if gross_loss else (float("inf") if gross_profit else 0)
+    if gross_loss:
+        profit_factor = round(gross_profit / gross_loss, 2)
+    elif gross_profit:
+        profit_factor = None  # wins only; UI shows infinity
+    else:
+        profit_factor = 0
 
     avg_win = round(gross_profit / win_count, 1) if wins else 0
     avg_loss = round(gross_loss / loss_count, 1) if losses else 0
@@ -386,6 +417,12 @@ class SaveResultsRequest(BaseModel):
 class DriveBacktestRequest(BaseModel):
     strategy_id: str
     drive_files: dict[str, str]  # arg -> drive URL or file ID
+
+
+class LibraryBacktestRequest(BaseModel):
+    strategy_id: str
+    symbol: str = DEFAULT_SYMBOL
+    max_days: Optional[int] = None  # None = default window; 0 or negative = full history
 
 
 def persist_backtest_results(strategy: dict, trades: list, stats: dict) -> str:
@@ -443,54 +480,300 @@ async def drive_list_folder(req: DriveFolderRequest):
         return JSONResponse({"error": f"Drive error: {e}"}, status_code=500)
 
 
+@app.get("/api/backtest/jobs/{job_id}")
+def get_backtest_job(job_id: str):
+    with JOBS_LOCK:
+        job = BACKTEST_JOBS.get(job_id)
+    if not job:
+        return JSONResponse({"error": "Job not found"}, status_code=404)
+    elapsed = max(0, int(time.time() - job["started_at"]))
+    return {**job, "elapsed_sec": elapsed}
+
+
 @app.post("/api/backtest/drive")
 async def run_backtest_drive(req: DriveBacktestRequest):
     strategy = next((s for s in _STRATEGIES if s["id"] == req.strategy_id), None)
     if not strategy:
         return JSONResponse({"error": "Strategy not found"}, status_code=404)
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        downloaded = {}
-        for arg_name, url_or_id in req.drive_files.items():
-            file_id = url_or_id.strip()
-            m = DRIVE_FILE_PATTERN.search(file_id)
-            if m:
-                file_id = m.group(1)
+    job_dir = TMP_DIR / str(uuid.uuid4())
+    job_dir.mkdir(parents=True, exist_ok=True)
+    downloaded = {}
+    for arg_name, url_or_id in req.drive_files.items():
+        file_id = url_or_id.strip()
+        m = DRIVE_FILE_PATTERN.search(file_id)
+        if m:
+            file_id = m.group(1)
 
-            ext = ".csv"
-            out_path = os.path.join(tmpdir, f"{arg_name.replace('--', '')}_{file_id[:8]}{ext}")
+        ext = ".csv"
+        out_path = job_dir / f"{arg_name.replace('--', '')}_{file_id[:8]}{ext}"
 
-            try:
-                gdown.download(id=file_id, output=out_path, quiet=True)
-                if not os.path.exists(out_path) or os.path.getsize(out_path) == 0:
-                    return JSONResponse({"error": f"Failed to download file for {arg_name}"}, status_code=500)
-                downloaded[arg_name] = out_path
-            except Exception as e:
-                return JSONResponse({"error": f"Error downloading {arg_name}: {e}"}, status_code=500)
+        try:
+            gdown.download(id=file_id, output=str(out_path), quiet=True)
+            if not out_path.exists() or out_path.stat().st_size == 0:
+                return JSONResponse({"error": f"Failed to download file for {arg_name}"}, status_code=500)
+            downloaded[arg_name] = str(out_path)
+        except Exception as e:
+            return JSONResponse({"error": f"Error downloading {arg_name}: {e}"}, status_code=500)
 
-        if len(downloaded) != len(strategy["csv_args"]):
-            missing = [a["arg"] for a in strategy["csv_args"] if a["arg"] not in downloaded]
-            return JSONResponse({"error": f"Missing files for: {missing}"}, status_code=400)
+    if len(downloaded) != len(strategy["csv_args"]):
+        missing = [a["arg"] for a in strategy["csv_args"] if a["arg"] not in downloaded]
+        return JSONResponse({"error": f"Missing files for: {missing}"}, status_code=400)
 
-        return _execute_backtest(strategy, downloaded, tmpdir)
+    return _start_backtest_job(
+        strategy,
+        downloaded,
+        data_source="drive",
+        symbol=DEFAULT_SYMBOL,
+        job_id=job_dir.name,
+    )
 
 
-def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> dict:
-    import shutil
+@app.get("/api/data/library")
+def get_data_library(strategy_id: str, symbol: str = DEFAULT_SYMBOL):
+    strategy = next((s for s in _STRATEGIES if s["id"] == strategy_id), None)
+    if not strategy:
+        return JSONResponse({"error": "Strategy not found"}, status_code=404)
+    return library_status(strategy["csv_args"], symbol=symbol)
+
+
+def _update_job(job_id: str, **kwargs) -> None:
+    with JOBS_LOCK:
+        job = BACKTEST_JOBS.get(job_id)
+        if not job:
+            return
+        job.update(kwargs)
+        job["updated_at"] = time.time()
+
+
+def _parse_progress_line(job_id: str, line: str) -> None:
+    if not line.startswith("BT_PROGRESS "):
+        return
+    parts = line.strip().split(" ", 3)
+    if len(parts) < 3:
+        return
+    try:
+        phase = parts[1]
+        pct = int(parts[2])
+        msg = parts[3] if len(parts) > 3 else ""
+    except ValueError:
+        return
+    if phase == "load_csv":
+        progress = 15 + int(pct * 0.1)
+    elif phase == "strategy":
+        progress = 30 + int(pct * 0.55)
+    else:
+        progress = 20 + int(pct * 0.6)
+    _update_job(job_id, phase=phase, progress=min(90, progress), message=msg or phase)
+
+
+def _resolve_library_max_days(max_days: Optional[int]) -> Optional[int]:
+    if max_days is None:
+        return DEFAULT_LIBRARY_MAX_DAYS
+    if max_days <= 0:
+        return None
+    return max_days
+
+
+def _start_backtest_job(
+    strategy: dict,
+    file_map: dict[str, str],
+    *,
+    data_source: str,
+    symbol: str,
+    library_files: Optional[list[str]] = None,
+    max_days: Optional[int] = None,
+    job_id: Optional[str] = None,
+) -> dict:
+    job_id = job_id or str(uuid.uuid4())
+    with JOBS_LOCK:
+        BACKTEST_JOBS[job_id] = {
+            "id": job_id,
+            "status": "queued",
+            "phase": "queued",
+            "progress": 0,
+            "message": "Queued...",
+            "log_tail": [],
+            "started_at": time.time(),
+            "updated_at": time.time(),
+            "result": None,
+            "error": None,
+        }
+    meta = {
+        "data_source": data_source,
+        "symbol": symbol,
+        "library_files": library_files,
+        "max_days": max_days,
+    }
+    thread = threading.Thread(
+        target=_backtest_job_worker,
+        args=(job_id, strategy, file_map, meta),
+        daemon=True,
+    )
+    thread.start()
+    return {"job_id": job_id}
+
+
+def _backtest_job_worker(
+    job_id: str,
+    strategy: dict,
+    file_map: dict[str, str],
+    meta: dict,
+) -> None:
+    job_dir = TMP_DIR / job_id
+    job_dir.mkdir(parents=True, exist_ok=True)
+    try:
+        _update_job(
+            job_id,
+            status="running",
+            phase="preparing",
+            progress=3,
+            message="Preparing market data...",
+        )
+        working_map = dict(file_map)
+        trim_notes: list[str] = []
+        max_days = meta.get("max_days")
+        if max_days:
+            def prep_progress(pct: int, msg: str) -> None:
+                _update_job(job_id, phase="preparing", progress=3 + min(12, pct), message=msg)
+
+            working_map, trim_notes = prepare_library_csv_window(
+                file_map, max_days, job_dir, prep_progress
+            )
+
+        payload = _execute_backtest_job(job_id, strategy, working_map, str(job_dir))
+        payload["data_source"] = meta.get("data_source", "unknown")
+        payload["symbol"] = str(meta.get("symbol", DEFAULT_SYMBOL)).upper()
+        if meta.get("library_files"):
+            payload["library_files"] = meta["library_files"]
+        if trim_notes:
+            payload["data_window"] = trim_notes
+        _update_job(
+            job_id,
+            status="completed",
+            phase="done",
+            progress=100,
+            message=f"Completed with {payload['stats'].get('total_trades', 0)} trades",
+            result=payload,
+        )
+    except subprocess.TimeoutExpired:
+        _update_job(
+            job_id,
+            status="failed",
+            phase="failed",
+            progress=100,
+            error=f"Backtest timed out after {BACKTEST_TIMEOUT_SEC}s",
+            message=f"Timed out after {BACKTEST_TIMEOUT_SEC}s",
+        )
+    except Exception as e:
+        _update_job(
+            job_id,
+            status="failed",
+            phase="failed",
+            progress=100,
+            error=str(e),
+            message=str(e),
+        )
+
+
+def _execute_backtest_job(
+    job_id: str,
+    strategy: dict,
+    file_map: dict[str, str],
+    tmpdir: str,
+) -> dict:
     script = STRATEGIES_DIR / strategy["file"]
     output_path = os.path.join(tmpdir, "results.json")
     cmd = [sys.executable, str(script)]
 
-    renamed = {}
-    for i, (arg_name, fpath) in enumerate(file_map.items()):
-        safe_name = f"data_1h_20200101_20991231_{i}.csv"
-        new_path = os.path.join(tmpdir, safe_name)
-        shutil.copy2(fpath, new_path)
-        cmd.extend([arg_name, new_path])
+    for arg_name, fpath in file_map.items():
+        cmd.extend([arg_name, fpath])
+    cmd.extend(["--output", output_path])
+
+    _update_job(
+        job_id,
+        phase="running",
+        progress=18,
+        message=f"Running {strategy['name']}...",
+    )
+
+    env = {**os.environ, "BT_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
+    proc = subprocess.Popen(
+        cmd,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        env=env,
+        bufsize=1,
+    )
+
+    stdout_parts: list[str] = []
+    log_tail: list[str] = []
+    assert proc.stdout is not None
+    for line in proc.stdout:
+        line = line.rstrip("\n")
+        if not line:
+            continue
+        stdout_parts.append(line)
+        log_tail.append(line)
+        if len(log_tail) > 40:
+            log_tail.pop(0)
+        _parse_progress_line(job_id, line)
+        if "Saved" in line and "trades" in line:
+            _update_job(job_id, message=line, progress=88)
+        _update_job(job_id, log_tail=list(log_tail))
+
+    try:
+        proc.wait(timeout=BACKTEST_TIMEOUT_SEC)
+    except subprocess.TimeoutExpired:
+        proc.kill()
+        proc.wait(timeout=5)
+        raise
+
+    stdout = "\n".join(stdout_parts)
+    if proc.returncode != 0:
+        raise RuntimeError(
+            f"Backtest failed (exit code {proc.returncode})\n{stdout[-2000:]}"
+        )
+
+    if not os.path.exists(output_path):
+        raise RuntimeError(f"No output file generated\n{stdout[-2000:]}")
+
+    _update_job(job_id, phase="finalizing", progress=92, message="Computing stats...")
+
+    with open(output_path) as f:
+        trades = json.load(f)
+
+    if not isinstance(trades, list):
+        trades = [trades]
+
+    enrich_trades_pnl(trades)
+    stats = compute_stats(trades)
+    trades = sanitize_for_json(trades)
+    stats = sanitize_for_json(stats)
+    saved_to = persist_backtest_results(strategy, trades, stats)
+    chart_path = pick_chart_csv_path(file_map, strategy["csv_args"])
+    chart_session = create_chart_session(chart_path, trades) if chart_path else None
+    return {
+        "trades": trades,
+        "stats": stats,
+        "stdout": stdout.strip(),
+        "saved_to": saved_to,
+        "chart_session": chart_session,
+    }
+
+
+def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> dict:
+    script = STRATEGIES_DIR / strategy["file"]
+    output_path = os.path.join(tmpdir, "results.json")
+    cmd = [sys.executable, str(script)]
+
+    for arg_name, fpath in file_map.items():
+        cmd.extend([arg_name, fpath])
     cmd.extend(["--output", output_path])
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+        result = subprocess.run(cmd, capture_output=True, text=True, timeout=BACKTEST_TIMEOUT_SEC)
         if result.returncode != 0:
             return JSONResponse({
                 "error": f"Backtest failed (exit code {result.returncode})",
@@ -513,50 +796,129 @@ def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> 
 
         enrich_trades_pnl(trades)
         stats = compute_stats(trades)
+        trades = sanitize_for_json(trades)
+        stats = sanitize_for_json(stats)
         saved_to = persist_backtest_results(strategy, trades, stats)
         chart_path = pick_chart_csv_path(file_map, strategy["csv_args"])
         chart_session = create_chart_session(chart_path, trades) if chart_path else None
-        return {
+        payload = {
             "trades": trades,
             "stats": stats,
             "stdout": result.stdout.strip(),
             "saved_to": saved_to,
             "chart_session": chart_session,
         }
+        return payload
 
     except subprocess.TimeoutExpired:
-        return JSONResponse({"error": "Backtest timed out after 180s"}, status_code=500)
+        return JSONResponse({"error": f"Backtest timed out after {BACKTEST_TIMEOUT_SEC}s"}, status_code=500)
     except Exception as e:
         return JSONResponse({"error": str(e)}, status_code=500)
 
 
+def _package_backtest_result(
+    strategy: dict,
+    arg_paths: dict[str, str],
+    *,
+    data_source: str,
+    symbol: str,
+    library_files: Optional[list[str]] = None,
+):
+    with tempfile.TemporaryDirectory() as tmpdir:
+        result = _execute_backtest(strategy, arg_paths, tmpdir)
+        if isinstance(result, JSONResponse):
+            return result
+        result["data_source"] = data_source
+        result["symbol"] = symbol.upper()
+        if library_files:
+            result["library_files"] = library_files
+        return result
+
+
 # Refactor existing backtest to use _execute_backtest
+@app.post("/api/backtest/library")
+async def run_backtest_library(req: LibraryBacktestRequest):
+    """Run backtest using CSVs from the local instrument data library (no upload)."""
+    strategy = next((s for s in _STRATEGIES if s["id"] == req.strategy_id), None)
+    if not strategy:
+        return JSONResponse({"error": "Strategy not found"}, status_code=404)
+    try:
+        arg_paths, library_files = resolve_strategy_data(strategy["csv_args"], symbol=req.symbol)
+    except FileNotFoundError as e:
+        return JSONResponse({"error": str(e)}, status_code=400)
+    return _start_backtest_job(
+        strategy,
+        arg_paths,
+        data_source="library",
+        symbol=req.symbol,
+        library_files=library_files,
+        max_days=_resolve_library_max_days(req.max_days),
+    )
+
+
 @app.post("/api/backtest")
-async def run_backtest(strategy_id: str = Form(...), files: list[UploadFile] = File(...)):
+async def run_backtest(
+    strategy_id: str = Form(...),
+    symbol: str = Form(DEFAULT_SYMBOL),
+    max_days: str = Form(""),
+    files: list[UploadFile] | None = File(default=None),
+):
     strategy = next((s for s in _STRATEGIES if s["id"] == strategy_id), None)
     if not strategy:
         return JSONResponse({"error": "Strategy not found"}, status_code=404)
 
-    with tempfile.TemporaryDirectory() as tmpdir:
-        uploaded = {}
-        for f in files:
-            fpath = os.path.join(tmpdir, f.filename)
-            with open(fpath, "wb") as out:
-                out.write(await f.read())
-            uploaded[f.filename] = fpath
+    parsed_max_days: Optional[int] = None
+    if max_days.strip():
+        try:
+            parsed_max_days = int(max_days)
+        except ValueError:
+            return JSONResponse({"error": "Invalid max_days value"}, status_code=400)
 
-        if not uploaded:
-            return JSONResponse({"error": "No CSV files uploaded"}, status_code=400)
+    if not files:
+        try:
+            arg_paths, library_files = resolve_strategy_data(
+                strategy["csv_args"], symbol=symbol
+            )
+        except FileNotFoundError as e:
+            return JSONResponse({"error": str(e)}, status_code=400)
+        return _start_backtest_job(
+            strategy,
+            arg_paths,
+            data_source="library",
+            symbol=symbol,
+            library_files=library_files,
+            max_days=_resolve_library_max_days(parsed_max_days),
+        )
 
-        arg_paths = match_files_to_args(strategy["csv_args"], uploaded)
-        if len(arg_paths) != len(strategy["csv_args"]):
-            missing = [a["arg"] for a in strategy["csv_args"] if a["arg"] not in arg_paths]
-            return JSONResponse({
-                "error": f"Could not match files to all required CSV arguments: {missing}. "
-                         f"Uploaded: {list(uploaded.keys())}"
-            }, status_code=400)
+    job_dir = TMP_DIR / str(uuid.uuid4())
+    job_dir.mkdir(parents=True, exist_ok=True)
+    uploaded = {}
+    for f in files:
+        if not f.filename:
+            continue
+        fpath = job_dir / f.filename
+        with open(fpath, "wb") as out:
+            out.write(await f.read())
+        uploaded[f.filename] = str(fpath)
 
-        return _execute_backtest(strategy, arg_paths, tmpdir)
+    if not uploaded:
+        return JSONResponse({"error": "No CSV files uploaded"}, status_code=400)
+
+    arg_paths = match_files_to_args(strategy["csv_args"], uploaded)
+    if len(arg_paths) != len(strategy["csv_args"]):
+        missing = [a["arg"] for a in strategy["csv_args"] if a["arg"] not in arg_paths]
+        return JSONResponse({
+            "error": f"Could not match files to all required CSV arguments: {missing}. "
+                     f"Uploaded: {list(uploaded.keys())}"
+        }, status_code=400)
+
+    return _start_backtest_job(
+        strategy,
+        arg_paths,
+        data_source="upload",
+        symbol=symbol,
+        job_id=job_dir.name,
+    )
 
 
 app.mount("/", StaticFiles(directory=str(STATIC_DIR), html=True), name="static")

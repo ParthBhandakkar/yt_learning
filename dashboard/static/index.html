@@ -4,10 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Strategy Backtester</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=20240708">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<!-- TradingView Lightweight Charts (official library by TradingView) -->
-<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@4.2.2/dist/lightweight-charts.standalone.production.js"></script>
+<!-- TradingView Lightweight Charts v5 -->
+<script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
+<script src="trade-zones-primitive.js?v=20240709"></script>
 </head>
 <body>
 <div class="app">
@@ -44,6 +45,7 @@
         <div id="source-local">
           <div class="drop-zone" id="drop-zone">
             <p>Drop CSV files here or click to browse</p>
+            <p class="drop-zone-sub">Leave empty to auto-load <strong>XAUUSD</strong> from your local Exness data library</p>
             <input type="file" id="file-input" multiple accept=".csv" hidden>
           </div>
           <div id="file-list"></div>
@@ -63,6 +65,15 @@
         </div>
 
         <button class="btn-primary" id="btn-run" onclick="runBacktest()">Run Backtest</button>
+        <div class="library-range-row" id="library-range-row">
+          <label for="library-range">Library data window</label>
+          <select id="library-range">
+            <option value="90">Last 90 days (fastest)</option>
+            <option value="180">Last 180 days</option>
+            <option value="365" selected>Last 1 year (recommended)</option>
+            <option value="0">Full history (can be very slow)</option>
+          </select>
+        </div>
       </section>
 
       <section class="results-section hidden" id="results-section">
@@ -86,12 +97,24 @@
               <span><span class="legend-dot entry"></span> Entry</span>
               <span><span class="legend-dot exit-win"></span> Exit (win)</span>
               <span><span class="legend-dot exit-loss"></span> Exit (loss)</span>
+              <span><span class="legend-pnl win"></span> Target (profit)</span>
+              <span><span class="legend-pnl loss"></span> Stop (risk)</span>
             </div>
           </div>
-          <div id="candleChart" class="candle-chart-container"></div>
+          <div class="candle-chart-outer" id="candle-chart-outer">
+            <div id="chart-ohlc-legend" class="chart-ohlc-legend hidden">
+              <div id="chart-ohlc-time" class="chart-ohlc-legend__time"></div>
+              <div id="chart-ohlc-values" class="chart-ohlc-legend__values"></div>
+            </div>
+            <div class="candle-chart-wrap">
+              <div id="candleChart" class="candle-chart-container"></div>
+            </div>
+          </div>
           <div class="candle-chart-controls">
             <span id="candle-window-label" class="candle-window-label"></span>
-            <button class="btn-sm" type="button" onclick="jumpToFirstTrade()">Jump to First Trade</button>
+            <button class="btn-sm" id="btn-prev-trade" type="button" onclick="jumpToPreviousTrade()" disabled>← Previous Trade</button>
+            <button class="btn-sm" id="btn-next-trade" type="button" onclick="jumpToNextTrade()" disabled>Next Trade →</button>
+            <button class="btn-sm" type="button" onclick="jumpToFirstTrade()">First Trade</button>
             <button class="btn-sm" type="button" onclick="resetCandleView()">Reset View</button>
           </div>
           <p class="candle-hint">Drag to pan, scroll to zoom — TradingView-style navigation. More candles load as you scroll.</p>
@@ -124,7 +147,26 @@
   </div>
 </div>
 
-<div class="loader hidden" id="loader"><div class="spinner"></div><p id="loader-text">Running backtest...</p></div>
-<script src="app.js"></script>
+<div class="loader hidden" id="loader">
+  <div class="loader-card">
+    <div class="loader-visual" aria-hidden="true">
+      <div class="loader-orbit"></div>
+      <div class="loader-orbit loader-orbit--delay"></div>
+      <div class="loader-core"></div>
+    </div>
+    <h3 class="loader-title" id="loader-title">Running backtest</h3>
+    <p class="loader-text" id="loader-text">Starting...</p>
+    <div class="loader-progress-track">
+      <div class="loader-progress-fill" id="loader-progress"></div>
+      <div class="loader-progress-glow" id="loader-progress-glow"></div>
+    </div>
+    <div class="loader-meta">
+      <span id="loader-phase">Queued</span>
+      <span id="loader-elapsed">0:00</span>
+    </div>
+    <pre class="loader-log" id="loader-log"></pre>
+  </div>
+</div>
+<script src="app.js?v=20240708"></script>
 </body>
 </html>

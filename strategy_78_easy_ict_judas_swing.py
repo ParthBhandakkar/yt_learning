@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
-    save_trades,
+    save_trades, index_at_or_after,
 )
 from causal_backtest import group_by_ny_day, ny_hour, past_slice, mss_events_up_to, simulate_exits
 
@@ -71,7 +71,7 @@ def find_sweep_in_window(
 def entry_after_sweep_causal(
     candles_5m: list[Candle], sweep_ts: int, direction: str
 ) -> Optional[dict]:
-    start_idx = next((i for i, c in enumerate(candles_5m) if c.timestamp >= sweep_ts), 0)
+    start_idx = index_at_or_after(candles_5m, sweep_ts)
     for i in range(start_idx, min(start_idx + 20, len(candles_5m) - 1)):
         mss_list = mss_events_up_to(candles_5m, i, lookback=3)
         trade_dir = None

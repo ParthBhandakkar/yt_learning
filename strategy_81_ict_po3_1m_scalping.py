@@ -21,8 +21,8 @@ sweep confirmed at bar close, entry bar after MSS; simulate_exits for TP/SL.
 """
 
 import argparse
-import sys
 import os
+import sys
 from typing import Optional
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -30,7 +30,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, emit_progress, index_at_or_after,
 )
 from causal_backtest import group_by_ny_day, past_slice, mss_events_up_to, simulate_exits
 
@@ -89,10 +89,8 @@ def find_liquidity_left(candles_1m: list[Candle], open_idx: int, lookback: int =
 def find_judas_swing_entry_causal(
     candles_1m: list[Candle], open_idx: int, c3_end_ts: int, liquidity: dict, bias: str
 ) -> Optional[dict]:
-    end_idx = next(
-        (i for i, c in enumerate(candles_1m) if c.timestamp >= c3_end_ts),
-        min(open_idx + 60, len(candles_1m)),
-    )
+    end_idx = index_at_or_after(candles_1m, c3_end_ts)
+    end_idx = min(end_idx, open_idx + 60, len(candles_1m))
 
     for i in range(open_idx, min(end_idx, len(candles_1m) - 1)):
         c = candles_1m[i]
@@ -160,6 +158,8 @@ def run_strategy(candles_1h: list[Candle], candles_1m: list[Candle], output_path
         h1_all.extend(day_1h)
 
     for i in range(2, len(h1_all)):
+        if i % 200 == 0:
+            emit_progress("strategy", min(99, int(100 * i / len(h1_all))), f"Scanning 1H bars {i}/{len(h1_all)}")
         c1, c2, c3 = h1_all[i - 2], h1_all[i - 1], h1_all[i]
         bias, _, _ = bias_from_2_candles([c1, c2])
         if bias == "neutral":
@@ -168,8 +168,8 @@ def run_strategy(candles_1h: list[Candle], candles_1m: list[Candle], output_path
         c3_ts = c3.timestamp
         c3_end_ts = c3_ts + 3600
 
-        open_1m = next((j for j, c in enumerate(candles_1m) if c.timestamp >= c3_ts), None)
-        if open_1m is None or open_1m >= len(candles_1m) - 10:
+        open_1m = index_at_or_after(candles_1m, c3_ts)
+        if open_1m >= len(candles_1m) - 10:
             continue
 
         liquidity = find_liquidity_left(candles_1m, open_1m)

@@ -45,7 +45,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, index_at_or_after, advance_index_at_or_after,
 )
 from causal_backtest import (
     ny_hour,
@@ -212,8 +212,9 @@ def run_strategy(
                 ),
             })
 
-        start_15m = next((i for i, c in enumerate(candles_15m) if c.timestamp >= open_ts_10am), 0)
+        start_15m = index_at_or_after(candles_15m, open_ts_10am)
         day_trade = None
+        start_1m_ptr = index_at_or_after(candles_1m, open_ts_10am)
 
         for i in range(start_15m, len(candles_15m)):
             c = candles_15m[i]
@@ -233,8 +234,8 @@ def run_strategy(
                 "description": f"Price entered 15m FVG at {c.close:.5f}",
             })
 
-            start_1m = next((j for j, x in enumerate(candles_1m) if x.timestamp >= c.timestamp), 0)
-            entry = find_1m_entry(candles_1m, start_1m, bias)
+            start_1m_ptr = advance_index_at_or_after(candles_1m, c.timestamp, start_1m_ptr)
+            entry = find_1m_entry(candles_1m, start_1m_ptr, bias)
             if entry is None:
                 continue
 

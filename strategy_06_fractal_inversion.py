@@ -52,9 +52,11 @@ from core import (
 from causal_backtest import (
     group_by_ny_day,
     ny_hour,
-    past_slice,
+    ny_date,
     detect_fvg_as_of,
+    detect_fvgs_in_window,
     ifvg_up_to,
+    index_at_or_after_timestamps,
     simulate_exits,
 )
 
@@ -122,15 +124,12 @@ def find_post_open_fvg(candles: list[Candle], orderflow: str) -> Optional[dict]:
     if start is None:
         return None
 
-    for j in range(start, min(start + 20, len(candles))):
-        sub = past_slice(candles, j)
-        for fvg in detect_fvg_as_of(sub, j):
-            if fvg["idx"] < start:
-                continue
-            if orderflow == "bullish" and fvg["direction"] == "bullish":
-                return fvg
-            if orderflow == "bearish" and fvg["direction"] == "bearish":
-                return fvg
+    end = min(start + 20, len(candles))
+    for fvg in detect_fvgs_in_window(candles, start, end):
+        if orderflow == "bullish" and fvg["direction"] == "bullish":
+            return fvg
+        if orderflow == "bearish" and fvg["direction"] == "bearish":
+            return fvg
     return None
 
 
@@ -141,16 +140,7 @@ def find_post_open_fvg(candles: list[Candle], orderflow: str) -> Optional[dict]:
 def check_1m_inversion(candles_1m: list[Candle], start_idx: int, max_bars: int = 30) -> Optional[dict]:
     """Check if ALL micro FVGs in the pullback leg get inverted (close-only)."""
     window_end = min(start_idx + max_bars, len(candles_1m))
-    micro_fvgs: list[dict] = []
-    seen: set[int] = set()
-
-    for j in range(start_idx, window_end):
-        sub = past_slice(candles_1m, j)
-        for fvg in detect_fvg_as_of(sub, j):
-            if fvg["idx"] >= start_idx and fvg["idx"] not in seen:
-                seen.add(fvg["idx"])
-                micro_fvgs.append(fvg)
-
+    micro_fvgs = detect_fvgs_in_window(candles_1m, start_idx, window_end)
     if not micro_fvgs:
         return None
 
@@ -181,14 +171,25 @@ def check_1m_inversion(candles_1m: list[Candle], start_idx: int, max_bars: int =
 def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m: list[Candle], output_path: str):
     trades = []
     days_5m = group_by_ny_day(candles_5m)
+    days_1m = group_by_ny_day(candles_1m)
+    day_1m_by_date = {ny_date(d[0].timestamp): d for d in days_1m if d}
 
+    h1_end = 0
     for day_5m in days_5m:
         if not day_5m:
             continue
+
         session_start_ts = day_5m[0].timestamp
-        candles_1h_before = [c for c in candles_1h if c.timestamp < session_start_ts]
+        while h1_end < len(candles_1h) and candles_1h[h1_end].timestamp < session_start_ts:
+            h1_end += 1
+        candles_1h_before = candles_1h[:h1_end]
         if len(candles_1h_before) < 10:
             continue
+
+        day_1m = day_1m_by_date.get(ny_date(session_start_ts))
+        if not day_1m:
+            continue
+        day_1m_ts = [c.timestamp for c in day_1m]
 
         orderflow = classify_1h_orderflow(candles_1h_before)
         if orderflow == "neutral":
@@ -220,13 +221,15 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m:
         ]
 
         day_trade = None
+        entry_idx = 0
+        entry_candle = day_1m[0]
+
         for i in range(htf_fvg["idx"] + 1, len(day_5m)):
             c = day_5m[i]
-            if htf_fvg["direction"] == "bullish" and c.low < htf_fvg["upper"] and c.high > htf_fvg["lower"]:
-                price_in_fvg = True
-            elif htf_fvg["direction"] == "bearish" and c.high > htf_fvg["lower"] and c.low < htf_fvg["upper"]:
-                price_in_fvg = True
-            else:
+            if htf_fvg["direction"] == "bullish":
+                if not (c.low < htf_fvg["upper"] and c.high > htf_fvg["lower"]):
+                    continue
+            elif not (c.high > htf_fvg["lower"] and c.low < htf_fvg["upper"]):
                 continue
 
             events_log.append({
@@ -235,23 +238,23 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m:
                 "description": f"Price entered 5m FVG zone at {c.close:.5f}",
             })
 
-            start_1m = next((j for j, x in enumerate(candles_1m) if x.timestamp >= c.timestamp), 0)
-            inv_result = check_1m_inversion(candles_1m, start_1m)
+            start_1m = index_at_or_after_timestamps(day_1m_ts, c.timestamp)
+            inv_result = check_1m_inversion(day_1m, start_1m)
             if inv_result is None:
                 continue
 
             events_log.append({
-                "timestamp": to_iso(candles_1m[inv_result["entry_idx"]].timestamp),
+                "timestamp": to_iso(day_1m[inv_result["entry_idx"]].timestamp),
                 "type": "micro_fvg_inversion",
                 "description": inv_result["description"],
             })
 
             entry_idx = inv_result["entry_idx"]
-            entry_candle = candles_1m[entry_idx]
+            entry_candle = day_1m[entry_idx]
             direction = orderflow
-            past = past_slice(candles_1m, entry_idx)
-            local_low = min(x.low for x in past[max(0, len(past) - 15):])
-            local_high = max(x.high for x in past[max(0, len(past) - 15):])
+            lookback = day_1m[max(0, entry_idx - 14): entry_idx + 1]
+            local_low = min(x.low for x in lookback)
+            local_high = max(x.high for x in lookback)
 
             if direction == "bullish":
                 sl = local_low - (local_low * 0.0005)
@@ -268,7 +271,7 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m:
             day_trade = {
                 "trade_number": len(trades) + 1,
                 "entry_time": to_iso(entry_candle.timestamp),
-                "direction": direction,
+                "direction": "long" if direction == "bullish" else "short",
                 "entry_price": round(inv_result["entry_price"], 5),
                 "stop_loss": round(sl, 5),
                 "take_profit": round(tp, 5),
@@ -282,10 +285,10 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], candles_1m:
             continue
 
         exit_info = simulate_exits(
-            candles_1m,
+            day_1m,
             entry_idx,
             entry_candle.timestamp,
-            "long" if day_trade["direction"] == "bullish" else "short",
+            day_trade["direction"],
             day_trade["stop_loss"],
             day_trade["take_profit"],
         )

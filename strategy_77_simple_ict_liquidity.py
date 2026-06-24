@@ -28,7 +28,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades,
+    save_trades, index_at_or_after,
 )
 from causal_backtest import (
     group_by_ny_day,
@@ -66,7 +66,7 @@ def find_4h_swing_liquidity(candles_4h: list[Candle]) -> Optional[dict]:
 def find_entry_5m_causal(
     candles_5m: list[Candle], liquidity: dict, start_ts: int
 ) -> Optional[dict]:
-    start_idx = next((i for i, c in enumerate(candles_5m) if c.timestamp >= start_ts), 0)
+    start_idx = index_at_or_after(candles_5m, start_ts)
     liq_low, liq_high = liquidity["liquidity_levels"]
 
     for i in range(start_idx, len(candles_5m) - 2):

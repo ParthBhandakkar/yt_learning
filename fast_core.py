@@ -131,9 +131,11 @@ def _simulate_exits_nb(
     tp: float,
 ) -> tuple[int, float, int]:
     """Returns (exit_idx, exit_price, outcome_code) outcome: 1 win, -1 loss, 0 open."""
-    for j in range(entry_idx + 1, len(ts)):
-        if ts[j] <= entry_ts:
-            continue
+    n = len(ts)
+    if entry_idx + 1 >= n:
+        last = n - 1
+        return last, close[last], 0
+    for j in range(entry_idx + 1, n):
         if is_long:
             if high[j] >= tp:
                 return j, tp, 1
@@ -144,7 +146,7 @@ def _simulate_exits_nb(
                 return j, tp, 1
             if high[j] >= sl:
                 return j, sl, -1
-    last = len(ts) - 1
+    last = n - 1
     return last, close[last], 0
 
 

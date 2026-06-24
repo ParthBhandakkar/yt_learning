@@ -584,24 +584,36 @@ async function saveResults() {
 }
 
 function renderStats(stats, trades) {
+  const s = stats && typeof stats === 'object' ? stats : {};
+  const num = (value, fallback = 0) => {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  };
+  const winRate = num(s.win_rate);
+  const totalPnl = num(s.total_pnl_pips);
+  const profitFactor = s.profit_factor;
+  const pfDisplay = (profitFactor == null || profitFactor === Infinity) ? '∞' : num(profitFactor);
+  const pfCls = (profitFactor == null || profitFactor >= 1.5) ? 'positive' : (profitFactor != null && profitFactor < 1 ? 'negative' : '');
+  const tradeList = Array.isArray(trades) ? trades : [];
+
   const grid = document.getElementById('stats-grid');
   const cards = [
-    { label: 'Total Trades', val: stats.total_trades, cls: '' },
-    { label: 'Win Rate', val: stats.win_rate + '%', cls: stats.win_rate >= 50 ? 'positive' : 'negative' },
-    { label: 'Total PnL (pips)', val: stats.total_pnl_pips, cls: stats.total_pnl_pips >= 0 ? 'positive' : 'negative' },
-    { label: 'Profit Factor', val: (stats.profit_factor == null || stats.profit_factor === Infinity) ? '∞' : stats.profit_factor, cls: (stats.profit_factor == null || stats.profit_factor >= 1.5) ? 'positive' : (stats.profit_factor != null && stats.profit_factor < 1 ? 'negative' : '') },
-    { label: 'Avg Win', val: stats.avg_win_pips, cls: 'positive' },
-    { label: 'Avg Loss', val: stats.avg_loss_pips, cls: 'negative' },
-    { label: 'Wins / Losses', val: `${stats.winning_trades} / ${stats.losing_trades}`, cls: '' },
-    { label: 'Max Consec Wins', val: stats.max_consecutive_wins, cls: 'positive' },
-    { label: 'Max Consec Losses', val: stats.max_consecutive_losses, cls: 'negative' },
-    { label: 'Best Trade', val: stats.best_trade_pips, cls: 'positive' },
-    { label: 'Worst Trade', val: stats.worst_trade_pips, cls: 'negative' },
+    { label: 'Total Trades', val: num(s.total_trades, tradeList.length), cls: '' },
+    { label: 'Win Rate', val: `${winRate}%`, cls: winRate >= 50 ? 'positive' : 'negative' },
+    { label: 'Total PnL (pips)', val: totalPnl, cls: totalPnl >= 0 ? 'positive' : 'negative' },
+    { label: 'Profit Factor', val: pfDisplay, cls: pfCls },
+    { label: 'Avg Win', val: num(s.avg_win_pips), cls: 'positive' },
+    { label: 'Avg Loss', val: num(s.avg_loss_pips), cls: 'negative' },
+    { label: 'Wins / Losses', val: `${num(s.winning_trades)} / ${num(s.losing_trades)}`, cls: '' },
+    { label: 'Max Consec Wins', val: num(s.max_consecutive_wins), cls: 'positive' },
+    { label: 'Max Consec Losses', val: num(s.max_consecutive_losses), cls: 'negative' },
+    { label: 'Best Trade', val: num(s.best_trade_pips), cls: 'positive' },
+    { label: 'Worst Trade', val: num(s.worst_trade_pips), cls: 'negative' },
   ];
   grid.innerHTML = cards.map(c =>
     `<div class="stat-card"><span class="stat-val ${c.cls}">${c.val}</span><span class="stat-label">${c.label}</span></div>`
   ).join('');
-  document.getElementById('trade-count').textContent = `${trades.length} trades`;
+  document.getElementById('trade-count').textContent = `${tradeList.length} trades`;
 }
 
 function renderTrades(trades) {
@@ -726,7 +738,36 @@ function findBarByTime(bars, time) {
   return bars.find((b) => b.time === time);
 }
 
-function buildTradeZoneData(trade, tradeIdx) {
+const MIN_VALID_CHART_TS = 946684800; // 2000-01-01 UTC
+const DEFAULT_ZONE_SECONDS = 3600;
+
+function isValidChartTimestamp(ts) {
+  return Number.isFinite(ts) && ts >= MIN_VALID_CHART_TS;
+}
+
+function resolveTradeExitTime(trade, entryTime, tMax) {
+  const outcome = (trade.outcome || '').toLowerCase();
+  let exitTime = null;
+  if (trade.exit_time) {
+    const parsed = Math.floor(new Date(trade.exit_time).getTime() / 1000);
+    exitTime = Number.isFinite(parsed) ? parsed : null;
+  }
+
+  const openOrInvalid = outcome === 'open'
+    || exitTime == null
+    || !isValidChartTimestamp(exitTime)
+    || exitTime <= entryTime;
+
+  if (openOrInvalid) {
+    const fallbackEnd = entryTime + DEFAULT_ZONE_SECONDS;
+    const resolved = tMax != null ? Math.min(fallbackEnd, tMax) : fallbackEnd;
+    return resolved > entryTime ? resolved : entryTime + DEFAULT_ZONE_SECONDS;
+  }
+
+  return tMax != null ? Math.min(exitTime, tMax) : exitTime;
+}
+
+function buildTradeZoneData(trade, tradeIdx, tMax) {
   const entryPrice = parseFloat(trade.entry_price);
   const stopLoss = parseFloat(trade.stop_loss);
   const takeProfit = parseFloat(trade.take_profit);
@@ -735,12 +776,16 @@ function buildTradeZoneData(trade, tradeIdx) {
   }
 
   const entryTime = Math.floor(new Date(trade.entry_time).getTime() / 1000);
-  const exitTime = trade.exit_time
-    ? Math.floor(new Date(trade.exit_time).getTime() / 1000)
-    : entryTime + 3600;
+  if (!isValidChartTimestamp(entryTime)) return null;
+
+  const exitTime = resolveTradeExitTime(trade, entryTime, tMax);
+  if (!Number.isFinite(exitTime) || exitTime <= entryTime) return null;
   const risk = Math.abs(entryPrice - stopLoss);
   const reward = Math.abs(takeProfit - entryPrice);
   const dir = normalizeTradeDirection(trade.direction).toUpperCase();
+  const outcome = (trade.outcome || '').toLowerCase();
+  const rawExitPrice = trade.exit_price != null ? parseFloat(trade.exit_price) : null;
+  const exitPrice = outcome === 'open' || !Number.isFinite(rawExitPrice) ? null : rawExitPrice;
 
   return {
     tradeId: tradeIdx + 1,
@@ -748,7 +793,7 @@ function buildTradeZoneData(trade, tradeIdx) {
     entryTime,
     exitTime,
     entryPrice,
-    exitPrice: trade.exit_price != null ? parseFloat(trade.exit_price) : null,
+    exitPrice,
     stopLoss,
     takeProfit,
     netPnl: computeTradePnlPips(trade),
@@ -764,7 +809,7 @@ function buildTradeZoneDataset() {
 
   candleState.trades.forEach((trade, idx) => {
     if (candleState.activeTradeIdx != null && idx !== candleState.activeTradeIdx) return;
-    const zone = buildTradeZoneData(trade, idx);
+    const zone = buildTradeZoneData(trade, idx, tMax);
     if (!zone) return;
     if (zone.entryTime > tMax || zone.exitTime < tMin) return;
     zones.push(zone);
@@ -919,10 +964,10 @@ function buildTradeMarkers(trades, bars) {
   trades.forEach((t, i) => {
     if (candleState.activeTradeIdx != null && i !== candleState.activeTradeIdx) return;
     const entryTs = t.entry_time ? Math.floor(new Date(t.entry_time).getTime() / 1000) : null;
-    const exitTs = t.exit_time ? Math.floor(new Date(t.exit_time).getTime() / 1000) : null;
+    const rawExitTs = t.exit_time ? Math.floor(new Date(t.exit_time).getTime() / 1000) : null;
     const direction = normalizeTradeDirection(t.direction);
 
-    if (entryTs && entryTs >= tMin && entryTs <= tMax) {
+    if (entryTs && isValidChartTimestamp(entryTs) && entryTs >= tMin && entryTs <= tMax) {
       const entryPrice = parseFloat(t.entry_price);
       if (!Number.isFinite(entryPrice)) return;
       markers.push({
@@ -934,12 +979,17 @@ function buildTradeMarkers(trades, bars) {
         text: `#${i + 1} ${direction === 'long' ? 'L' : 'S'} @ ${formatChartPrice(entryPrice)}`,
       });
     }
-    if (exitTs && exitTs >= tMin && exitTs <= tMax && t.exit_price != null) {
+    const outcome = (t.outcome || '').toLowerCase();
+    const validExitTs = rawExitTs != null
+      && isValidChartTimestamp(rawExitTs)
+      && entryTs != null
+      && rawExitTs > entryTs;
+    if (validExitTs && rawExitTs >= tMin && rawExitTs <= tMax && outcome !== 'open' && t.exit_price != null) {
       const exitPrice = parseFloat(t.exit_price);
       if (!Number.isFinite(exitPrice)) return;
       const pnl = computeTradePnlPips(t);
       markers.push({
-        time: snapToBarTime(bars, exitTs),
+        time: snapToBarTime(bars, rawExitTs),
         position: 'atPriceMiddle',
         price: exitPrice,
         color: pnl >= 0 ? '#15803d' : '#b91c1c',
@@ -1234,7 +1284,6 @@ function initCandleChart(sessionId, trades) {
   };
 
   const container = document.getElementById('candleChart');
-  const outer = document.getElementById('candle-chart-outer');
   container.innerHTML = '';
 
   const colorType = LightweightCharts.ColorType?.Solid ?? 0;
@@ -1344,8 +1393,7 @@ function initCandleChart(sessionId, trades) {
   };
   candleChart.subscribeCrosshairMove(candleCrosshairHandler);
 
-  const wrap = outer || container.parentElement;
-  candleChartWrap = wrap || container;
+  candleChartWrap = container;
   candlePointerMoveHandler = (event) => {
     updateZoneLabelHover(event.clientX, event.clientY);
   };
@@ -1371,7 +1419,7 @@ function initCandleChart(sessionId, trades) {
       candleChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
     }
   });
-  candleResizeObs.observe(wrap || container);
+  candleResizeObs.observe(container);
 
   loadInitialCandles();
 }

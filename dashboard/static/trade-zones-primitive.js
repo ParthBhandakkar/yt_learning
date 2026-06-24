@@ -1,6 +1,6 @@
 /**
  * Canvas-drawn long/short trade zones (profit/risk rectangles + labels).
- * Zones render on the bottom z-order layer without drawBackground (avoids LWC black band).
+ * Profit/risk fills and overlays render in draw(); drawBackground is intentionally empty.
  */
 (function (global) {
   const PROFIT_FILL = 'rgba(34, 197, 94, 0.28)';
@@ -12,7 +12,6 @@
   const NORMAL_FILL = '#fffef5';
   const HIGHLIGHT_FILL = '#FFE500';
   const HIT_PADDING = 4;
-  const AUTOSCALE_MAX_PCT = 0.12;
 
   function formatPnl(pnl) {
     const sign = pnl >= 0 ? '+' : '';
@@ -23,37 +22,24 @@
     return String(direction).toUpperCase() === 'LONG';
   }
 
-  function levelNearEntry(entry, level) {
-    if (!Number.isFinite(level) || !Number.isFinite(entry) || entry === 0) {
-      return false;
-    }
-    return Math.abs(level - entry) / Math.abs(entry) <= AUTOSCALE_MAX_PCT;
+  function coordinatesOnPane(yValues, paneHeight) {
+    return yValues.every((y) => y !== null && Number.isFinite(y) && y >= 0 && y <= paneHeight);
   }
 
-  function clampY(y, height) {
-    if (y == null || Number.isNaN(y)) return null;
-    return Math.max(0, Math.min(height, y));
-  }
-
-  function drawProfitAndRiskZones(canvas, direction, left, width, entryY, tpY, slY, height) {
-    const entry = clampY(entryY, height);
-    const tp = clampY(tpY, height);
-    const sl = clampY(slY, height);
-    if (entry == null || tp == null || sl == null) return;
-
+  function drawProfitAndRiskZones(canvas, direction, left, width, entryY, tpY, slY) {
     if (isLongTrade(direction)) {
-      if (tp >= entry || sl <= entry) return;
+      if (tpY >= entryY || slY <= entryY) return;
       canvas.fillStyle = PROFIT_FILL;
-      canvas.fillRect(left, tp, width, entry - tp);
+      canvas.fillRect(left, tpY, width, entryY - tpY);
       canvas.fillStyle = RISK_FILL;
-      canvas.fillRect(left, entry, width, sl - entry);
+      canvas.fillRect(left, entryY, width, slY - entryY);
       return;
     }
-    if (tp <= entry || sl >= entry) return;
+    if (tpY <= entryY || slY >= entryY) return;
     canvas.fillStyle = PROFIT_FILL;
-    canvas.fillRect(left, entry, width, tp - entry);
+    canvas.fillRect(left, entryY, width, tpY - entryY);
     canvas.fillStyle = RISK_FILL;
-    canvas.fillRect(left, sl, width, entry - sl);
+    canvas.fillRect(left, slY, width, entryY - slY);
   }
 
   function drawZoneLabel(canvas, x, y, text, labelId, align, highlighted, labelBounds) {
@@ -99,6 +85,10 @@
       this._getContext = getContext;
     }
 
+    drawBackground() {
+      // Zones render in draw() to avoid background-layer coordinate artifacts.
+    }
+
     draw(target) {
       const ctx = this._getContext();
       if (!ctx || ctx.trades.length === 0) return;
@@ -107,7 +97,7 @@
 
       target.useMediaCoordinateSpace((scope) => {
         const canvas = scope.context;
-        const height = scope.mediaSize.height;
+        const paneHeight = scope.mediaSize.height;
         const timeScale = ctx.chart.timeScale();
 
         for (const trade of ctx.trades) {
@@ -125,7 +115,9 @@
           const width = right - left;
           if (width < 1) continue;
 
-          drawProfitAndRiskZones(canvas, trade.direction, left, width, entryY, tpY, slY, height);
+          if (coordinatesOnPane([entryY, tpY, slY], paneHeight)) {
+            drawProfitAndRiskZones(canvas, trade.direction, left, width, entryY, tpY, slY);
+          }
 
           canvas.strokeStyle = ENTRY_LINE_COLOR;
           canvas.lineWidth = 2;
@@ -160,7 +152,7 @@
     }
 
     zOrder() {
-      return 'bottom';
+      return 'normal';
     }
 
     renderer() {
@@ -235,14 +227,8 @@
       let minValue = Number.POSITIVE_INFINITY;
       let maxValue = Number.NEGATIVE_INFINITY;
       for (const trade of this._trades) {
-        const entry = trade.entryPrice;
-        const levels = [entry];
-        if (levelNearEntry(entry, trade.stopLoss)) levels.push(trade.stopLoss);
-        if (levelNearEntry(entry, trade.takeProfit)) levels.push(trade.takeProfit);
-        for (const level of levels) {
-          minValue = Math.min(minValue, level);
-          maxValue = Math.max(maxValue, level);
-        }
+        minValue = Math.min(minValue, trade.stopLoss, trade.takeProfit, trade.entryPrice);
+        maxValue = Math.max(maxValue, trade.stopLoss, trade.takeProfit, trade.entryPrice);
       }
 
       if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return null;

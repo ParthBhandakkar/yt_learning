@@ -662,8 +662,75 @@ def trade_pnl_pips(trade: dict) -> float:
     return round(raw / pip_size, 1)
 
 
+MIN_VALID_TRADE_TS = 946684800  # 2000-01-01 UTC
+
+
+def _trade_timestamp(value) -> Optional[int]:
+    if value is None or value == "":
+        return None
+    if isinstance(value, (int, float)):
+        ts = int(value)
+        return ts if ts >= MIN_VALID_TRADE_TS else None
+    text = str(value).strip()
+    if not text:
+        return None
+    try:
+        if text.endswith("Z"):
+            text = text[:-1] + "+00:00"
+        dt = datetime.fromisoformat(text)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=timezone.utc)
+        ts = int(dt.timestamp())
+        return ts if ts >= MIN_VALID_TRADE_TS else None
+    except (TypeError, ValueError):
+        return None
+
+
+def _trade_has_valid_exit_time(trade: dict) -> bool:
+    entry_ts = _trade_timestamp(trade.get("entry_time"))
+    exit_ts = _trade_timestamp(trade.get("exit_time"))
+    if exit_ts is None:
+        return False
+    if entry_ts is not None and exit_ts <= entry_ts:
+        return False
+    return True
+
+
+def _normalize_trade_exit_metadata(trade: dict) -> None:
+    """Drop bogus exit_time values that break stats and chart rendering."""
+    if _trade_has_valid_exit_time(trade):
+        return
+    if trade.get("exit_time"):
+        trade.pop("exit_time", None)
+
+
+def _infer_closed_outcome_from_pnl(trade: dict) -> None:
+    """Infer win/loss/breakeven only when exit metadata proves the trade closed."""
+    outcome = (trade.get("outcome") or "").strip().lower()
+    if outcome not in ("", "open"):
+        return
+
+    entry = trade.get("entry_price")
+    exit_p = trade.get("exit_price")
+    if entry is None or exit_p is None:
+        return
+    if not _trade_has_valid_exit_time(trade):
+        return
+
+    pnl = trade.get("pnl_pips")
+    if pnl is None:
+        return
+    pnl = float(pnl)
+    if pnl > 0:
+        trade["outcome"] = "win"
+    elif pnl < 0:
+        trade["outcome"] = "loss"
+    else:
+        trade["outcome"] = "breakeven"
+
+
 def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
-    """Fill missing pnl_pips on each trade from entry/exit prices."""
+    """Fill missing pnl_pips and normalize exit metadata for stats/chart consumers."""
     for trade in trades:
         stored = trade.get("pnl_pips")
         entry = trade.get("entry_price")
@@ -677,6 +744,8 @@ def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
         if needs_compute:
             trade.pop("pnl_pips", None)
             trade["pnl_pips"] = trade_pnl_pips(trade)
+        _normalize_trade_exit_metadata(trade)
+        _infer_closed_outcome_from_pnl(trade)
     return trades
 
 

@@ -180,9 +180,16 @@ def simulate_exits(
     exit_idx, exit_price, code = simulate_exits_arrays(
         h, l, c, ts, entry_idx, entry_ts, direction, sl, tp
     )
+    exit_idx = max(0, min(int(exit_idx), len(candles) - 1))
+    exit_ts = candles[exit_idx].timestamp
+    if exit_ts <= entry_ts and exit_idx + 1 < len(candles):
+        exit_idx += 1
+        exit_ts = candles[exit_idx].timestamp
+        if code == 0:
+            exit_price = float(candles[exit_idx].close)
     outcome = "win" if code == 1 else "loss" if code == -1 else "open"
     return {
-        "exit_time": to_iso(int(ts[exit_idx])),
+        "exit_time": to_iso(int(exit_ts)),
         "exit_price": float(exit_price),
         "outcome": outcome,
     }

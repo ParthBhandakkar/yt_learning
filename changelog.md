@@ -21,4 +21,6 @@
 [IST 22-JUN-2026 23:00:00] - Numba JIT layer (fast_core.py); O(log n) candle index lookups across all strategies; JIT MSS/resample/exits
 [IST 22-JUN-2026 23:30:00] - Fix chart black band on hover by removing primitive drawBackground layer; cap zone autoscale
 [IST 25-JUN-2026 01:30:00] - Fix price chart hover black band (remove Y clamping, restore background-layer zones) and restore trade zone/marker rendering for invalid open-trade exit times
-[IST 25-JUN-2026 02:15:00] - Fix exit simulation timestamps (bar-index only), trade stats outcome inference, and chart zone fills for bogus 1970 exit times
+[IST 25-JUN-2026 12:45:00] - Add automatic strategy concept overlays on price chart (VP, FVG, liquidity, sessions, fib, structure) with per-category toggles and active-trade filtering
+[IST 25-JUN-2026 18:30:00] - Improve concept overlay label placement (compact tags, collision avoidance, trade-zone reservation); compact trade zone labels with hover detail; fix uploaded CSV backtests ignoring library window trim
+[IST 25-JUN-2026 20:15:00] - Fix price chart hover black band: enable LWC autoSize, cream pane backgrounds, taller chart wrap, and integer sizing sync

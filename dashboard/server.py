@@ -917,6 +917,7 @@ async def run_backtest(
         arg_paths,
         data_source="upload",
         symbol=symbol,
+        max_days=_resolve_library_max_days(parsed_max_days),
         job_id=job_dir.name,
     )
 

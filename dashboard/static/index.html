@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Strategy Backtester</title>
-<link rel="stylesheet" href="style.css?v=20240708">
+<link rel="stylesheet" href="style.css?v=20240625e">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- TradingView Lightweight Charts v5 -->
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="trade-zones-primitive.js?v=20240625b"></script>
+<script src="trade-zones-primitive.js?v=20240625e"></script>
+<script src="concept-overlays.js?v=20240625e"></script>
 </head>
 <body>
 <div class="app">
@@ -73,6 +74,7 @@
             <option value="365" selected>Last 1 year (recommended)</option>
             <option value="0">Full history (can be very slow)</option>
           </select>
+          <p class="library-range-hint">Backtests scan only the selected window. Causal strategies may show fewer trades than older lookahead versions.</p>
         </div>
       </section>
 
@@ -100,6 +102,17 @@
               <span><span class="legend-pnl win"></span> Target (profit)</span>
               <span><span class="legend-pnl loss"></span> Stop (risk)</span>
             </div>
+            <div class="overlay-toggle-bar" id="overlay-toggle-bar">
+              <span class="overlay-toggle-title">Overlays</span>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-trades" checked onchange="onOverlayToggleChange('trades', this.checked)"> Trades</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-fvg" checked onchange="onOverlayToggleChange('fvg', this.checked)"> FVG</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-ob" checked onchange="onOverlayToggleChange('ob', this.checked)"> OB</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-vp" checked onchange="onOverlayToggleChange('vp', this.checked)"> VP</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-liquidity" checked onchange="onOverlayToggleChange('liquidity', this.checked)"> Liquidity</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-sessions" checked onchange="onOverlayToggleChange('sessions', this.checked)"> Sessions</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-fib" checked onchange="onOverlayToggleChange('fib', this.checked)"> Fib</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-structure" checked onchange="onOverlayToggleChange('structure', this.checked)"> Structure</label>
+            </div>
           </div>
           <div class="candle-chart-outer" id="candle-chart-outer">
             <div id="chart-ohlc-legend" class="chart-ohlc-legend hidden">
@@ -117,7 +130,7 @@
             <button class="btn-sm" type="button" onclick="jumpToFirstTrade()">First Trade</button>
             <button class="btn-sm" type="button" onclick="resetCandleView()">Reset View</button>
           </div>
-          <p class="candle-hint">Drag to pan, scroll to zoom — TradingView-style navigation. More candles load as you scroll.</p>
+          <p class="candle-hint">Drag to pan, scroll to zoom — TradingView-style navigation. More candles load as you scroll. Hover trade labels for full detail; concept tags stay compact on active trade.</p>
         </div>
         <div class="trades-box">
           <h3>Trade History <span class="badge" id="trade-count"></span></h3>
@@ -167,6 +180,6 @@
     <pre class="loader-log" id="loader-log"></pre>
   </div>
 </div>
-<script src="app.js?v=20240625b"></script>
+<script src="app.js?v=20240625e"></script>
 </body>
 </html>

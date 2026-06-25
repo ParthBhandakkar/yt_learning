@@ -1,6 +1,6 @@
 /**
  * Canvas-drawn long/short trade zones (profit/risk rectangles + labels).
- * Profit/risk fills and overlays render in draw(); drawBackground is intentionally empty.
+ * Profit/risk fills and overlays render in draw(); drawBackground repaints pane cream.
  */
 (function (global) {
   const PROFIT_FILL = 'rgba(34, 197, 94, 0.28)';
@@ -16,6 +16,22 @@
   function formatPnl(pnl) {
     const sign = pnl >= 0 ? '+' : '';
     return `${sign}${Number(pnl).toFixed(2)}`;
+  }
+
+  function buildEntryLabel(trade, highlighted) {
+    const pnl = formatPnl(trade.netPnl);
+    const short = `#${trade.tradeId} ${trade.direction} @ ${trade.entryPrice.toFixed(2)} → ${pnl}`;
+    if (!highlighted) return short;
+    const exitText = trade.exitPrice != null
+      ? `exit @ ${trade.exitPrice.toFixed(2)} (${pnl})`
+      : pnl;
+    return `#${trade.tradeId} ${trade.direction}  entry @ ${trade.entryPrice.toFixed(2)}  →  ${exitText}  R:R ${trade.setupRr}`;
+  }
+
+  function clampLabelRect(left, top, width, height, paneWidth, paneHeight) {
+    const clampedLeft = Math.max(4, Math.min(left, paneWidth - width - 4));
+    const clampedTop = Math.max(4, Math.min(top, paneHeight - height - 4));
+    return { left: clampedLeft, top: clampedTop, width, height };
   }
 
   function isLongTrade(direction) {
@@ -42,7 +58,7 @@
     canvas.fillRect(left, slY, width, entryY - slY);
   }
 
-  function drawZoneLabel(canvas, x, y, text, labelId, align, highlighted, labelBounds) {
+  function drawZoneLabel(canvas, x, y, text, labelId, align, highlighted, labelBounds, paneSize) {
     const font = highlighted ? HIGHLIGHT_FONT : NORMAL_FONT;
     const padX = highlighted ? 6 : 5;
     const labelHeight = highlighted ? 18 : 16;
@@ -68,14 +84,23 @@
       canvas.textAlign = 'left';
     }
 
-    const top = y - labelHeight / 2;
+    let top = y - labelHeight / 2;
+    if (paneSize) {
+      const clamped = clampLabelRect(left, top, width, labelHeight, paneSize.width, paneSize.height);
+      left = clamped.left;
+      top = clamped.top;
+      if (align === 'center') textX = left + width / 2;
+      else if (align === 'right') textX = left + width - padX;
+      else textX = left + padX;
+    }
+
     canvas.fillStyle = highlighted ? HIGHLIGHT_FILL : NORMAL_FILL;
     canvas.fillRect(left, top, width, labelHeight);
     canvas.strokeStyle = LABEL_COLOR;
     canvas.lineWidth = borderWidth;
     canvas.strokeRect(left + borderWidth / 2, top + borderWidth / 2, width - borderWidth, labelHeight - borderWidth);
     canvas.fillStyle = LABEL_COLOR;
-    canvas.fillText(text, textX, y);
+    canvas.fillText(text, textX, top + labelHeight / 2);
 
     labelBounds.push({ id: labelId, left, top, width, height: labelHeight });
   }
@@ -85,8 +110,12 @@
       this._getContext = getContext;
     }
 
-    drawBackground() {
-      // Zones render in draw() to avoid background-layer coordinate artifacts.
+    drawBackground(target) {
+      target.useMediaCoordinateSpace((scope) => {
+        const canvas = scope.context;
+        canvas.fillStyle = NORMAL_FILL;
+        canvas.fillRect(0, 0, scope.mediaSize.width, scope.mediaSize.height);
+      });
     }
 
     draw(target) {
@@ -98,6 +127,8 @@
       target.useMediaCoordinateSpace((scope) => {
         const canvas = scope.context;
         const paneHeight = scope.mediaSize.height;
+        const paneWidth = scope.mediaSize.width;
+        const paneSize = { width: paneWidth, height: paneHeight };
         const timeScale = ctx.chart.timeScale();
 
         for (const trade of ctx.trades) {
@@ -128,19 +159,33 @@
           canvas.stroke();
 
           const labelX = left + width / 2;
-          const exitText = trade.exitPrice != null
-            ? `exit @ ${trade.exitPrice.toFixed(2)} (${formatPnl(trade.netPnl)})`
-            : formatPnl(trade.netPnl);
-          const centerLabel = `#${trade.tradeId} ${trade.direction}  entry @ ${trade.entryPrice.toFixed(2)}  →  ${exitText}  R:R ${trade.setupRr}`;
           const entryId = `${trade.tradeId}-entry`;
           const targetId = `${trade.tradeId}-target`;
           const stopId = `${trade.tradeId}-stop`;
+          const entryHighlighted = ctx.hoveredLabelId === entryId;
+          const centerLabel = buildEntryLabel(trade, entryHighlighted);
+          const entryOffset = isLongTrade(trade.direction) ? -16 : 16;
 
-          drawZoneLabel(canvas, labelX, entryY, centerLabel, entryId, 'center', ctx.hoveredLabelId === entryId, ctx.labelBounds);
+          drawZoneLabel(
+            canvas, labelX, entryY + entryOffset, centerLabel, entryId, 'center',
+            entryHighlighted, ctx.labelBounds, paneSize,
+          );
 
           const edgeX = left + 6;
-          drawZoneLabel(canvas, edgeX, tpY, `Target ${trade.takeProfit.toFixed(2)}`, targetId, 'left', ctx.hoveredLabelId === targetId, ctx.labelBounds);
-          drawZoneLabel(canvas, edgeX, slY, `Stop ${trade.stopLoss.toFixed(2)}`, stopId, 'left', ctx.hoveredLabelId === stopId, ctx.labelBounds);
+          const targetLabel = ctx.hoveredLabelId === targetId
+            ? `Target ${trade.takeProfit.toFixed(2)}`
+            : `TP ${trade.takeProfit.toFixed(2)}`;
+          const stopLabel = ctx.hoveredLabelId === stopId
+            ? `Stop ${trade.stopLoss.toFixed(2)}`
+            : `SL ${trade.stopLoss.toFixed(2)}`;
+          drawZoneLabel(
+            canvas, edgeX, tpY - 10, targetLabel, targetId, 'left',
+            ctx.hoveredLabelId === targetId, ctx.labelBounds, paneSize,
+          );
+          drawZoneLabel(
+            canvas, edgeX, slY + 10, stopLabel, stopId, 'left',
+            ctx.hoveredLabelId === stopId, ctx.labelBounds, paneSize,
+          );
         }
       });
     }
@@ -219,6 +264,10 @@
         }
       }
       return null;
+    }
+
+    getLabelBounds() {
+      return this._labelBounds.map((b) => ({ ...b }));
     }
 
     autoscaleInfo() {

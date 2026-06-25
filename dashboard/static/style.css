@@ -83,6 +83,10 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .tv-attribution { font-size: 11px; color: #525252; text-decoration: none; }
 .tv-attribution:hover { color: #0a0a0a; }
 .candle-chart-legend { display: flex; gap: 14px; font-size: 11px; color: #525252; flex-wrap: wrap; }
+.overlay-toggle-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; font-size: 11px; font-family: "Space Mono", "Courier New", monospace; width: 100%; }
+.overlay-toggle-title { font-weight: 700; color: #525252; margin-right: 2px; }
+.overlay-toggle { display: inline-flex; align-items: center; gap: 4px; cursor: pointer; user-select: none; white-space: nowrap; color: #0a0a0a; }
+.overlay-toggle input { accent-color: #0a0a0a; cursor: pointer; }
 .legend-dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; margin-right: 4px; vertical-align: middle; }
 .legend-dot.entry { background: #15803d; }
 .legend-dot.exit-win { background: #22c55e; }
@@ -91,8 +95,9 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .legend-pnl.win { background: rgba(34, 197, 94, 0.28); border-color: #15803d; }
 .legend-pnl.loss { background: rgba(239, 68, 68, 0.28); border-color: #b91c1c; }
 .candle-chart-outer { position: relative; width: 100%; }
-.candle-chart-wrap { position: relative; height: 420px; width: 100%; overflow: hidden; background: #fffef5; border: 3px solid #0a0a0a; box-shadow: 4px 4px 0 #0a0a0a; }
-.candle-chart-container { height: 100%; width: 100%; background: #fffef5; }
+.candle-chart-wrap { position: relative; height: 460px; width: 100%; overflow: hidden; background: #fffef5; border: 3px solid #0a0a0a; box-shadow: 4px 4px 0 #0a0a0a; }
+.candle-chart-container { display: block; position: relative; height: 100%; width: 100%; min-height: 100%; background: #fffef5; }
+.candle-chart-container .tv-lightweight-charts { background: #fffef5 !important; }
 .chart-ohlc-legend { position: absolute; top: 0.65rem; left: 0.65rem; z-index: 10; display: flex; flex-direction: column; gap: 0.2rem; max-width: calc(100% - 1.3rem); padding: 0.45rem 0.65rem; font-family: "Space Mono", "Courier New", monospace; font-size: 0.72rem; line-height: 1.35; background: #ffe500; border: 3px solid #0a0a0a; box-shadow: 3px 3px 0 #0a0a0a; pointer-events: none; transition: background 0.12s ease, box-shadow 0.12s ease; }
 .chart-ohlc-legend--hover { background: #fff44d; box-shadow: 4px 4px 0 #0a0a0a; }
 .chart-ohlc-legend__time { font-weight: 700; }
@@ -147,8 +152,9 @@ tr:hover td { background: #1c2128; }
 .loader-progress-glow { position: absolute; top: 0; left: 0; height: 100%; width: 30%; background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); animation: loader-shimmer 1.6s ease-in-out infinite; pointer-events: none; }
 .loader-meta { display: flex; justify-content: space-between; color: var(--muted); font-size: 12px; margin-bottom: 12px; text-transform: capitalize; }
 .loader-log { background: #0d1117; border: 1px solid #21262d; border-radius: 8px; padding: 10px 12px; font-size: 11px; color: #8b949e; max-height: 110px; overflow: auto; white-space: pre-wrap; margin: 0; font-family: "Space Mono", "Courier New", monospace; }
-.library-range-row { display: flex; align-items: center; gap: 12px; margin-top: 14px; font-size: 13px; color: var(--muted); }
+.library-range-row { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-top: 14px; font-size: 13px; color: var(--muted); }
 .library-range-row select { flex: 1; max-width: 320px; padding: 8px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 13px; }
+.library-range-hint { flex-basis: 100%; margin: 0; font-size: 11px; line-height: 1.4; color: var(--muted); }
 @keyframes loader-spin { to { transform: rotate(360deg); } }
 @keyframes loader-pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(.92); opacity: .85; } }
 @keyframes loader-shimmer { 0% { transform: translateX(-120%); } 100% { transform: translateX(350%); } }

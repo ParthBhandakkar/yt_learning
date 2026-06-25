@@ -11,6 +11,7 @@ let candleChart = null;
 let candleSeries = null;
 let candleResizeObs = null;
 let candleZonesPrimitive = null;
+let candleConceptsPrimitive = null;
 let candleMarkersApi = null;
 let priceAxisWheelCleanup = null;
 let candleCrosshairHandler = null;
@@ -31,11 +32,76 @@ let candleState = {
   loading: false,
   activeTradeIdx: null,
   viewportLocked: false,
+  overlaySettings: null,
 };
+
+const OVERLAY_TOGGLE_KEYS = ['trades', 'fvg', 'ob', 'vp', 'liquidity', 'sessions', 'fib', 'structure'];
+
+function defaultOverlaySettings() {
+  return typeof DEFAULT_OVERLAY_SETTINGS !== 'undefined'
+    ? { ...DEFAULT_OVERLAY_SETTINGS }
+    : {
+      trades: true, fvg: true, ob: true, vp: true,
+      liquidity: true, sessions: true, fib: true, structure: true,
+    };
+}
+
+function overlaySettingsEnabled() {
+  return candleState.overlaySettings || defaultOverlaySettings();
+}
+
+function syncOverlayToggleUi() {
+  const settings = overlaySettingsEnabled();
+  OVERLAY_TOGGLE_KEYS.forEach((key) => {
+    const el = document.getElementById(`overlay-toggle-${key}`);
+    if (el) el.checked = settings[key] !== false;
+  });
+}
+
+function onOverlayToggleChange(key, checked) {
+  if (!candleState.overlaySettings) {
+    candleState.overlaySettings = defaultOverlaySettings();
+  }
+  candleState.overlaySettings[key] = checked;
+  updateCandleOverlays();
+}
 
 const CANDLE_VIEW_WIDTH = 150;
 const RESET_LOAD_COUNT = 500;
 const CANDLE_LAZY_LOAD_MARGIN = 50;
+const CHART_BG = '#fffef5';
+
+function getCandleChartMount() {
+  return document.getElementById('candleChart');
+}
+
+function getCandleChartWrapEl() {
+  return document.querySelector('.candle-chart-wrap');
+}
+
+function readCandleChartSize(mount) {
+  if (!mount) return null;
+  const width = Math.floor(mount.clientWidth);
+  const height = Math.floor(mount.clientHeight);
+  if (width <= 0 || height <= 0) return null;
+  return { width, height };
+}
+
+function syncCandleChartSize() {
+  if (!candleChart) return;
+  const mount = getCandleChartMount();
+  const size = readCandleChartSize(mount);
+  if (!size) return;
+  if (typeof candleChart.autoSizeActive === 'function' && candleChart.autoSizeActive()) return;
+  candleChart.resize(size.width, size.height);
+}
+
+function scheduleCandleChartSizeSync() {
+  requestAnimationFrame(() => {
+    syncCandleChartSize();
+    requestAnimationFrame(syncCandleChartSize);
+  });
+}
 
 async function loadStrategies() {
   const res = await fetch('/api/strategies');
@@ -807,6 +873,9 @@ function buildTradeZoneDataset() {
   const tMax = candleState.bars[candleState.bars.length - 1].time;
   const zones = [];
 
+  const settings = overlaySettingsEnabled();
+  if (!settings.trades) return [];
+
   candleState.trades.forEach((trade, idx) => {
     if (candleState.activeTradeIdx != null && idx !== candleState.activeTradeIdx) return;
     const zone = buildTradeZoneData(trade, idx, tMax);
@@ -834,6 +903,56 @@ function updateTradeZonesPrimitive() {
   } else {
     candleZonesPrimitive.setTrades(zones);
   }
+}
+
+function updateConceptOverlaysPrimitive() {
+  if (!candleSeries || typeof buildConceptOverlays === 'undefined' || typeof ConceptOverlaysPrimitive === 'undefined') {
+    return;
+  }
+  const overlays = buildConceptOverlays(
+    candleState.trades,
+    candleState.bars,
+    candleState.activeTradeIdx,
+    overlaySettingsEnabled(),
+  );
+  const reservedRects = estimateTradeLabelRects(buildTradeZoneDataset());
+  if (overlays.length === 0) {
+    if (candleConceptsPrimitive) {
+      candleSeries.detachPrimitive(candleConceptsPrimitive);
+      candleConceptsPrimitive = null;
+    }
+    return;
+  }
+  if (!candleConceptsPrimitive) {
+    candleConceptsPrimitive = new ConceptOverlaysPrimitive(overlays);
+    candleSeries.attachPrimitive(candleConceptsPrimitive);
+  } else {
+    candleConceptsPrimitive.setOverlays(overlays);
+  }
+  candleConceptsPrimitive.setReservedLabelRects(reservedRects);
+}
+
+function estimateTradeLabelRects(zones) {
+  if (!candleChart || !candleSeries || !zones.length) return [];
+  const timeScale = candleChart.timeScale();
+  const rects = [];
+  zones.forEach((trade) => {
+    const x1 = timeScale.timeToCoordinate(trade.entryTime);
+    const x2 = timeScale.timeToCoordinate(trade.exitTime);
+    const entryY = candleSeries.priceToCoordinate(trade.entryPrice);
+    const tpY = candleSeries.priceToCoordinate(trade.takeProfit);
+    const slY = candleSeries.priceToCoordinate(trade.stopLoss);
+    if (x1 == null || x2 == null || entryY == null) return;
+    const left = Math.min(x1, x2);
+    const width = Math.max(Math.abs(x2 - x1), 2);
+    const centerX = left + width / 2;
+    const entryOffset = trade.direction === 'LONG' ? -16 : 16;
+    rects.push({ left: centerX - 95, top: entryY + entryOffset - 12, width: 190, height: 24 });
+    const edgeX = left + 6;
+    if (tpY != null) rects.push({ left: edgeX, top: tpY - 22, width: 88, height: 18 });
+    if (slY != null) rects.push({ left: edgeX, top: slY + 2, width: 88, height: 18 });
+  });
+  return rects;
 }
 
 function destroyCandleChart() {
@@ -870,6 +989,7 @@ function destroyCandleChart() {
   candlePanEndHandler = null;
   candleIsPanning = false;
   candleZonesPrimitive = null;
+  candleConceptsPrimitive = null;
   candleMarkersApi = null;
   candleCrosshairHandler = null;
   if (candleChart) {
@@ -939,6 +1059,7 @@ function showCandlesFromStart() {
 function updateCandleOverlays() {
   updateCandleMarkers();
   updateTradeZonesPrimitive();
+  updateConceptOverlaysPrimitive();
 }
 
 function snapToBarTime(bars, ts) {
@@ -961,6 +1082,9 @@ function buildTradeMarkers(trades, bars) {
   const tMax = bars[bars.length - 1].time;
   const markers = [];
 
+  const settings = overlaySettingsEnabled();
+  if (!settings.trades) return [];
+
   trades.forEach((t, i) => {
     if (candleState.activeTradeIdx != null && i !== candleState.activeTradeIdx) return;
     const entryTs = t.entry_time ? Math.floor(new Date(t.entry_time).getTime() / 1000) : null;
@@ -970,13 +1094,18 @@ function buildTradeMarkers(trades, bars) {
     if (entryTs && isValidChartTimestamp(entryTs) && entryTs >= tMin && entryTs <= tMax) {
       const entryPrice = parseFloat(t.entry_price);
       if (!Number.isFinite(entryPrice)) return;
+      const compactMarker = candleState.activeTradeIdx != null;
+      const dirTag = direction === 'long' ? 'L' : 'S';
+      const markerText = compactMarker
+        ? `#${i + 1} ${dirTag}`
+        : `#${i + 1} ${dirTag} @ ${formatChartPrice(entryPrice)}`;
       markers.push({
         time: snapToBarTime(bars, entryTs),
         position: 'atPriceMiddle',
         price: entryPrice,
         color: direction === 'long' ? '#15803d' : '#b91c1c',
         shape: direction === 'long' ? 'arrowUp' : 'arrowDown',
-        text: `#${i + 1} ${direction === 'long' ? 'L' : 'S'} @ ${formatChartPrice(entryPrice)}`,
+        text: markerText,
       });
     }
     const outcome = (t.outcome || '').toLowerCase();
@@ -1122,6 +1251,7 @@ function onVisibleRangeChange(range) {
   if (!range || candleState.loading || candleState.viewportLocked) return;
   updateCandleLabel();
   updateTradeZonesPrimitive();
+  updateConceptOverlaysPrimitive();
   if (candleIsPanning) return;
   scheduleLazyCandleLoad(range);
 }
@@ -1281,18 +1411,30 @@ function initCandleChart(sessionId, trades) {
     loading: false,
     activeTradeIdx: null,
     viewportLocked: false,
+    overlaySettings: defaultOverlaySettings(),
   };
+  syncOverlayToggleUi();
 
-  const container = document.getElementById('candleChart');
-  container.innerHTML = '';
+  const mount = getCandleChartMount();
+  const wrapEl = getCandleChartWrapEl();
+  mount.innerHTML = '';
 
   const colorType = LightweightCharts.ColorType?.Solid ?? 0;
-  candleChart = LightweightCharts.createChart(container, {
+  const initialSize = readCandleChartSize(mount);
+  candleChart = LightweightCharts.createChart(mount, {
+    autoSize: true,
+    width: initialSize?.width,
+    height: initialSize?.height,
     layout: {
-      background: { type: colorType, color: '#fffef5' },
+      background: { type: colorType, color: CHART_BG },
       textColor: '#0a0a0a',
       fontFamily: '"Space Mono", "Courier New", monospace',
       attributionLogo: false,
+      panes: {
+        separatorColor: CHART_BG,
+        separatorHoverColor: CHART_BG,
+        enableResize: false,
+      },
     },
     grid: {
       vertLines: { color: '#e5e5e5' },
@@ -1320,7 +1462,7 @@ function initCandleChart(sessionId, trades) {
       scaleMargins: { top: 0.1, bottom: 0.1 },
     },
     timeScale: {
-      borderColor: '#0a0a0a',
+      borderColor: CHART_BG,
       borderVisible: true,
       timeVisible: true,
       secondsVisible: false,
@@ -1393,7 +1535,7 @@ function initCandleChart(sessionId, trades) {
   };
   candleChart.subscribeCrosshairMove(candleCrosshairHandler);
 
-  candleChartWrap = container;
+  candleChartWrap = wrapEl || mount;
   candlePointerMoveHandler = (event) => {
     updateZoneLabelHover(event.clientX, event.clientY);
   };
@@ -1415,13 +1557,15 @@ function initCandleChart(sessionId, trades) {
 
   priceAxisWheelCleanup = attachPriceAxisWheelZoom(candleChart, candleChartWrap);
   candleResizeObs = new ResizeObserver(() => {
-    if (candleChart) {
-      candleChart.applyOptions({ width: container.clientWidth, height: container.clientHeight });
-    }
+    syncCandleChartSize();
   });
-  candleResizeObs.observe(container);
+  candleResizeObs.observe(mount);
+  if (wrapEl && wrapEl !== mount) {
+    candleResizeObs.observe(wrapEl);
+  }
 
-  loadInitialCandles();
+  scheduleCandleChartSizeSync();
+  loadInitialCandles().then(() => scheduleCandleChartSizeSync());
 }
 
 // Trade detail modal

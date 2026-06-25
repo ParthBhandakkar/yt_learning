@@ -92,7 +92,12 @@ function syncCandleChartSize() {
   const mount = getCandleChartMount();
   const size = readCandleChartSize(mount);
   if (!size) return;
-  if (typeof candleChart.autoSizeActive === 'function' && candleChart.autoSizeActive()) return;
+  // LWC autoSize does not reliably fix the pane/time-scale split when the
+  // container grows after creation, leaving an uncovered black band. Drive
+  // sizing explicitly and always resize when the measured size changes.
+  const last = candleState._lastChartSize;
+  if (last && last.width === size.width && last.height === size.height) return;
+  candleState._lastChartSize = size;
   candleChart.resize(size.width, size.height);
 }
 
@@ -1419,12 +1424,42 @@ function initCandleChart(sessionId, trades) {
   const wrapEl = getCandleChartWrapEl();
   mount.innerHTML = '';
 
+  // Defer chart creation until the section is actually laid out at full size.
+  // Creating the chart while the container is still collapsed (height 0 or a
+  // stale value) locks the price-pane height and leaves an uncovered black
+  // band between the price pane and the time scale.
+  whenChartMountReady(mount, () => buildCandleChartInstance(mount, wrapEl));
+}
+
+function whenChartMountReady(mount, cb) {
+  const size = readCandleChartSize(mount);
+  if (size && size.height > 0) {
+    cb();
+    return;
+  }
+  let tries = 0;
+  const tick = () => {
+    const s = readCandleChartSize(mount);
+    if ((s && s.height > 0) || tries > 30) {
+      cb();
+      return;
+    }
+    tries += 1;
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function buildCandleChartInstance(mount, wrapEl) {
   const colorType = LightweightCharts.ColorType?.Solid ?? 0;
-  const initialSize = readCandleChartSize(mount);
+  // autoSize is intentionally disabled: it does not correct the price-pane /
+  // time-scale split after the container grows from a collapsed state, which
+  // leaves an uncovered black band. We size explicitly and via ResizeObserver.
+  const initialSize = readCandleChartSize(mount) || { width: 800, height: 460 };
   candleChart = LightweightCharts.createChart(mount, {
-    autoSize: true,
-    width: initialSize?.width,
-    height: initialSize?.height,
+    autoSize: false,
+    width: initialSize.width,
+    height: initialSize.height,
     layout: {
       background: { type: colorType, color: CHART_BG },
       textColor: '#0a0a0a',

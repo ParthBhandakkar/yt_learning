@@ -24,3 +24,4 @@
 [IST 25-JUN-2026 12:45:00] - Add automatic strategy concept overlays on price chart (VP, FVG, liquidity, sessions, fib, structure) with per-category toggles and active-trade filtering
 [IST 25-JUN-2026 18:30:00] - Improve concept overlay label placement (compact tags, collision avoidance, trade-zone reservation); compact trade zone labels with hover detail; fix uploaded CSV backtests ignoring library window trim
 [IST 25-JUN-2026 20:15:00] - Fix price chart hover black band: enable LWC autoSize, cream pane backgrounds, taller chart wrap, and integer sizing sync
+[IST 25-JUN-2026 23:10:00] - Fix price chart black band root cause: .chart-box canvas max-height:300px was capping LWC pane canvases; scope rule to #resultsChart only; explicit chart sizing without autoSize

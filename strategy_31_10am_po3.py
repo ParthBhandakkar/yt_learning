@@ -119,7 +119,7 @@ def compute_fib_std_targets(candles_15m: list[Candle], open_ts: int) -> Optional
 def find_1m_entry(candles_1m: list[Candle], start_idx: int, bias: str) -> Optional[dict]:
     end_idx = min(start_idx + 30, len(candles_1m) - 1)
     for j in range(start_idx, end_idx + 1):
-        sub = past_slice(candles_1m, j)
+        sub = candles_1m  # cached helper slices by index internally
         for ev in mss_events_up_to(sub, j, lookback=5):
             if ev["idx"] < start_idx:
                 continue

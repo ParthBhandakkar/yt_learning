@@ -111,10 +111,13 @@
     }
 
     drawBackground(target) {
-      target.useMediaCoordinateSpace((scope) => {
+      // Fill the FULL device-pixel canvas (bitmap space). Using media (CSS-px)
+      // coordinates leaves the rest of the 2x retina bitmap unpainted, which
+      // shows through black on hover redraws.
+      target.useBitmapCoordinateSpace((scope) => {
         const canvas = scope.context;
         canvas.fillStyle = NORMAL_FILL;
-        canvas.fillRect(0, 0, scope.mediaSize.width, scope.mediaSize.height);
+        canvas.fillRect(0, 0, scope.bitmapSize.width, scope.bitmapSize.height);
       });
     }
 

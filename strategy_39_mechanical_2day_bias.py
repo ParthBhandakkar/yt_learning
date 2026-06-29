@@ -93,7 +93,7 @@ def find_sweep_and_entry(
                         "direction": "sell_side_swept",
                     }
                     for j in range(i + 1, min(i + 10, len(candles_15m))):
-                        sub = past_slice(candles_15m, j)
+                        sub = candles_15m  # cached helper slices by index internally
                         for ev in mss_events_up_to(sub, j, lookback=3):
                             if ev["direction"] == "bullish" and ev["idx"] >= i:
                                 entry_c = candles_15m[ev["idx"]]
@@ -134,7 +134,7 @@ def find_sweep_and_entry(
                         "direction": "buy_side_swept",
                     }
                     for j in range(i + 1, min(i + 10, len(candles_15m))):
-                        sub = past_slice(candles_15m, j)
+                        sub = candles_15m  # cached helper slices by index internally
                         for ev in mss_events_up_to(sub, j, lookback=3):
                             if ev["direction"] == "bearish" and ev["idx"] >= i:
                                 entry_c = candles_15m[ev["idx"]]

@@ -46,7 +46,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from core import (
     Candle, load_csv, to_iso, parse_csv_filename,
     swing_highs, swing_lows,
-    save_trades, index_at_or_after,
+    save_trades, index_at_or_after, index_through_ts,
 )
 from causal_backtest import (
     group_by_ny_day,
@@ -74,30 +74,44 @@ def find_session_candle_idx(candles_1h: list[Candle], target_hour: int) -> Optio
     return None
 
 
-def find_unswept_5m_levels(candles_5m: list[Candle], open_ts: int, as_of_ts: int) -> dict:
-    """Closest unswept 5m swing high/low before open, verified up to as_of_ts."""
-    before_open = [c for c in candles_5m if c.timestamp < open_ts]
-    if len(before_open) < 10:
-        return {"high": None, "low": None, "high_idx": None, "low_idx": None}
+_BASE_LEVEL_CACHE: dict = {}
 
-    sh = swing_highs(before_open)
-    sl = swing_lows(before_open)
+
+def find_unswept_5m_levels(candles_5m: list[Candle], open_ts: int, as_of_ts: int) -> dict:
+    """Closest unswept 5m swing high/low before open, verified up to as_of_ts.
+
+    The candidate swing levels depend only on `open_ts`, so they are computed
+    once per session and memoized. The "still unswept" check uses index bounds
+    (O(log n) + small slice) instead of scanning the whole 5m history per bar.
+    """
+    key = (id(candles_5m), open_ts)
+    base = _BASE_LEVEL_CACHE.get(key)
+    if base is None or base[0] is not candles_5m:
+        end = index_at_or_after(candles_5m, open_ts)  # candles with ts < open_ts
+        before_open = candles_5m[:end]
+        high_level = low_level = None
+        high_idx = low_idx = None
+        if len(before_open) >= 10:
+            sh = swing_highs(before_open)
+            sl = swing_lows(before_open)
+            if sh:
+                high_level, high_idx = before_open[sh[-1]].high, sh[-1]
+            if sl:
+                low_level, low_idx = before_open[sl[-1]].low, sl[-1]
+        _BASE_LEVEL_CACHE[key] = (candles_5m, end, high_level, low_level, high_idx, low_idx)
+        base = _BASE_LEVEL_CACHE[key]
+
+    _, start, high_level, low_level, high_idx, low_idx = base
     result = {"high": None, "low": None, "high_idx": None, "low_idx": None}
 
-    if sh:
-        level = before_open[sh[-1]].high
-        swept = any(c.high > level for c in candles_5m if open_ts <= c.timestamp <= as_of_ts)
-        if not swept:
-            result["high"] = level
-            result["high_idx"] = sh[-1]
-
-    if sl:
-        level = before_open[sl[-1]].low
-        swept = any(c.low < level for c in candles_5m if open_ts <= c.timestamp <= as_of_ts)
-        if not swept:
-            result["low"] = level
-            result["low_idx"] = sl[-1]
-
+    stop = index_through_ts(candles_5m, as_of_ts)  # exclusive end for ts <= as_of_ts
+    window = candles_5m[start:stop]
+    if high_level is not None and not any(c.high > high_level for c in window):
+        result["high"] = high_level
+        result["high_idx"] = high_idx
+    if low_level is not None and not any(c.low < low_level for c in window):
+        result["low"] = low_level
+        result["low_idx"] = low_idx
     return result
 
 
@@ -122,7 +136,9 @@ def find_swing_for_fib(candles_5m: list[Candle], open_idx_5m: int) -> Optional[d
 
 def _structure_at_bar(candles_1m: list[Candle], i: int, direction: str) -> tuple[bool, bool]:
     """Return (mss_found, ifvg_found) using only data through bar i."""
-    sub = past_slice(candles_1m, i)
+    # Pass the full list (cached helpers slice by as_of index internally; this
+    # avoids copying a multi-million-row prefix on every bar).
+    sub = candles_1m
     mss_found = any(ev["direction"] == direction for ev in mss_events_up_to(sub, i, lookback=3))
     ifvg_found = False
     for fvg in detect_fvg_as_of(sub, i):

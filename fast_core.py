@@ -137,15 +137,27 @@ def _simulate_exits_nb(
         return last, close[last], 0
     for j in range(entry_idx + 1, n):
         if is_long:
-            if high[j] >= tp:
-                return j, tp, 1
-            if low[j] <= sl:
+            hit_sl = low[j] <= sl
+            hit_tp = high[j] >= tp
+            # Conservative intrabar assumption: when a single bar's range spans
+            # BOTH the stop and the target, assume the stop was reached first.
+            # Without tick data we cannot know the path, so we take the worst case
+            # to avoid inflating win rate.
+            if hit_sl and hit_tp:
                 return j, sl, -1
+            if hit_sl:
+                return j, sl, -1
+            if hit_tp:
+                return j, tp, 1
         else:
-            if low[j] <= tp:
-                return j, tp, 1
-            if high[j] >= sl:
+            hit_sl = high[j] >= sl
+            hit_tp = low[j] <= tp
+            if hit_sl and hit_tp:
                 return j, sl, -1
+            if hit_sl:
+                return j, sl, -1
+            if hit_tp:
+                return j, tp, 1
     last = n - 1
     return last, close[last], 0
 

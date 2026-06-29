@@ -105,7 +105,7 @@ def monitor_sweep_and_entry(
                 else:
                     continue
 
-                sub = past_slice(candles_1m, j)
+                sub = candles_1m  # cached helper slices by index internally
                 has_mss = False
                 mss_dir = None
                 for ev in mss_events_up_to(sub, j, lookback=3):

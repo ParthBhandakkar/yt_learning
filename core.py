@@ -640,7 +640,12 @@ def infer_pip_size(price: float) -> float:
 
 
 def trade_pnl_pips(trade: dict) -> float:
-    """Return trade PnL in pips, computing from prices when not stored."""
+    """Return trade NET PnL in pips, computing from prices when not stored.
+
+    When a value is already stored (set by enrich_trades_pnl), it is returned
+    as-is and is assumed to be net of trading costs. When computed on the fly,
+    round-turn trading costs are deducted so callers never see a cost-free PnL.
+    """
     stored = trade.get("pnl_pips")
     if stored is not None:
         return float(stored)
@@ -659,7 +664,68 @@ def trade_pnl_pips(trade: dict) -> float:
         raw = ref - float(exit_p)
     else:
         return 0.0
-    return round(raw / pip_size, 1)
+    gross = raw / pip_size
+    cost = round_turn_cost_pips(ref)
+    return round(gross - cost, 1)
+
+
+# ---------------------------------------------------------------------------
+# Trading cost model (spread + commission + slippage)
+# ---------------------------------------------------------------------------
+#
+# Real fills are never free. Every round-turn trade pays the bid/ask spread,
+# broker commission, and some slippage. Backtests that ignore this routinely
+# show "profitable" systems that bleed money live, especially scalpers whose
+# edge per trade is small. We deduct a configurable round-turn cost from every
+# trade, expressed in PRICE units (same units as the instrument) and converted
+# to the framework's "pip" unit via infer_pip_size.
+#
+# Defaults are calibrated to a retail Exness-style account and are intentionally
+# conservative-but-realistic. Override per run with the env vars below.
+#   BT_COST_PRICE       explicit round-turn cost in price units (highest priority)
+#   BT_SLIPPAGE_PRICE   extra slippage in price units added on top of class default
+# ---------------------------------------------------------------------------
+
+def _default_round_turn_cost_price(ref_price: float) -> float:
+    """Round-turn cost (spread + commission + slippage) in PRICE units by class."""
+    if ref_price >= 1000:        # metals like XAUUSD (~2000-3000)
+        return 0.40              # ~30c spread + ~10c slippage round-turn
+    if ref_price >= 100:         # JPY crosses (~150), some indices
+        return 0.030
+    if ref_price >= 10:          # e.g. silver (~25)
+        return 0.020
+    return 0.00012               # FX majors (~1.2 pip round-turn)
+
+
+def round_turn_cost_price(ref_price: float) -> float:
+    explicit = os.environ.get("BT_COST_PRICE")
+    if explicit:
+        try:
+            return float(explicit)
+        except ValueError:
+            pass
+    base = _default_round_turn_cost_price(ref_price)
+    extra = os.environ.get("BT_SLIPPAGE_PRICE")
+    if extra:
+        try:
+            base += float(extra)
+        except ValueError:
+            pass
+    return base
+
+
+def round_turn_cost_pips(ref_price: float) -> float:
+    """Round-turn cost expressed in the framework's pip unit for this price."""
+    if ref_price <= 0:
+        return 0.0
+    mult = 1.0
+    env_mult = os.environ.get("BT_COST_MULT")
+    if env_mult:
+        try:
+            mult = float(env_mult)
+        except ValueError:
+            mult = 1.0
+    return mult * round_turn_cost_price(ref_price) / infer_pip_size(ref_price)
 
 
 MIN_VALID_TRADE_TS = 946684800  # 2000-01-01 UTC
@@ -729,23 +795,75 @@ def _infer_closed_outcome_from_pnl(trade: dict) -> None:
         trade["outcome"] = "breakeven"
 
 
+def _gross_pnl_pips(trade: dict) -> Optional[float]:
+    entry = trade.get("entry_price")
+    exit_p = trade.get("exit_price")
+    if entry is None or exit_p is None:
+        return None
+    ref = float(entry)
+    pip_size = infer_pip_size(ref)
+    direction = (trade.get("direction") or "").lower()
+    if direction in ("long", "bullish"):
+        raw = float(exit_p) - ref
+    elif direction in ("short", "bearish"):
+        raw = ref - float(exit_p)
+    else:
+        return None
+    return raw / pip_size
+
+
 def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
-    """Fill missing pnl_pips and normalize exit metadata for stats/chart consumers."""
+    """Compute net PnL (after trading costs) and normalize exit metadata.
+
+    For every closed trade we store:
+      pnl_gross_pips  - PnL before costs
+      cost_pips       - round-turn trading cost applied
+      pnl_pips        - net PnL (gross - cost)  <- used by all stats
+    Outcome (win/loss/breakeven) is derived from NET PnL so a target that does
+    not cover its own trading cost is correctly counted as a loser.
+    """
     for trade in trades:
-        stored = trade.get("pnl_pips")
-        entry = trade.get("entry_price")
-        exit_p = trade.get("exit_price")
-        needs_compute = stored is None or (
-            stored == 0
-            and entry is not None
-            and exit_p is not None
-            and float(entry) != float(exit_p)
-        )
-        if needs_compute:
+        # Strategies with multi-leg exits (partial profit + breakeven, scaling)
+        # cannot be represented by a single entry->exit price. They report their
+        # realized result in 'pnl_R'; honor it here (net of round-turn cost, with
+        # an extra half round-turn when a partial was taken).
+        if trade.get("pnl_R") is not None and trade.get("entry_price") is not None \
+                and trade.get("stop_loss") is not None and _trade_has_valid_exit_time(trade):
+            ref = float(trade["entry_price"])
+            pip = infer_pip_size(ref)
+            risk_pips = abs(ref - float(trade["stop_loss"])) / pip
+            gross_pips = float(trade["pnl_R"]) * risk_pips
+            cost_pips = round_turn_cost_pips(ref) * 1.5  # entry + two exits
+            net = round(gross_pips - cost_pips, 1)
+            trade["pnl_gross_pips"] = round(gross_pips, 1)
+            trade["cost_pips"] = round(cost_pips, 1)
+            trade["pnl_pips"] = net
+            trade["outcome"] = "win" if net > 0 else "loss" if net < 0 else "breakeven"
+            _normalize_trade_exit_metadata(trade)
+            continue
+        gross = _gross_pnl_pips(trade)
+        if gross is not None and _trade_has_valid_exit_time(trade):
+            ref = float(trade["entry_price"])
+            cost = round_turn_cost_pips(ref)
+            net = round(gross - cost, 1)
+            trade["pnl_gross_pips"] = round(gross, 1)
+            trade["cost_pips"] = round(cost, 1)
+            trade["pnl_pips"] = net
+            # Net-based outcome: covers the "won the move, lost to costs" case.
+            outcome = (trade.get("outcome") or "").strip().lower()
+            if outcome in ("", "open") or trade.get("exit_price") is not None:
+                if net > 0:
+                    trade["outcome"] = "win"
+                elif net < 0:
+                    trade["outcome"] = "loss"
+                else:
+                    trade["outcome"] = "breakeven"
+        else:
+            # No valid exit -> leave as open, no PnL claimed.
             trade.pop("pnl_pips", None)
-            trade["pnl_pips"] = trade_pnl_pips(trade)
+            _normalize_trade_exit_metadata(trade)
+            continue
         _normalize_trade_exit_metadata(trade)
-        _infer_closed_outcome_from_pnl(trade)
     return trades
 
 

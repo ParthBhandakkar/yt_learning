@@ -60,6 +60,75 @@ def past_slice(candles: list[Candle], end_idx: int) -> list[Candle]:
     return candles[: max(0, end_idx) + 1]
 
 
+# ---------------------------------------------------------------------------
+# Causal-event caches
+# ---------------------------------------------------------------------------
+# Detecting MSS / CISD / FVG events "as of" a bar previously recomputed the whole
+# history on every bar (O(n^2), plus rebuilding numpy arrays from the candle list
+# each call). Each event at index j depends only on data <= j, so computing the
+# full series once and slicing by index is identical but O(n log n). We key the
+# cache on the candle-list identity so per-day sublists and full-file lists are
+# handled correctly, and keep a reference to guard against id() reuse.
+
+import bisect as _bisect
+from itertools import islice as _islice
+
+_MSS_CACHE: dict = {}
+_CISD_CACHE: dict = {}
+_FVG_CACHE: dict = {}
+
+
+class _PrefixView:
+    """Zero-copy read-only view of events[:n].
+
+    Cached event lists grow with as_of index; returning a slice copy on every
+    bar made per-bar loops O(n^2). This view exposes the list API callers use
+    (iteration, len, bool, indexing incl. negative/slices) without copying.
+    """
+
+    __slots__ = ("_data", "_n")
+
+    def __init__(self, data: list, n: int):
+        self._data = data
+        self._n = max(0, min(n, len(data)))
+
+    def __len__(self) -> int:
+        return self._n
+
+    def __bool__(self) -> bool:
+        return self._n > 0
+
+    def __iter__(self):
+        return _islice(self._data, self._n)
+
+    def __getitem__(self, key):
+        if isinstance(key, slice):
+            return list(_islice(self._data, self._n))[key]
+        if key < 0:
+            key += self._n
+        if key < 0 or key >= self._n:
+            raise IndexError("index out of range")
+        return self._data[key]
+
+
+def _get_sorted_events(cache: dict, candles: list, lookback, builder):
+    key = (id(candles), len(candles), lookback)
+    entry = cache.get(key)
+    if entry is not None and entry[0] is candles:
+        return entry[1], entry[2]
+    events = builder(candles)
+    events.sort(key=lambda e: e["idx"])
+    idxs = [e["idx"] for e in events]
+    cache[key] = (candles, events, idxs)
+    return events, idxs
+
+
+def _events_up_to(cache: dict, candles: list, as_of_idx: int, lookback, builder):
+    events, idxs = _get_sorted_events(cache, candles, lookback, builder)
+    hi = _bisect.bisect_right(idxs, as_of_idx)
+    return _PrefixView(events, hi)
+
+
 def index_at_or_after_timestamps(timestamps: list[int], ts: int) -> int:
     lo, hi = 0, len(timestamps)
     while lo < hi:
@@ -103,31 +172,17 @@ def detect_fvgs_in_window(
 
 
 def detect_fvg_as_of(candles: list[Candle], as_of_idx: int) -> list[dict]:
-    """FVG at middle bar i only when bar i+1 has closed (as_of_idx >= i+1)."""
-    fvgs = []
-    for i in range(1, min(as_of_idx, len(candles) - 2)):
-        if as_of_idx < i + 1:
-            continue
-        prev, nxt = candles[i - 1], candles[i + 1]
-        gap_low = nxt.low - prev.high
-        if gap_low > 0:
-            fvgs.append({
-                "idx": i,
-                "direction": "bullish",
-                "upper": nxt.low,
-                "lower": prev.high,
-                "gap": gap_low,
-            })
-        gap_high = prev.low - nxt.high
-        if gap_high > 0:
-            fvgs.append({
-                "idx": i,
-                "direction": "bearish",
-                "upper": prev.low,
-                "lower": nxt.high,
-                "gap": gap_high,
-            })
-    return fvgs
+    """FVG at middle bar i only when bar i+1 has closed (as_of_idx >= i+1).
+
+    Cached: full-series FVGs computed once, then sliced to idx <= as_of_idx - 1
+    (equivalent to the original per-call scan but O(1) amortized).
+    """
+    events, idxs = _get_sorted_events(
+        _FVG_CACHE, candles, 0,
+        lambda c: [f for f in detect_fvg(c) if 1 <= f["idx"] <= len(c) - 3],
+    )
+    hi = _bisect.bisect_right(idxs, as_of_idx - 1)
+    return _PrefixView(events, hi)
 
 
 def resample_as_of(candles: list[Candle], minutes: int, as_of_ts: int) -> list[Candle]:
@@ -144,11 +199,13 @@ def resample_as_of(candles: list[Candle], minutes: int, as_of_ts: int) -> list[C
 
 
 def mss_events_up_to(candles: list[Candle], as_of_idx: int, lookback: int = 5) -> list[dict]:
-    return detect_mss(candles[: as_of_idx + 1], lookback)
+    return _events_up_to(_MSS_CACHE, candles, as_of_idx, lookback,
+                         lambda c: detect_mss(c, lookback))
 
 
 def cisd_events_up_to(candles: list[Candle], as_of_idx: int, lookback: int = 5) -> list[dict]:
-    return detect_cisd(candles[: as_of_idx + 1], lookback)
+    return _events_up_to(_CISD_CACHE, candles, as_of_idx, lookback,
+                         lambda c: detect_cisd(c, lookback))
 
 
 def ifvg_up_to(candles: list[Candle], fvg: dict, as_of_idx: int) -> Optional[dict]:

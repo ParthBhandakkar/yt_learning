@@ -119,7 +119,7 @@ def run_strategy(candles: list[Candle], output_path: str):
         if i - last_entry_idx < 10:
             continue
 
-        sub = past_slice(candles, i)
+        sub = candles  # cached helper slices by index internally
         fvgs = detect_fvg_as_of(sub, i)
         if not fvgs:
             continue

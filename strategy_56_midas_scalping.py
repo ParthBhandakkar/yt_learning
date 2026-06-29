@@ -37,7 +37,7 @@ from causal_backtest import group_by_ny_day, ny_hour, past_slice, mss_events_up_
 
 
 def nearest_unswept_levels(candles_15m: list[Candle], before_ts: int) -> dict:
-    before = [c for c in candles_15m if c.timestamp < before_ts]
+    before = candles_15m[:index_at_or_after(candles_15m, before_ts)]  # O(log n), no full scan
     result = {"high": None, "low": None, "high_idx": None, "low_idx": None}
     if len(before) < 5:
         return result
@@ -109,11 +109,9 @@ def monitor_session_causal(
 
     for i in range(start_1m, min(start_1m + 60, len(candles_1m) - 1)):
         c = candles_1m[i]
-        past = past_slice(candles_1m, i)
+        recent = candles_1m[max(0, i - 5):i]  # bounded; avoid copying full prefix per bar
         body = abs(c.close - c.open)
-        avg_body = sum(abs(x.close - x.open) for x in past[max(0, len(past) - 6) : -1]) / max(
-            1, min(5, len(past) - 1)
-        )
+        avg_body = sum(abs(x.close - x.open) for x in recent) / max(1, min(5, i))
         if body <= avg_body * 1.5:
             continue
 
@@ -131,9 +129,9 @@ def monitor_session_causal(
 
         entry_idx = i + 1
         entry_c = candles_1m[entry_idx]
-        past_entry = past_slice(candles_1m, i)
-        local_low = min(x.low for x in past_entry[max(0, len(past_entry) - 4) :])
-        local_high = max(x.high for x in past_entry[max(0, len(past_entry) - 4) :])
+        recent_e = candles_1m[max(0, i - 3):i + 1]  # bounded; avoid full-prefix copy
+        local_low = min(x.low for x in recent_e)
+        local_high = max(x.high for x in recent_e)
         sl = local_low - (local_low * 0.0005) if mss_dir == "long" else local_high + (local_high * 0.0005)
         risk = abs(entry_c.close - sl)
         tp = entry_c.close + (2 * risk) if mss_dir == "long" else entry_c.close - (2 * risk)

@@ -186,3 +186,28 @@ tr:hover td { background: #1c2128; }
 .drive-arg-row code { background: #21262d; padding: 2px 6px; border-radius: 4px; color: var(--accent); font-size: 12px; min-width: 80px; }
 .drive-arg-row input { flex: 1; padding: 6px 10px; background: var(--bg); border: 1px solid var(--border); border-radius: 4px; color: var(--text); font-size: 12px; outline: none; }
 .drive-arg-row input:focus { border-color: var(--accent); }
+
+/* ---- Pair/symbol input ---- */
+.symbol-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 8px 0 14px; }
+.symbol-row label { font-weight: 700; font-size: 13px; }
+.symbol-row input { width: 140px; padding: 6px 10px; border: 2px solid #0a0a0a; border-radius: 4px;
+  font-family: "Space Mono", monospace; text-transform: uppercase; font-size: 13px; }
+.symbol-hint { color: var(--muted); font-size: 12px; }
+
+/* ---- Drive saved-link suggestion ---- */
+.drive-arg-row .drive-suggest { padding: 5px 8px; border: 2px solid #0a0a0a; border-radius: 4px;
+  background: #fffef5; font-family: "Space Mono", monospace; font-size: 12px; max-width: 190px; }
+
+/* ---- Money panel ---- */
+.money-panel { border: 2px solid #0a0a0a; border-radius: 8px; padding: 14px; margin-bottom: 16px; background: #fffef5; }
+.money-inputs { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.money-inputs label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: #0a0a0a; }
+.money-inputs input { width: 130px; padding: 6px 10px; border: 2px solid #0a0a0a; border-radius: 4px;
+  font-family: "Space Mono", monospace; font-size: 14px; }
+.money-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.money-card { border: 2px solid #0a0a0a; border-radius: 6px; padding: 10px 12px; background: #fff; display: flex; flex-direction: column; gap: 2px; }
+.money-val { font-size: 18px; font-weight: 700; font-family: "Space Mono", monospace; }
+.money-val.positive { color: #1a7f37; }
+.money-val.negative { color: #c1121f; }
+.money-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+.money-hint { font-size: 11px; color: var(--muted); margin-top: 10px; }

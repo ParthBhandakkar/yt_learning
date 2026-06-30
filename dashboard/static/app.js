@@ -5,6 +5,71 @@ let libraryStatus = null;
 const DEFAULT_SYMBOL = 'XAUUSD';
 let chartInstance = null;
 let dataSource = 'local';
+
+// ----- Pair/symbol selection -----
+function getSymbol() {
+  const el = document.getElementById('symbol-input');
+  const v = (el && el.value ? el.value : '').trim().toUpperCase();
+  return v || DEFAULT_SYMBOL;
+}
+function onSymbolInput() {
+  // Re-check the local data library + refresh Drive link suggestions for the new pair.
+  if (selectedStrategy) {
+    loadLibraryStatus();
+    renderDriveArgInputs(selectedStrategy.csv_args);
+  }
+}
+
+// ----- Saved Drive links (global, keyed SYMBOL_TF) -----
+let savedLinks = {};
+async function loadSavedLinks() {
+  try {
+    const res = await fetch('/api/saved-links');
+    if (res.ok) savedLinks = (await res.json()) || {};
+  } catch (e) { /* ignore */ }
+}
+function normalizeTfJS(tfHint, arg) {
+  const map = { '1-minute': '1m', '5-minute': '5m', '15-minute': '15m', '30-minute': '30m',
+    '1-hour': '1h', '4-hour': '4h', 'daily': '1d',
+    '1m': '1m', '5m': '5m', '15m': '15m', '30m': '30m', '1h': '1h', '4h': '4h', '1d': '1d' };
+  const h = (tfHint || '').toLowerCase().trim();
+  if (map[h]) return map[h];
+  const a = (arg || '').toLowerCase();
+  const pats = [['csv1m','1m'],['csv5m','5m'],['csv15m','15m'],['csv30m','30m'],['csv1h','1h'],
+    ['csv4h','4h'],['csvdaily','1d'],['daily','1d'],['4h','4h'],['1h','1h'],['15m','15m'],['5m','5m'],['1m','1m']];
+  for (const [needle, folder] of pats) if (a.includes(needle)) return folder;
+  return '5m';
+}
+function applyDriveSuggestion(sel) {
+  if (!sel.value) return;
+  const row = sel.closest('.drive-arg-row');
+  const inp = row && row.querySelector('.drive-file-url');
+  if (inp) inp.value = sel.value;
+}
+
+// ----- Money model (margin-based, fixed stake, INR) -----
+function pipSizeJS(price) {
+  const p = Math.abs(Number(price) || 0);
+  if (p >= 1000) return 1.0;
+  if (p >= 100) return 0.1;
+  if (p >= 10) return 0.01;
+  return 0.0001;
+}
+function getMoneyParams() {
+  const n = (id, d) => { const v = Number(document.getElementById(id)?.value); return Number.isFinite(v) ? v : d; };
+  return { capital: n('money-capital', 100000), margin: n('money-margin', 1000), leverage: n('money-leverage', 2000) };
+}
+function tradeMoneyINR(t, leverage, margin) {
+  const entry = Number(t.entry_price);
+  const pnlPips = Number(t.pnl_pips);
+  if (!Number.isFinite(entry) || entry === 0 || !Number.isFinite(pnlPips)) return 0;
+  const priceMove = pnlPips * pipSizeJS(entry);          // net move in quote-per-base
+  return (priceMove / entry) * leverage * margin;         // quote-ccy cancels -> INR
+}
+function fmtINR(x) {
+  const v = Math.round(Number(x) || 0);
+  return '₹' + v.toLocaleString('en-IN');
+}
 let driveFolderFiles = [];
 let lastResults = null;
 let candleChart = null;
@@ -167,7 +232,7 @@ async function loadLibraryStatus() {
   if (!selectedStrategy) return;
   try {
     const res = await fetch(
-      `/api/data/library?strategy_id=${encodeURIComponent(selectedStrategy.id)}&symbol=${DEFAULT_SYMBOL}`
+      `/api/data/library?strategy_id=${encodeURIComponent(selectedStrategy.id)}&symbol=${getSymbol()}`
     );
     libraryStatus = await res.json();
     updateFileList();
@@ -191,12 +256,27 @@ function renderCsvArgs(args) {
 
 function renderDriveArgInputs(args) {
   const el = document.getElementById('drive-file-inputs');
-  el.innerHTML = args.map(a => `
+  const sym = getSymbol();
+  el.innerHTML = args.map(a => {
+    const tf = normalizeTfJS(a.timeframe, a.arg);
+    // Saved links for this timeframe, current pair first.
+    const entries = Object.entries(savedLinks)
+      .filter(([k]) => k.toLowerCase().endsWith('_' + tf))
+      .sort((x, y) => (x[0].startsWith(sym + '_') ? -1 : 0) - (y[0].startsWith(sym + '_') ? -1 : 0));
+    const opts = entries.map(([k, url]) =>
+      `<option value="${url}">${k}</option>`).join('');
+    const suggest = entries.length
+      ? `<select class="drive-suggest" onchange="applyDriveSuggestion(this)" title="Use a previously saved link">
+           <option value="">↥ saved (${tf})…</option>${opts}
+         </select>`
+      : '';
+    return `
     <div class="drive-arg-row">
       <code>${a.arg}</code>
+      ${suggest}
       <input type="text" class="drive-file-url" data-arg="${a.arg}" placeholder="Drive file URL or ID for ${a.timeframe || 'CSV'}">
-    </div>
-  `).join('');
+    </div>`;
+  }).join('');
 }
 
 // Source tabs
@@ -487,14 +567,14 @@ async function runLocalBacktest() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             strategy_id: selectedStrategy.id,
-            symbol: DEFAULT_SYMBOL,
+            symbol: getSymbol(),
             max_days: getLibraryMaxDays(),
           }),
         });
       }
       const formData = new FormData();
       formData.append('strategy_id', selectedStrategy.id);
-      formData.append('symbol', DEFAULT_SYMBOL);
+      formData.append('symbol', getSymbol());
       formData.append('max_days', String(getLibraryMaxDays()));
       for (const f of uploadedFiles) {
         formData.append('files', f);
@@ -560,8 +640,10 @@ async function runDriveBacktest() {
     const data = await startBacktestAndWait(() => fetch('/api/backtest/drive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ strategy_id: selectedStrategy.id, drive_files: driveFiles }),
+      body: JSON.stringify({ strategy_id: selectedStrategy.id, drive_files: driveFiles, symbol: getSymbol() }),
     }));
+    await loadSavedLinks();                       // refresh suggestions with the links just used
+    renderDriveArgInputs(selectedStrategy.csv_args);
     renderResults(data);
   } catch (err) {
     alert('Error: ' + err.message);
@@ -609,6 +691,7 @@ function renderResults(data) {
 
   renderStats(stats, trades);
   renderTrades(trades);
+  renderMoneySummary(trades);
   renderChart(trades);
   initCandleChart(data.chart_session, trades);
 }
@@ -684,7 +767,14 @@ function renderStats(stats, trades) {
 
 function renderTrades(trades) {
   const tbody = document.getElementById('trades-body');
-  tbody.innerHTML = trades.map((t, i) => `
+  const { capital, margin, leverage } = getMoneyParams();
+  let balance = capital;
+  tbody.innerHTML = trades.map((t, i) => {
+    const money = tradeMoneyINR(t, leverage, margin);
+    balance += money;
+    const moneyCls = money > 0 ? 'win' : money < 0 ? 'loss' : '';
+    const balCls = balance < capital ? 'loss' : 'win';
+    return `
     <tr>
       <td>${i + 1}</td>
       <td>${t.entry_time ? t.entry_time.slice(0, 19).replace('T', ' ') : '-'}</td>
@@ -692,11 +782,46 @@ function renderTrades(trades) {
       <td>${t.entry_price || '-'}</td>
       <td>${t.exit_price || '-'}</td>
       <td class="${t.outcome === 'win' ? 'win' : t.outcome === 'loss' ? 'loss' : ''}">${t.pnl_pips || 0}</td>
+      <td class="${moneyCls}">${money >= 0 ? '+' : ''}${fmtINR(money)}</td>
+      <td class="${balCls}">${fmtINR(balance)}</td>
       <td><span class="${t.outcome}">${(t.outcome || '').toUpperCase()}</span></td>
       <td><button class="btn-sm" onclick="showTradeDetail(${i})">Detail</button></td>
       <td><button class="btn-sm" onclick="jumpToTrade(${i})">Chart</button></td>
-    </tr>
-  `).join('');
+    </tr>`;
+  }).join('');
+}
+
+function renderMoneySummary(trades) {
+  const el = document.getElementById('money-summary');
+  if (!el) return;
+  const list = Array.isArray(trades) ? trades : [];
+  const { capital, margin, leverage } = getMoneyParams();
+  let balance = capital, peak = capital, maxDD = 0, gross = 0;
+  for (const t of list) {
+    const m = tradeMoneyINR(t, leverage, margin);
+    gross += m; balance += m;
+    peak = Math.max(peak, balance);
+    maxDD = Math.max(maxDD, peak - balance);
+  }
+  const ending = capital + gross;
+  const ret = capital > 0 ? (gross / capital * 100) : 0;
+  const cards = [
+    { label: 'Starting Capital', val: fmtINR(capital), cls: '' },
+    { label: 'Margin / Trade', val: fmtINR(margin) + ` · 1:${leverage}`, cls: '' },
+    { label: 'Net P&L', val: (gross >= 0 ? '+' : '') + fmtINR(gross), cls: gross >= 0 ? 'positive' : 'negative' },
+    { label: 'Ending Balance', val: fmtINR(ending), cls: ending >= capital ? 'positive' : 'negative' },
+    { label: 'Return', val: `${ret >= 0 ? '+' : ''}${ret.toFixed(1)}%`, cls: ret >= 0 ? 'positive' : 'negative' },
+    { label: 'Max Drawdown', val: '-' + fmtINR(maxDD), cls: 'negative' },
+  ];
+  el.innerHTML = cards.map(c =>
+    `<div class="money-card"><span class="money-val ${c.cls}">${c.val}</span><span class="money-label">${c.label}</span></div>`
+  ).join('');
+}
+
+function recomputeMoney() {
+  const trades = (lastResults && lastResults.trades) || [];
+  renderTrades(trades);
+  renderMoneySummary(trades);
 }
 
 function renderChart(trades) {
@@ -1623,3 +1748,4 @@ window.fetch = async function(...args) {
 };
 
 loadStrategies();
+loadSavedLinks();

@@ -53,3 +53,18 @@
 
 
 [IST 29-JUN-2026 04:00:00] - Chart hover black-window fix: trade-zones-primitive.js and concept-overlays.js drawBackground now fill in useBitmapCoordinateSpace (full device-pixel bitmap) instead of useMediaCoordinateSpace (CSS px), so the 2x retina canvas is fully painted and no longer shows through black on crosshair/hover redraws. Cleanup: removed local market data (data/, ~958M), dashboard/out/_tmp (~722M), bt_results/ (~651M), drive_listing.json and /tmp test files (~2.3GB freed). Code, dashboard, venvs and saved result JSONs retained. NOTE: dashboard library backtests now require re-downloading data or uploading CSVs.
+
+
+[IST 29-JUN-2026 05:00:00] - strategy_95 now emits a two-leg exit breakdown in events[] so the partial-profit accounting reconciles in the detail panel: _simulate returns partial_time/partial_price; events include 'partial_take_profit' (Leg 1: half at +0.5R, stop->BE) and 'final_exit' (Leg 2: remaining half at target/BE with net R). Explains "entry==exit but +pips" (profit from the partial leg) and runners showing fewer pips than full entry->exit distance (only half rides to target). Verified on GBPUSD: 94 trades, 40 BE-scratch, 38 runners; event legs reconcile to displayed pnl. (No code regression — results unchanged.)
+
+
+[IST 29-JUN-2026 05:45:00] - Fixed pips=0 on pre-2000 trades (EURUSD 1999 data). core.MIN_VALID_TRADE_TS was 946684800 (2000-01-01), which made _trade_has_valid_exit_time() reject legitimate 1999 trades -> enrich_trades_pnl skipped PnL -> table showed 0 (while strategy's win/loss label remained). Lowered to 86400 (1970-01-02): rejects epoch-0/garbage only, allows all real history. Verified: 1999 trade now computes pnl_pips (e.g. +27.2 for 1R / 29-pip-risk), BE-scratch shows +5.4. Requires dashboard server restart (enrich runs in server process) + re-run backtest.
+
+
+[IST 29-JUN-2026 06:30:00] - Resolved scale-out pips discrepancy in the trade table. Ran a real dashboard backtest (GBPUSD, library mode) and confirmed: scratches showed entry==exit with non-zero pips, runners showed (exit-entry) != pips, because a single entry/exit row can't represent the partial+breakeven two-leg exit. Fix: enrich_trades_pnl (pnl_R branch) now sets a BLENDED EFFECTIVE exit price so (exit-entry) reconciles EXACTLY to net pnl_pips for every row; real final fill kept in final_exit_price, real two legs kept in events[]. Verified: 0/94 rows mismatch, win_rate/total_pnl unchanged (82.98%, +780.8), chart markers still render. (Requires server restart + re-run; re-downloaded GBPUSD data with correct IDs into the library for testing.)
+
+
+[IST 29-JUN-2026 08:00:00] - Dashboard: 3 features added.
+(1) Saved Drive links: server persists used links to dashboard/out/saved_links.json keyed SYMBOL_TF (e.g. GBPUSD_1h) on each drive backtest; new GET /api/saved-links; drive request now carries 'symbol'. UI shows a per-timeframe "↥ saved" dropdown in the Drive inputs to refill links, refreshed after each drive run.
+(2) Pair/Symbol input added (replaces hardcoded XAUUSD); library/local/drive backtests + library-status now use the typed symbol.
+(3) Money panel (₹): Starting Capital + Margin/Trade + Leverage(2000) inputs. Margin-based fixed-stake model: trade P&L(INR) = (net_price_move/entry) x leverage x margin (quote-ccy cancels). Trade table now shows P&L(₹) and running Balance(₹); summary shows Net P&L, Ending Balance, Return%, Max Drawdown. Computed in-browser so it updates live without re-running. Verified end-to-end on GBPUSD (drive run saved 4 links; money e.g. +20.9 pips -> +Rs3003).

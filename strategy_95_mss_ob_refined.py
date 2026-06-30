@@ -125,7 +125,7 @@ def _smart_sl(ob, bias_dir, df5, tap_time, sym):
 
 def _simulate(df5, entry_time, direction, entry, sl, max_bars=8640):
     """Partial at +PARTIAL_R then breakeven; remainder to +FINAL_R. Conservative
-    (stop checked first). Returns (exit_time, exit_price, outcome, pnl_R)."""
+    (stop checked first). Returns dict with the two-leg breakdown."""
     lo = df5["low"].values; hi = df5["high"].values; cl = df5["close"].values
     start = df5.index.searchsorted(entry_time)
     risk = abs(entry - sl)
@@ -137,25 +137,38 @@ def _simulate(df5, entry_time, direction, entry, sl, max_bars=8640):
     cur_stop = sl
     half = False
     realized = 0.0
+    partial_time = None
+    partial_price = None
+
+    def result(exit_idx, exit_price):
+        outcome = "win" if realized > 0 else "loss" if realized < 0 else "breakeven"
+        return {
+            "exit_time": df5.index[exit_idx], "exit_price": float(exit_price),
+            "outcome": outcome, "pnl_R": realized,
+            "partial_time": partial_time, "partial_price": partial_price,
+        }
+
     for j in range(start, min(start + max_bars, len(df5))):
         hit_stop = (lo[j] <= cur_stop) if is_long else (hi[j] >= cur_stop)
         if hit_stop:
             stop_R = (cur_stop - entry) / risk if is_long else (entry - cur_stop) / risk
             realized += (0.5 if half else 1.0) * stop_R
-            return df5.index[j], float(cur_stop), ("win" if realized > 0 else "loss"), realized
+            return result(j, cur_stop)
         if not half and ((hi[j] >= tp1) if is_long else (lo[j] <= tp1)):
             realized += 0.5 * PARTIAL_R
             half = True
             cur_stop = entry
+            partial_time = df5.index[j]
+            partial_price = float(tp1)
             continue
         if half and ((hi[j] >= tpf) if is_long else (lo[j] <= tpf)):
             realized += 0.5 * FINAL_R
-            return df5.index[j], float(tpf), "win", realized
+            return result(j, tpf)
     j = min(start + max_bars, len(df5)) - 1
     last = cl[j]
     rem_R = (last - entry) / risk if is_long else (entry - last) / risk
     realized += (0.5 if half else 1.0) * rem_R
-    return df5.index[j], float(last), ("win" if realized > 0 else "loss"), realized
+    return result(j, last)
 
 
 def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
@@ -189,7 +202,9 @@ def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
         res = _simulate(df_5m, tap, direction, entry, sl)
         if res is None:
             continue
-        exit_time, exit_price, outcome, pnl_R = res
+        exit_time = res["exit_time"]; exit_price = res["exit_price"]
+        outcome = res["outcome"]; pnl_R = res["pnl_R"]
+        partial_time = res["partial_time"]; partial_price = res["partial_price"]
         open_until = exit_time
         risk = abs(entry - sl)
         # display target = full final target level
@@ -244,14 +259,36 @@ def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
                 "description": (f"5M tap of the order block → {direction.upper()} entry at "
                                 f"{entry:.5f}; SL {sl:.5f}, final TP {tp:.5f}"),
             },
-            {
+        ]
+        # Two-leg exit breakdown so the displayed pips fully reconcile.
+        if partial_time is not None:
+            events.append({
+                "timestamp": to_iso(int(pd.Timestamp(partial_time).timestamp())),
+                "type": "partial_take_profit",
+                "price": round(float(partial_price), 6),
+                "description": (f"Leg 1: closed HALF at +{PARTIAL_R}R ({partial_price:.5f}) and "
+                                f"moved stop to breakeven ({entry:.5f})"),
+            })
+            if abs(float(exit_price) - float(entry)) < 1e-9:
+                final_desc = (f"Leg 2: remaining half stopped at BREAKEVEN ({exit_price:.5f}). "
+                              f"Trade net {pnl_R:+.2f}R (the +{PARTIAL_R}R partial is the profit)")
+            else:
+                final_desc = (f"Leg 2: remaining half exited at {exit_price:.5f}. "
+                              f"Trade net {pnl_R:+.2f}R (half at +{PARTIAL_R}R, half here)")
+            events.append({
+                "timestamp": to_iso(int(exit_time.timestamp())),
+                "type": "final_exit",
+                "price": round(float(exit_price), 6),
+                "description": final_desc,
+            })
+        else:
+            events.append({
                 "timestamp": to_iso(int(exit_time.timestamp())),
                 "type": "exit",
                 "price": round(float(exit_price), 6),
-                "description": (f"Exit at {exit_price:.5f} → {outcome.upper()} "
-                                f"({pnl_R:+.2f}R after partial/breakeven management)"),
-            },
-        ]
+                "description": (f"Full position exited at {exit_price:.5f} → {outcome.upper()} "
+                                f"({pnl_R:+.2f}R) — partial level never reached"),
+            })
         events.sort(key=lambda e: e["timestamp"])  # true chronological order
 
         trades.append({

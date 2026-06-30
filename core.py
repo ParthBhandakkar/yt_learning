@@ -728,7 +728,7 @@ def round_turn_cost_pips(ref_price: float) -> float:
     return mult * round_turn_cost_price(ref_price) / infer_pip_size(ref_price)
 
 
-MIN_VALID_TRADE_TS = 946684800  # 2000-01-01 UTC
+MIN_VALID_TRADE_TS = 86400  # 1970-01-02 UTC — reject epoch-0/garbage only, allow all real history (FX data goes back to 1971/1999)
 
 
 def _trade_timestamp(value) -> Optional[int]:
@@ -839,6 +839,18 @@ def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
             trade["cost_pips"] = round(cost_pips, 1)
             trade["pnl_pips"] = net
             trade["outcome"] = "win" if net > 0 else "loss" if net < 0 else "breakeven"
+            # Scale-out trades have TWO exits, so a single entry->exit row can't
+            # represent them (scratches show entry==exit with non-zero pips).
+            # Show a BLENDED effective exit so the row reconciles exactly with the
+            # net pips; keep the real final fill in final_exit_price (and the real
+            # legs in events[]).
+            direction = (trade.get("direction") or "").lower()
+            if "final_exit_price" not in trade:
+                trade["final_exit_price"] = trade.get("exit_price")
+            if direction in ("long", "bullish"):
+                trade["exit_price"] = round(ref + net * pip, 6)
+            else:
+                trade["exit_price"] = round(ref - net * pip, 6)
             _normalize_trade_exit_metadata(trade)
             continue
         gross = _gross_pnl_pips(trade)

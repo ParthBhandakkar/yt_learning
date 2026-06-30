@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Strategy Backtester</title>
-<link rel="stylesheet" href="style.css?v=20240625e">
+<link rel="stylesheet" href="style.css?v=20240629a">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- TradingView Lightweight Charts v5 -->
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="trade-zones-primitive.js?v=20240625e"></script>
-<script src="concept-overlays.js?v=20240625e"></script>
+<script src="trade-zones-primitive.js?v=20240629a"></script>
+<script src="concept-overlays.js?v=20240629a"></script>
 </head>
 <body>
 <div class="app">
@@ -40,6 +40,11 @@
 
       <section class="upload-section" id="upload-section">
         <h3>Upload CSV Files</h3>
+        <div class="symbol-row">
+          <label for="symbol-input">Pair / Symbol</label>
+          <input type="text" id="symbol-input" value="XAUUSD" placeholder="e.g. GBPUSD" oninput="onSymbolInput()">
+          <span class="symbol-hint">Used for the local data library and to label saved Drive links (e.g. GBPUSD_1h)</span>
+        </div>
         <div class="csv-requirements" id="csv-args"></div>
 
         <!-- Local Upload -->
@@ -84,6 +89,15 @@
           <button class="btn-secondary btn-sm" id="btn-save" onclick="saveResults()">Save Results to Project</button>
         </div>
         <div id="results-message" class="results-message hidden"></div>
+        <div class="money-panel" id="money-panel">
+          <div class="money-inputs">
+            <label>Starting Capital (₹)<input type="number" id="money-capital" value="100000" min="0" step="1000" oninput="recomputeMoney()"></label>
+            <label>Margin / Trade (₹)<input type="number" id="money-margin" value="1000" min="0" step="100" oninput="recomputeMoney()"></label>
+            <label>Leverage 1 :<input type="number" id="money-leverage" value="2000" min="1" step="1" oninput="recomputeMoney()"></label>
+          </div>
+          <div class="money-summary" id="money-summary"></div>
+          <p class="money-hint">Fixed stake: same margin every trade. Position notional = margin × leverage; trade P&amp;L (₹) = (net price move ÷ entry) × notional. ⚠ At high leverage a single losing trade can lose more than its margin.</p>
+        </div>
         <div class="stats-grid" id="stats-grid"></div>
         <div class="chart-box">
           <h3>Results</h3>
@@ -138,7 +152,7 @@
             <table>
               <thead><tr>
                 <th>#</th><th>Entry</th><th>Direction</th><th>Entry Price</th>
-                <th>Exit Price</th><th>PnL (pips)</th><th>Outcome</th><th></th><th></th>
+                <th>Exit Price</th><th>PnL (pips)</th><th>P&L (₹)</th><th>Balance (₹)</th><th>Outcome</th><th></th><th></th>
               </tr></thead>
               <tbody id="trades-body"></tbody>
             </table>
@@ -180,6 +194,6 @@
     <pre class="loader-log" id="loader-log"></pre>
   </div>
 </div>
-<script src="app.js?v=20240625e"></script>
+<script src="app.js?v=20240629a"></script>
 </body>
 </html>

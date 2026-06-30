@@ -29,6 +29,7 @@ from core import enrich_trades_pnl, load_csv, trade_pnl_pips
 from data_library import (
     DEFAULT_SYMBOL,
     library_status,
+    normalize_tf_folder,
     prepare_library_csv_window,
     resolve_strategy_data,
 )
@@ -39,6 +40,32 @@ TMP_DIR = OUT_DIR / "_tmp"
 OUT_DIR.mkdir(exist_ok=True)
 TMP_DIR.mkdir(exist_ok=True)
 STATIC_DIR.mkdir(exist_ok=True)
+
+# Persistent store of previously-used Google Drive links, keyed "SYMBOL_TF"
+# (e.g. "GBPUSD_1h") so the UI can suggest them instead of re-typing.
+SAVED_LINKS_PATH = OUT_DIR / "saved_links.json"
+_SAVED_LINKS_LOCK = threading.Lock()
+
+
+def _load_saved_links() -> dict:
+    try:
+        with open(SAVED_LINKS_PATH, "r", encoding="utf-8") as f:
+            data = json.load(f)
+            return data if isinstance(data, dict) else {}
+    except (FileNotFoundError, json.JSONDecodeError, OSError):
+        return {}
+
+
+def _save_links(updates: dict) -> dict:
+    with _SAVED_LINKS_LOCK:
+        data = _load_saved_links()
+        data.update({k: v for k, v in updates.items() if v})
+        try:
+            with open(SAVED_LINKS_PATH, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2)
+        except OSError:
+            pass
+        return data
 
 app = FastAPI(title="Standalone Strategy Backtester")
 
@@ -417,6 +444,7 @@ class SaveResultsRequest(BaseModel):
 class DriveBacktestRequest(BaseModel):
     strategy_id: str
     drive_files: dict[str, str]  # arg -> drive URL or file ID
+    symbol: str = DEFAULT_SYMBOL
 
 
 class LibraryBacktestRequest(BaseModel):
@@ -490,11 +518,31 @@ def get_backtest_job(job_id: str):
     return {**job, "elapsed_sec": elapsed}
 
 
+@app.get("/api/saved-links")
+def get_saved_links():
+    """Previously-used Drive links keyed 'SYMBOL_TF' (e.g. GBPUSD_1h)."""
+    return _load_saved_links()
+
+
 @app.post("/api/backtest/drive")
 async def run_backtest_drive(req: DriveBacktestRequest):
     strategy = next((s for s in _STRATEGIES if s["id"] == req.strategy_id), None)
     if not strategy:
         return JSONResponse({"error": "Strategy not found"}, status_code=404)
+
+    # Remember the links per SYMBOL_TF so the UI can suggest them next time.
+    sym = (req.symbol or DEFAULT_SYMBOL).strip().upper()
+    tf_by_arg = {
+        ca["arg"]: normalize_tf_folder(ca.get("timeframe", ""), ca["arg"])
+        for ca in strategy["csv_args"]
+    }
+    link_updates = {}
+    for arg_name, url in req.drive_files.items():
+        tf = tf_by_arg.get(arg_name)
+        if tf and url and url.strip():
+            link_updates[f"{sym}_{tf}"] = url.strip()
+    if link_updates:
+        _save_links(link_updates)
 
     job_dir = TMP_DIR / str(uuid.uuid4())
     job_dir.mkdir(parents=True, exist_ok=True)
@@ -524,7 +572,7 @@ async def run_backtest_drive(req: DriveBacktestRequest):
         strategy,
         downloaded,
         data_source="drive",
-        symbol=DEFAULT_SYMBOL,
+        symbol=sym,
         job_id=job_dir.name,
     )
 

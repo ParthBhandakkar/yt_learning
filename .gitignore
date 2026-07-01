@@ -1,2 +1,8 @@
 __pycache__/
 dashboard/out/
+.venv/
+.venv2/
+.venv312/
+venv/
+*.pyc
+.env

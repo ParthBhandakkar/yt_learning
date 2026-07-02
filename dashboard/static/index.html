@@ -4,12 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Strategy Backtester</title>
-<link rel="stylesheet" href="style.css?v=20240629a">
+<link rel="stylesheet" href="style.css?v=20260702e">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- TradingView Lightweight Charts v5 -->
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
-<script src="trade-zones-primitive.js?v=20240629a"></script>
-<script src="concept-overlays.js?v=20240629a"></script>
+<script src="trade-zones-primitive.js?v=20260702o"></script>
+<script src="concept-overlays.js?v=20260702o"></script>
 </head>
 <body>
 <div class="app">
@@ -126,6 +126,7 @@
               <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-sessions" checked onchange="onOverlayToggleChange('sessions', this.checked)"> Sessions</label>
               <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-fib" checked onchange="onOverlayToggleChange('fib', this.checked)"> Fib</label>
               <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-structure" checked onchange="onOverlayToggleChange('structure', this.checked)"> Structure</label>
+              <label class="overlay-toggle"><input type="checkbox" id="overlay-toggle-htf" checked onchange="onOverlayToggleChange('htf', this.checked)"> HTF (4H/1H/15m)</label>
             </div>
           </div>
           <div class="candle-chart-outer" id="candle-chart-outer">
@@ -194,6 +195,6 @@
     <pre class="loader-log" id="loader-log"></pre>
   </div>
 </div>
-<script src="app.js?v=20240629a"></script>
+<script src="app.js?v=20260702o"></script>
 </body>
 </html>

@@ -1,6 +1,5 @@
 /**
  * Canvas-drawn long/short trade zones (profit/risk rectangles + labels).
- * Profit/risk fills and overlays render in draw(); drawBackground repaints pane cream.
  */
 (function (global) {
   const PROFIT_FILL = 'rgba(34, 197, 94, 0.28)';
@@ -38,8 +37,27 @@
     return String(direction).toUpperCase() === 'LONG';
   }
 
-  function coordinatesOnPane(yValues, paneHeight) {
-    return yValues.every((y) => y !== null && Number.isFinite(y) && y >= 0 && y <= paneHeight);
+  function resolveZoneXSpan(timeScale, entryTime, exitTime, paneWidth) {
+    const visible = timeScale.getVisibleRange?.() || null;
+    if (visible && (exitTime < visible.from || entryTime > visible.to)) {
+      return null;
+    }
+
+    let x1 = timeScale.timeToCoordinate(entryTime);
+    let x2 = timeScale.timeToCoordinate(exitTime);
+    if (x1 === null && x2 === null) return null;
+
+    if (x1 === null) {
+      x1 = visible && entryTime < visible.from ? 0 : paneWidth;
+    }
+    if (x2 === null) {
+      x2 = visible && exitTime > visible.to ? paneWidth : 0;
+    }
+
+    const left = Math.min(x1, x2);
+    const right = Math.max(x1, x2);
+    if (right - left < 1) return null;
+    return { left, right };
   }
 
   function drawProfitAndRiskZones(canvas, direction, left, width, entryY, tpY, slY) {
@@ -110,17 +128,6 @@
       this._getContext = getContext;
     }
 
-    drawBackground(target) {
-      // Fill the FULL device-pixel canvas (bitmap space). Using media (CSS-px)
-      // coordinates leaves the rest of the 2x retina bitmap unpainted, which
-      // shows through black on hover redraws.
-      target.useBitmapCoordinateSpace((scope) => {
-        const canvas = scope.context;
-        canvas.fillStyle = NORMAL_FILL;
-        canvas.fillRect(0, 0, scope.bitmapSize.width, scope.bitmapSize.height);
-      });
-    }
-
     draw(target) {
       const ctx = this._getContext();
       if (!ctx || ctx.trades.length === 0) return;
@@ -135,23 +142,21 @@
         const timeScale = ctx.chart.timeScale();
 
         for (const trade of ctx.trades) {
-          const x1 = timeScale.timeToCoordinate(trade.entryTime);
-          const x2 = timeScale.timeToCoordinate(trade.exitTime);
-          if (x1 === null || x2 === null) continue;
+          const span = resolveZoneXSpan(timeScale, trade.entryTime, trade.exitTime, paneWidth);
+          if (!span) continue;
+
+          const left = span.left;
+          const right = span.right;
+          const width = right - left;
 
           const entryY = ctx.series.priceToCoordinate(trade.entryPrice);
           const tpY = ctx.series.priceToCoordinate(trade.takeProfit);
           const slY = ctx.series.priceToCoordinate(trade.stopLoss);
-          if (entryY === null || tpY === null || slY === null) continue;
+          if (entryY == null || tpY == null || slY == null) continue;
 
-          const left = Math.min(x1, x2);
-          const right = Math.max(x1, x2);
-          const width = right - left;
-          if (width < 1) continue;
-
-          if (coordinatesOnPane([entryY, tpY, slY], paneHeight)) {
-            drawProfitAndRiskZones(canvas, trade.direction, left, width, entryY, tpY, slY);
-          }
+          drawProfitAndRiskZones(
+            canvas, trade.direction, left, width, entryY, tpY, slY,
+          );
 
           canvas.strokeStyle = ENTRY_LINE_COLOR;
           canvas.lineWidth = 2;
@@ -271,20 +276,6 @@
 
     getLabelBounds() {
       return this._labelBounds.map((b) => ({ ...b }));
-    }
-
-    autoscaleInfo() {
-      if (this._trades.length === 0) return null;
-
-      let minValue = Number.POSITIVE_INFINITY;
-      let maxValue = Number.NEGATIVE_INFINITY;
-      for (const trade of this._trades) {
-        minValue = Math.min(minValue, trade.stopLoss, trade.takeProfit, trade.entryPrice);
-        maxValue = Math.max(maxValue, trade.stopLoss, trade.takeProfit, trade.entryPrice);
-      }
-
-      if (!Number.isFinite(minValue) || !Number.isFinite(maxValue)) return null;
-      return { priceRange: { minValue, maxValue } };
     }
 
     _renderContext() {

@@ -100,14 +100,14 @@ let candleState = {
   overlaySettings: null,
 };
 
-const OVERLAY_TOGGLE_KEYS = ['trades', 'fvg', 'ob', 'vp', 'liquidity', 'sessions', 'fib', 'structure'];
+const OVERLAY_TOGGLE_KEYS = ['trades', 'fvg', 'ob', 'vp', 'liquidity', 'sessions', 'fib', 'structure', 'htf'];
 
 function defaultOverlaySettings() {
   return typeof DEFAULT_OVERLAY_SETTINGS !== 'undefined'
     ? { ...DEFAULT_OVERLAY_SETTINGS }
     : {
       trades: true, fvg: true, ob: true, vp: true,
-      liquidity: true, sessions: true, fib: true, structure: true,
+      liquidity: true, sessions: true, fib: true, structure: true, htf: true,
     };
 }
 
@@ -157,7 +157,12 @@ function syncCandleChartSize() {
   const mount = getCandleChartMount();
   const size = readCandleChartSize(mount);
   if (!size) return;
-  if (typeof candleChart.autoSizeActive === 'function' && candleChart.autoSizeActive()) return;
+  // LWC autoSize does not reliably fix the pane/time-scale split when the
+  // container grows after creation, leaving an uncovered black band. Drive
+  // sizing explicitly and always resize when the measured size changes.
+  const last = candleState._lastChartSize;
+  if (last && last.width === size.width && last.height === size.height) return;
+  candleState._lastChartSize = size;
   candleChart.resize(size.width, size.height);
 }
 
@@ -931,6 +936,7 @@ function findBarByTime(bars, time) {
 
 const MIN_VALID_CHART_TS = 946684800; // 2000-01-01 UTC
 const DEFAULT_ZONE_SECONDS = 3600;
+const MIN_ZONE_DISPLAY_SECONDS = 45 * 60;
 
 function isValidChartTimestamp(ts) {
   return Number.isFinite(ts) && ts >= MIN_VALID_CHART_TS;
@@ -958,7 +964,15 @@ function resolveTradeExitTime(trade, entryTime, tMax) {
   return tMax != null ? Math.min(exitTime, tMax) : exitTime;
 }
 
-function buildTradeZoneData(trade, tradeIdx, tMax) {
+function snapToBarOnOrAfter(bars, ts) {
+  if (!bars?.length || ts == null) return ts;
+  for (let i = 0; i < bars.length; i += 1) {
+    if (bars[i].time >= ts) return bars[i].time;
+  }
+  return bars[bars.length - 1].time;
+}
+
+function buildTradeZoneData(trade, tradeIdx, bars) {
   const entryPrice = parseFloat(trade.entry_price);
   const stopLoss = parseFloat(trade.stop_loss);
   const takeProfit = parseFloat(trade.take_profit);
@@ -966,11 +980,21 @@ function buildTradeZoneData(trade, tradeIdx, tMax) {
     return null;
   }
 
-  const entryTime = Math.floor(new Date(trade.entry_time).getTime() / 1000);
+  let entryTime = Math.floor(new Date(trade.entry_time).getTime() / 1000);
   if (!isValidChartTimestamp(entryTime)) return null;
 
-  const exitTime = resolveTradeExitTime(trade, entryTime, tMax);
+  const tMax = bars?.length ? bars[bars.length - 1].time : null;
+  let exitTime = resolveTradeExitTime(trade, entryTime, tMax);
   if (!Number.isFinite(exitTime) || exitTime <= entryTime) return null;
+
+  if (bars?.length) {
+    entryTime = snapToBarOnOrAfter(bars, entryTime);
+    exitTime = snapToBarOnOrAfter(bars, exitTime);
+  }
+
+  const displayExitTime = exitTime - entryTime < MIN_ZONE_DISPLAY_SECONDS
+    ? Math.min(entryTime + MIN_ZONE_DISPLAY_SECONDS, tMax ?? entryTime + MIN_ZONE_DISPLAY_SECONDS)
+    : exitTime;
   const risk = Math.abs(entryPrice - stopLoss);
   const reward = Math.abs(takeProfit - entryPrice);
   const dir = normalizeTradeDirection(trade.direction).toUpperCase();
@@ -982,7 +1006,7 @@ function buildTradeZoneData(trade, tradeIdx, tMax) {
     tradeId: tradeIdx + 1,
     direction: dir === 'LONG' ? 'LONG' : 'SHORT',
     entryTime,
-    exitTime,
+    exitTime: displayExitTime,
     entryPrice,
     exitPrice,
     stopLoss,
@@ -1003,7 +1027,7 @@ function buildTradeZoneDataset() {
 
   candleState.trades.forEach((trade, idx) => {
     if (candleState.activeTradeIdx != null && idx !== candleState.activeTradeIdx) return;
-    const zone = buildTradeZoneData(trade, idx, tMax);
+    const zone = buildTradeZoneData(trade, idx, candleState.bars);
     if (!zone) return;
     if (zone.entryTime > tMax || zone.exitTime < tMin) return;
     zones.push(zone);
@@ -1015,32 +1039,42 @@ function buildTradeZoneDataset() {
 function updateTradeZonesPrimitive() {
   if (!candleSeries || typeof TradeZonesPrimitive === 'undefined') return;
   const zones = buildTradeZoneDataset();
-  if (zones.length === 0) {
-    if (candleZonesPrimitive) {
-      candleSeries.detachPrimitive(candleZonesPrimitive);
-      candleZonesPrimitive = null;
-    }
-    return;
+  if (candleZonesPrimitive) {
+    candleSeries.detachPrimitive(candleZonesPrimitive);
+    candleZonesPrimitive = null;
   }
-  if (!candleZonesPrimitive) {
-    candleZonesPrimitive = new TradeZonesPrimitive(zones);
-    candleSeries.attachPrimitive(candleZonesPrimitive);
-  } else {
-    candleZonesPrimitive.setTrades(zones);
-  }
+  if (zones.length === 0) return;
+  candleZonesPrimitive = new TradeZonesPrimitive(zones);
+  candleSeries.attachPrimitive(candleZonesPrimitive);
 }
 
 function updateConceptOverlaysPrimitive() {
   if (!candleSeries || typeof buildConceptOverlays === 'undefined' || typeof ConceptOverlaysPrimitive === 'undefined') {
     return;
   }
+  const zones = buildTradeZoneDataset();
   const overlays = buildConceptOverlays(
     candleState.trades,
     candleState.bars,
     candleState.activeTradeIdx,
     overlaySettingsEnabled(),
   );
-  const reservedRects = estimateTradeLabelRects(buildTradeZoneDataset());
+  const reservedRects = estimateTradeLabelRects(zones);
+  // Band = entry/SL/TP of the framed trade(s); keeps far-off HTF levels from
+  // squeezing the price scale when the chart opens.
+  let bandMin = Infinity;
+  let bandMax = -Infinity;
+  for (const z of zones) {
+    bandMin = Math.min(bandMin, z.entryPrice, z.stopLoss, z.takeProfit);
+    bandMax = Math.max(bandMax, z.entryPrice, z.stopLoss, z.takeProfit);
+  }
+  const barBand = visibleLoadedBarPriceRange(candleChart, candleState.bars);
+  if (barBand) {
+    bandMin = Math.min(bandMin, barBand.min);
+    bandMax = Math.max(bandMax, barBand.max);
+  }
+  const band = Number.isFinite(bandMin) && Number.isFinite(bandMax) ? { min: bandMin, max: bandMax } : null;
+
   if (overlays.length === 0) {
     if (candleConceptsPrimitive) {
       candleSeries.detachPrimitive(candleConceptsPrimitive);
@@ -1055,6 +1089,7 @@ function updateConceptOverlaysPrimitive() {
     candleConceptsPrimitive.setOverlays(overlays);
   }
   candleConceptsPrimitive.setReservedLabelRects(reservedRects);
+  candleConceptsPrimitive.setAutoscaleBand(band);
 }
 
 function estimateTradeLabelRects(zones) {
@@ -1181,10 +1216,27 @@ function showCandlesFromStart() {
   applyViewportFromStart();
 }
 
+function visibleLoadedBarPriceRange(chart, bars) {
+  if (!chart || !bars?.length) return null;
+  const range = chart.timeScale().getVisibleLogicalRange();
+  if (!range) return null;
+  const from = Math.max(0, Math.floor(range.from));
+  const to = Math.min(bars.length, Math.ceil(range.to));
+  let min = Infinity;
+  let max = -Infinity;
+  for (let i = from; i < to; i += 1) {
+    const bar = bars[i];
+    if (!bar) continue;
+    min = Math.min(min, bar.low);
+    max = Math.max(max, bar.high);
+  }
+  return Number.isFinite(min) ? { min, max } : null;
+}
+
 function updateCandleOverlays() {
   updateCandleMarkers();
-  updateTradeZonesPrimitive();
   updateConceptOverlaysPrimitive();
+  updateTradeZonesPrimitive();
 }
 
 function snapToBarTime(bars, ts) {
@@ -1201,6 +1253,51 @@ function snapToBarTime(bars, ts) {
   return best;
 }
 
+function buildEventMarkers(trade, tradeIdx, bars, tMin, tMax) {
+  const events = trade.events || [];
+  if (!events.length) return [];
+
+  const direction = normalizeTradeDirection(trade.direction);
+  const isLong = direction === 'long';
+  const outcome = (trade.outcome || '').toLowerCase();
+  const exitWin = outcome === 'win' || (trade.pnl_R != null && Number(trade.pnl_R) > 0);
+  const markers = [];
+  const compactMarker = candleState.activeTradeIdx != null;
+  const dirTag = isLong ? 'L' : 'S';
+
+  const pushMarker = (time, price, shape, color, text) => {
+    if (!time || !isValidChartTimestamp(time) || time < tMin || time > tMax) return;
+    if (!Number.isFinite(price)) return;
+    markers.push({
+      time: snapToBarTime(bars, time),
+      position: 'atPriceMiddle',
+      price,
+      color,
+      shape,
+      text,
+    });
+  };
+
+  events.forEach((ev, idx) => {
+    const ts = ev.timestamp ? Math.floor(new Date(ev.timestamp).getTime() / 1000) : null;
+    const price = parseFloat(ev.price);
+    if (!ts || !Number.isFinite(price)) return;
+    const step = idx + 1;
+
+    if (ev.type === 'entry_tap') {
+      const text = compactMarker ? `${step} ${dirTag}` : `${step} ${dirTag} @ ${formatChartPrice(price)}`;
+      pushMarker(ts, price, isLong ? 'arrowUp' : 'arrowDown', isLong ? '#15803d' : '#b91c1c', text);
+    } else if (ev.type === 'partial_take_profit') {
+      pushMarker(ts, price, 'circle', '#15803d', `${step} partial`);
+    } else if (ev.type === 'final_exit' || ev.type === 'exit') {
+      const color = exitWin ? '#15803d' : '#b91c1c';
+      pushMarker(ts, price, 'circle', color, `${step} x ${formatChartPrice(price)}`);
+    }
+  });
+
+  return markers;
+}
+
 function buildTradeMarkers(trades, bars) {
   if (!bars.length) return [];
   const tMin = bars[0].time;
@@ -1212,6 +1309,13 @@ function buildTradeMarkers(trades, bars) {
 
   trades.forEach((t, i) => {
     if (candleState.activeTradeIdx != null && i !== candleState.activeTradeIdx) return;
+
+    const eventMarkers = buildEventMarkers(t, i, bars, tMin, tMax);
+    if (eventMarkers.length) {
+      markers.push(...eventMarkers);
+      return;
+    }
+
     const entryTs = t.entry_time ? Math.floor(new Date(t.entry_time).getTime() / 1000) : null;
     const rawExitTs = t.exit_time ? Math.floor(new Date(t.exit_time).getTime() / 1000) : null;
     const direction = normalizeTradeDirection(t.direction);
@@ -1362,6 +1466,46 @@ async function ensureCandlesAround(absIndex) {
   }
 }
 
+async function ensureCandlesRange(startIdx, endIdx) {
+  while (candleState.loadedStart > startIdx && candleState.loadedStart > 0) {
+    await extendCandlesBackward();
+  }
+  const target = Math.max(endIdx, startIdx + 150);
+  while (candleState.loadedEnd < target && candleState.loadedEnd < candleState.total) {
+    await extendCandlesForward();
+  }
+}
+
+// Earliest "action" event (sweep / OB / MSS / entry / partial / exit). The
+// liquidity_level_formed event is just where the level was created and can sit
+// days before the trade, so it is excluded from the visible story start.
+function tradeStoryStartTs(trade) {
+  const events = trade?.events || [];
+  const entryTs = trade?.entry_time ? Math.floor(new Date(trade.entry_time).getTime() / 1000) : null;
+  let earliest = entryTs;
+  for (const ev of events) {
+    if (!ev.timestamp || ev.type === 'liquidity_level_formed') continue;
+    const ts = Math.floor(new Date(ev.timestamp).getTime() / 1000);
+    if (!isValidChartTimestamp(ts)) continue;
+    if (earliest === null || ts < earliest) earliest = ts;
+  }
+  return earliest;
+}
+
+function tradeExitTs(trade) {
+  if (!trade?.exit_time) return null;
+  const ts = Math.floor(new Date(trade.exit_time).getTime() / 1000);
+  return isValidChartTimestamp(ts) ? ts : null;
+}
+
+async function locateAbsIndex(ts) {
+  if (ts == null || !candleState.sessionId) return null;
+  const res = await fetch(`/api/chart/${candleState.sessionId}/locate?ts=${ts}`);
+  if (!res.ok) return null;
+  const data = await res.json();
+  return Number.isFinite(data?.start) ? data.start : null;
+}
+
 function scheduleLazyCandleLoad(range) {
   if (candleLazyLoadTimer) clearTimeout(candleLazyLoadTimer);
   candleLazyLoadTimer = setTimeout(() => {
@@ -1375,8 +1519,8 @@ function scheduleLazyCandleLoad(range) {
 function onVisibleRangeChange(range) {
   if (!range || candleState.loading || candleState.viewportLocked) return;
   updateCandleLabel();
-  updateTradeZonesPrimitive();
   updateConceptOverlaysPrimitive();
+  updateTradeZonesPrimitive();
   if (candleIsPanning) return;
   scheduleLazyCandleLoad(range);
 }
@@ -1432,21 +1576,66 @@ async function jumpToTrade(idx) {
   candleState.viewportLocked = true;
 
   try {
-    const ts = Math.floor(new Date(t.entry_time).getTime() / 1000);
-    const res = await fetch(`/api/chart/${candleState.sessionId}/locate?ts=${ts}`);
-    const data = await res.json();
-    if (!res.ok) return;
-
-    await ensureCandlesAround(data.start);
-    const localIdx = candleState.bars.findIndex((b) => b.time >= ts);
-    if (localIdx >= 0) {
-      candleChart.timeScale().resetTimeScale();
-      candleChart.priceScale('right').applyOptions({ autoScale: true });
-      candleChart.timeScale().setVisibleLogicalRange({
-        from: Math.max(0, localIdx - 25),
-        to: Math.min(candleState.bars.length, localIdx + 125),
-      });
+    const entryTs = Math.floor(new Date(t.entry_time).getTime() / 1000);
+    const MAX_STORY_LOOKBACK_SEC = 24 * 3600; // cap so we don't pull days of history
+    let storyStartTs = tradeStoryStartTs(t) ?? entryTs;
+    if (entryTs - storyStartTs > MAX_STORY_LOOKBACK_SEC) {
+      storyStartTs = entryTs - MAX_STORY_LOOKBACK_SEC;
     }
+    const exitTs = tradeExitTs(t);
+
+    const entryIdx = await locateAbsIndex(entryTs);
+    if (entryIdx == null) return;
+    let storyStartIdx = entryIdx;
+    if (storyStartTs < entryTs) {
+      const s = await locateAbsIndex(storyStartTs);
+      if (s != null) storyStartIdx = s;
+    }
+    let endIdx = entryIdx + 150;
+    if (exitTs != null && exitTs > entryTs) {
+      const e = await locateAbsIndex(exitTs);
+      if (e != null) endIdx = e + 30;
+    }
+
+    await ensureCandlesRange(storyStartIdx, endIdx);
+
+    const storyLocalIdx = candleState.bars.findIndex((b) => b.time >= storyStartTs);
+    const entryLocalIdx = candleState.bars.findIndex((b) => b.time >= entryTs);
+    const exitLocalIdx = exitTs != null ? candleState.bars.findIndex((b) => b.time >= exitTs) : -1;
+    const zone = buildTradeZoneData(t, idx, candleState.bars);
+    const zoneExitLocalIdx = zone
+      ? candleState.bars.findIndex((b) => b.time >= zone.exitTime)
+      : -1;
+
+    candleChart.timeScale().resetTimeScale();
+    candleChart.priceScale('right').applyOptions({ autoScale: true });
+
+    const fromAnchor = storyLocalIdx >= 0 ? storyLocalIdx : entryLocalIdx;
+    const MAX_VISIBLE = 360;
+    const zoneEndIdx = zoneExitLocalIdx >= 0
+      ? zoneExitLocalIdx
+      : (exitLocalIdx >= 0 ? exitLocalIdx : entryLocalIdx);
+
+    let from = Math.max(0, fromAnchor - 8);
+    let to = Math.max(
+      zoneEndIdx >= 0 ? zoneEndIdx + 20 : from + CANDLE_VIEW_WIDTH,
+      entryLocalIdx >= 0 ? entryLocalIdx + 40 : from + CANDLE_VIEW_WIDTH,
+    );
+    to = Math.min(to, candleState.bars.length);
+
+    if (entryLocalIdx >= 0 && to - from > MAX_VISIBLE) {
+      to = Math.min(candleState.bars.length, Math.max(to, entryLocalIdx + 40));
+      from = Math.max(0, to - MAX_VISIBLE);
+      if (from > entryLocalIdx) {
+        from = Math.max(0, entryLocalIdx - 8);
+        to = Math.min(candleState.bars.length, from + MAX_VISIBLE);
+      }
+    } else {
+      to = Math.min(to, from + MAX_VISIBLE, candleState.bars.length);
+    }
+
+    candleChart.timeScale().setVisibleLogicalRange({ from, to });
+
     updateCandleOverlays();
     updateCandleLabel();
     updateTradeNavButtons();
@@ -1544,12 +1733,42 @@ function initCandleChart(sessionId, trades) {
   const wrapEl = getCandleChartWrapEl();
   mount.innerHTML = '';
 
+  // Defer chart creation until the section is actually laid out at full size.
+  // Creating the chart while the container is still collapsed (height 0 or a
+  // stale value) locks the price-pane height and leaves an uncovered black
+  // band between the price pane and the time scale.
+  whenChartMountReady(mount, () => buildCandleChartInstance(mount, wrapEl));
+}
+
+function whenChartMountReady(mount, cb) {
+  const size = readCandleChartSize(mount);
+  if (size && size.height > 0) {
+    cb();
+    return;
+  }
+  let tries = 0;
+  const tick = () => {
+    const s = readCandleChartSize(mount);
+    if ((s && s.height > 0) || tries > 30) {
+      cb();
+      return;
+    }
+    tries += 1;
+    requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
+}
+
+function buildCandleChartInstance(mount, wrapEl) {
   const colorType = LightweightCharts.ColorType?.Solid ?? 0;
-  const initialSize = readCandleChartSize(mount);
+  // autoSize is intentionally disabled: it does not correct the price-pane /
+  // time-scale split after the container grows from a collapsed state, which
+  // leaves an uncovered black band. We size explicitly and via ResizeObserver.
+  const initialSize = readCandleChartSize(mount) || { width: 800, height: 460 };
   candleChart = LightweightCharts.createChart(mount, {
-    autoSize: true,
-    width: initialSize?.width,
-    height: initialSize?.height,
+    autoSize: false,
+    width: initialSize.width,
+    height: initialSize.height,
     layout: {
       background: { type: colorType, color: CHART_BG },
       textColor: '#0a0a0a',

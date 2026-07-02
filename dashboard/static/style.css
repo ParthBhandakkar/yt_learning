@@ -76,7 +76,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; background: var(--bg); c
 .candle-chart-box .candle-window-label,
 .candle-chart-box .candle-hint { color: #525252; }
 .chart-box h3 { font-size: 14px; color: var(--muted); margin-bottom: 12px; }
-.chart-box canvas { max-height: 300px; }
+#resultsChart { max-height: 300px; }
 
 .candle-chart-header { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 8px; margin-bottom: 8px; }
 .candle-chart-header h3 { margin-bottom: 2px; }

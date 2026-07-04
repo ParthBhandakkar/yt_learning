@@ -111,6 +111,23 @@ def _displacement_ok(df1, mss_ts):
     return abs(c["close"] - c["open"]) / c["close"] * 100 >= MIN_DISPLACEMENT_PCT
 
 
+def _mss_actionable_time(df_1h, mss_ts, strict_mss_causal: bool):
+    """When strict, MSS is only actionable after the breaking 1H candle closes."""
+    ts = pd.Timestamp(mss_ts)
+    if not strict_mss_causal:
+        return ts
+    idx = df_1h.index.searchsorted(ts)
+    if idx < len(df_1h) and df_1h.index[idx] == ts:
+        candle_idx = idx
+    elif idx > 0:
+        candle_idx = idx - 1
+    else:
+        candle_idx = 0
+    if candle_idx + 1 < len(df_1h):
+        return pd.Timestamp(df_1h.index[candle_idx + 1])
+    return ts + pd.Timedelta(hours=1)
+
+
 def _smart_sl(ob, bias_dir, df5, tap_time, sym):
     base = ob.top if bias_dir == BiasType.BEARISH else ob.bottom
     seg = df5.loc[(df5.index >= ob.datetime) & (df5.index <= tap_time)]
@@ -171,7 +188,7 @@ def _simulate(df5, entry_time, direction, entry, sl, max_bars=8640):
     return result(j, last)
 
 
-def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
+def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX", strict_mss_causal=False):
     trades = []
     if df_4h is None or len(df_4h) < 55 or df_5m is None or len(df_5m) < 50:
         save_trades(trades, output_path)
@@ -184,11 +201,25 @@ def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
         mss = _first_mss(mss_list, bias, ttl_end)
         if mss is None or not _displacement_ok(df_1h, mss.timestamp):
             continue
-        ms = df_5m.index.searchsorted(mss.timestamp); me = df_5m.index.searchsorted(ttl_end)
+
+        actionable_ts = _mss_actionable_time(df_1h, mss.timestamp, strict_mss_causal)
+        if strict_mss_causal and actionable_ts >= ttl_end:
+            continue
+        mss_for_entry = mss
+        if strict_mss_causal:
+            mss_for_entry = MSSConfirmation(
+                mss=mss.mss,
+                direction=mss.direction,
+                timestamp=actionable_ts,
+                details=mss.details,
+            )
+
+        ms = df_5m.index.searchsorted(mss_for_entry.timestamp)
+        me = df_5m.index.searchsorted(ttl_end)
         win = df_5m.iloc[ms:me]
         if len(win) < 3:
             continue
-        ob = STRAT.find_ob_entry(df_15m, win, bias, mss)
+        ob = STRAT.find_ob_entry(df_15m, win, bias, mss_for_entry)
         if ob is None:
             continue
         tap = ob.timestamp
@@ -240,8 +271,15 @@ def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
                 "timestamp": to_iso(int(pd.Timestamp(mss.timestamp).timestamp())),
                 "type": "mss",
                 "price": round(float(mss.mss.break_price), 6),
-                "description": (f"1H {sweep_dir} MSS: structure broken at {mss.mss.break_price:.5f} "
-                                f"with a {body_pct:.2f}% displacement candle (gate >= {MIN_DISPLACEMENT_PCT}%)"),
+                "description": (
+                    f"1H {sweep_dir} MSS: structure broken at {mss.mss.break_price:.5f} "
+                    f"with a {body_pct:.2f}% displacement candle (gate >= {MIN_DISPLACEMENT_PCT}%)"
+                    + (
+                        f"; entries allowed after {actionable_ts.strftime('%Y-%m-%d %H:%M')} UTC "
+                        f"(strict 1H close)"
+                        if strict_mss_causal else ""
+                    )
+                ),
             },
             {
                 "timestamp": to_iso(int(ob_dt.timestamp())),
@@ -304,7 +342,8 @@ def run_strategy(df_4h, df_1h, df_15m, df_5m, output_path, symbol="FX"):
             "pnl_R": round(float(pnl_R), 3),
             "events": events,
             "reason": (f"4H sweep {bias.direction.value} + 1H displacement MSS + 15M OB(OTE) "
-                       f"+ 5M tap; partial {PARTIAL_R}R->BE, final {FINAL_R}R"),
+                       f"+ 5M tap; partial {PARTIAL_R}R->BE, final {FINAL_R}R"
+                       + ("; strict 1H MSS causal" if strict_mss_causal else "")),
         })
     save_trades(trades, output_path)
     print(f"Saved {len(trades)} trades to {output_path}")
@@ -318,6 +357,11 @@ def main():
     parser.add_argument("--csv15m", required=True, help="15-minute CSV")
     parser.add_argument("--csv5m", required=True, help="5-minute CSV")
     parser.add_argument("--output", default=None, help="Output JSON path")
+    parser.add_argument(
+        "--strict-mss-causal",
+        action="store_true",
+        help="Only allow 5M entry after the 1H MSS candle closes (live-realistic, no same-hour lookahead)",
+    )
     args = parser.parse_args()
 
     df_4h = _df_from_csv(args.csv4h)
@@ -326,7 +370,8 @@ def main():
     df_5m = _df_from_csv(args.csv5m)
     meta = parse_csv_filename(args.csv4h)
     out = args.output or f"strategy_95_results_{meta['symbol']}.json"
-    run_strategy(df_4h, df_1h, df_15m, df_5m, out, symbol=meta.get("symbol", "FX"))
+    run_strategy(df_4h, df_1h, df_15m, df_5m, out, symbol=meta.get("symbol", "FX"),
+                 strict_mss_causal=args.strict_mss_causal)
 
 
 if __name__ == "__main__":

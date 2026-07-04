@@ -223,6 +223,7 @@ async function selectStrategy(id) {
 
   renderCsvArgs(selectedStrategy.csv_args);
   renderDriveArgInputs(selectedStrategy.csv_args);
+  syncStrictMssToggle();
   uploadedFiles = [];
   driveFolderFiles = [];
   libraryStatus = null;
@@ -434,6 +435,26 @@ function getLibraryMaxDays() {
   return parseInt(sel.value, 10);
 }
 
+function isStrategy95Selected() {
+  return selectedStrategy?.file === 'strategy_95_mss_ob_refined.py'
+    || selectedStrategy?.id === 's95';
+}
+
+function isStrictMssCausal() {
+  const el = document.getElementById('strict-mss-causal');
+  return Boolean(el && el.checked && isStrategy95Selected());
+}
+
+function syncStrictMssToggle() {
+  const wrap = document.getElementById('strict-mss-wrap');
+  if (!wrap) return;
+  wrap.classList.toggle('hidden', !isStrategy95Selected());
+}
+
+function backtestOptionsPayload() {
+  return { strict_mss_causal: isStrictMssCausal() };
+}
+
 function formatLoaderElapsed(ms) {
   const totalSec = Math.floor(ms / 1000);
   const m = Math.floor(totalSec / 60);
@@ -574,6 +595,7 @@ async function runLocalBacktest() {
             strategy_id: selectedStrategy.id,
             symbol: getSymbol(),
             max_days: getLibraryMaxDays(),
+            ...backtestOptionsPayload(),
           }),
         });
       }
@@ -581,6 +603,7 @@ async function runLocalBacktest() {
       formData.append('strategy_id', selectedStrategy.id);
       formData.append('symbol', getSymbol());
       formData.append('max_days', String(getLibraryMaxDays()));
+      formData.append('strict_mss_causal', isStrictMssCausal() ? 'true' : 'false');
       for (const f of uploadedFiles) {
         formData.append('files', f);
       }
@@ -645,7 +668,12 @@ async function runDriveBacktest() {
     const data = await startBacktestAndWait(() => fetch('/api/backtest/drive', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ strategy_id: selectedStrategy.id, drive_files: driveFiles, symbol: getSymbol() }),
+      body: JSON.stringify({
+        strategy_id: selectedStrategy.id,
+        drive_files: driveFiles,
+        symbol: getSymbol(),
+        ...backtestOptionsPayload(),
+      }),
     }));
     await loadSavedLinks();                       // refresh suggestions with the links just used
     renderDriveArgInputs(selectedStrategy.csv_args);
@@ -661,17 +689,20 @@ async function runDriveBacktest() {
 
 // Render results
 function renderResults(data) {
-  const { trades, stats, stdout, saved_to, data_source, library_files, symbol, data_window } = data;
-  lastResults = { trades, stats, strategy_id: selectedStrategy?.id };
+  const {
+    trades, stats, stdout, saved_to, data_source, library_files, symbol, data_window, strict_mss_causal,
+  } = data;
+  lastResults = { trades, stats, strategy_id: selectedStrategy?.id, strict_mss_causal: Boolean(strict_mss_causal) };
   if (trades) sessionStorage.setItem('lastTrades', JSON.stringify(trades));
   document.getElementById('results-section').classList.remove('hidden');
 
   const savedEl = document.getElementById('saved-path');
   const windowNote = data_window?.length ? `Window: ${data_window.join(' · ')}` : '';
+  const strictNote = strict_mss_causal ? 'Strict 1H MSS (causal)' : '';
   const sourceNote = data_source === 'library'
     ? `Data: ${symbol || DEFAULT_SYMBOL} library` + (library_files?.length ? ` (${library_files.join(', ')})` : '')
     : '';
-  const combinedNote = [sourceNote, windowNote].filter(Boolean).join(' | ');
+  const combinedNote = [sourceNote, windowNote, strictNote].filter(Boolean).join(' | ');
   if (saved_to) {
     savedEl.textContent = ('Saved to: ' + saved_to + (combinedNote ? ' | ' + combinedNote : ''));
     savedEl.classList.remove('hidden');

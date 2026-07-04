@@ -445,15 +445,21 @@ class DriveBacktestRequest(BaseModel):
     strategy_id: str
     drive_files: dict[str, str]  # arg -> drive URL or file ID
     symbol: str = DEFAULT_SYMBOL
+    strict_mss_causal: bool = False
 
 
 class LibraryBacktestRequest(BaseModel):
     strategy_id: str
     symbol: str = DEFAULT_SYMBOL
     max_days: Optional[int] = None  # None = default window; 0 or negative = full history
+    strict_mss_causal: bool = False
 
 
-def persist_backtest_results(strategy: dict, trades: list, stats: dict) -> str:
+def _append_strategy_cli_flags(cmd: list, strategy: dict, strict_mss_causal: bool = False) -> None:
+    if strict_mss_causal and strategy.get("file") == "strategy_95_mss_ob_refined.py":
+        cmd.append("--strict-mss-causal")
+
+def persist_backtest_results(strategy: dict, trades: list, stats: dict, **extra) -> str:
     """Save backtest output under dashboard/out/ inside the project."""
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     stem = strategy["file"].replace(".py", "")
@@ -466,6 +472,7 @@ def persist_backtest_results(strategy: dict, trades: list, stats: dict) -> str:
         "saved_at": datetime.now().isoformat(),
         "stats": stats,
         "trades": trades,
+        **extra,
     }
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(payload, f, indent=2, default=str)
@@ -574,6 +581,7 @@ async def run_backtest_drive(req: DriveBacktestRequest):
         data_source="drive",
         symbol=sym,
         job_id=job_dir.name,
+        strict_mss_causal=req.strict_mss_causal,
     )
 
 
@@ -632,6 +640,7 @@ def _start_backtest_job(
     library_files: Optional[list[str]] = None,
     max_days: Optional[int] = None,
     job_id: Optional[str] = None,
+    strict_mss_causal: bool = False,
 ) -> dict:
     job_id = job_id or str(uuid.uuid4())
     with JOBS_LOCK:
@@ -652,6 +661,7 @@ def _start_backtest_job(
         "symbol": symbol,
         "library_files": library_files,
         "max_days": max_days,
+        "strict_mss_causal": strict_mss_causal,
     }
     thread = threading.Thread(
         target=_backtest_job_worker,
@@ -689,7 +699,10 @@ def _backtest_job_worker(
                 file_map, max_days, job_dir, prep_progress
             )
 
-        payload = _execute_backtest_job(job_id, strategy, working_map, str(job_dir))
+        payload = _execute_backtest_job(
+            job_id, strategy, working_map, str(job_dir),
+            strict_mss_causal=bool(meta.get("strict_mss_causal")),
+        )
         payload["data_source"] = meta.get("data_source", "unknown")
         payload["symbol"] = str(meta.get("symbol", DEFAULT_SYMBOL)).upper()
         if meta.get("library_files"):
@@ -729,6 +742,7 @@ def _execute_backtest_job(
     strategy: dict,
     file_map: dict[str, str],
     tmpdir: str,
+    strict_mss_causal: bool = False,
 ) -> dict:
     script = STRATEGIES_DIR / strategy["file"]
     output_path = os.path.join(tmpdir, "results.json")
@@ -737,6 +751,7 @@ def _execute_backtest_job(
     for arg_name, fpath in file_map.items():
         cmd.extend([arg_name, fpath])
     cmd.extend(["--output", output_path])
+    _append_strategy_cli_flags(cmd, strategy, strict_mss_causal)
 
     _update_job(
         job_id,
@@ -799,7 +814,9 @@ def _execute_backtest_job(
     stats = compute_stats(trades)
     trades = sanitize_for_json(trades)
     stats = sanitize_for_json(stats)
-    saved_to = persist_backtest_results(strategy, trades, stats)
+    saved_to = persist_backtest_results(
+        strategy, trades, stats, strict_mss_causal=strict_mss_causal,
+    )
     chart_path = pick_chart_csv_path(file_map, strategy["csv_args"])
     chart_session = create_chart_session(chart_path, trades) if chart_path else None
     return {
@@ -808,10 +825,11 @@ def _execute_backtest_job(
         "stdout": stdout.strip(),
         "saved_to": saved_to,
         "chart_session": chart_session,
+        "strict_mss_causal": strict_mss_causal,
     }
 
 
-def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> dict:
+def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str, strict_mss_causal: bool = False) -> dict:
     script = STRATEGIES_DIR / strategy["file"]
     output_path = os.path.join(tmpdir, "results.json")
     cmd = [sys.executable, str(script)]
@@ -819,6 +837,7 @@ def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> 
     for arg_name, fpath in file_map.items():
         cmd.extend([arg_name, fpath])
     cmd.extend(["--output", output_path])
+    _append_strategy_cli_flags(cmd, strategy, strict_mss_causal)
 
     try:
         result = subprocess.run(cmd, capture_output=True, text=True, timeout=BACKTEST_TIMEOUT_SEC)
@@ -846,7 +865,9 @@ def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> 
         stats = compute_stats(trades)
         trades = sanitize_for_json(trades)
         stats = sanitize_for_json(stats)
-        saved_to = persist_backtest_results(strategy, trades, stats)
+        saved_to = persist_backtest_results(
+            strategy, trades, stats, strict_mss_causal=strict_mss_causal,
+        )
         chart_path = pick_chart_csv_path(file_map, strategy["csv_args"])
         chart_session = create_chart_session(chart_path, trades) if chart_path else None
         payload = {
@@ -855,6 +876,7 @@ def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str) -> 
             "stdout": result.stdout.strip(),
             "saved_to": saved_to,
             "chart_session": chart_session,
+            "strict_mss_causal": strict_mss_causal,
         }
         return payload
 
@@ -901,6 +923,7 @@ async def run_backtest_library(req: LibraryBacktestRequest):
         symbol=req.symbol,
         library_files=library_files,
         max_days=_resolve_library_max_days(req.max_days),
+        strict_mss_causal=req.strict_mss_causal,
     )
 
 
@@ -909,11 +932,14 @@ async def run_backtest(
     strategy_id: str = Form(...),
     symbol: str = Form(DEFAULT_SYMBOL),
     max_days: str = Form(""),
+    strict_mss_causal: str = Form(""),
     files: list[UploadFile] | None = File(default=None),
 ):
     strategy = next((s for s in _STRATEGIES if s["id"] == strategy_id), None)
     if not strategy:
         return JSONResponse({"error": "Strategy not found"}, status_code=404)
+
+    strict_mss = strict_mss_causal.lower() in ("true", "1", "on", "yes")
 
     parsed_max_days: Optional[int] = None
     if max_days.strip():
@@ -936,6 +962,7 @@ async def run_backtest(
             symbol=symbol,
             library_files=library_files,
             max_days=_resolve_library_max_days(parsed_max_days),
+            strict_mss_causal=strict_mss,
         )
 
     job_dir = TMP_DIR / str(uuid.uuid4())
@@ -967,6 +994,7 @@ async def run_backtest(
         symbol=symbol,
         max_days=_resolve_library_max_days(parsed_max_days),
         job_id=job_dir.name,
+        strict_mss_causal=strict_mss,
     )
 
 

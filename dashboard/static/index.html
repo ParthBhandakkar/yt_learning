@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Strategy Backtester</title>
-<link rel="stylesheet" href="style.css?v=20260702e">
+<link rel="stylesheet" href="style.css?v=20260704a">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <!-- TradingView Lightweight Charts v5 -->
 <script src="https://cdn.jsdelivr.net/npm/lightweight-charts@5.2.0/dist/lightweight-charts.standalone.production.js"></script>
@@ -68,6 +68,14 @@
             <div class="drive-divider"><span>OR add individual file links</span></div>
             <div id="drive-file-inputs"></div>
           </div>
+        </div>
+
+        <div class="strict-mss-row hidden" id="strict-mss-wrap">
+          <label class="strict-mss-toggle">
+            <input type="checkbox" id="strict-mss-causal">
+            Strict 1H MSS timing (enter only after the 1H candle closes — live-realistic)
+          </label>
+          <p class="strict-mss-hint">Off by default (legacy backtest). Turn on to remove same-hour MSS lookahead.</p>
         </div>
 
         <button class="btn-primary" id="btn-run" onclick="runBacktest()">Run Backtest</button>
@@ -195,6 +203,6 @@
     <pre class="loader-log" id="loader-log"></pre>
   </div>
 </div>
-<script src="app.js?v=20260702o"></script>
+<script src="app.js?v=20260704a"></script>
 </body>
 </html>

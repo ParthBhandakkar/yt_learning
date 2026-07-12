@@ -89,3 +89,5 @@
 [IST 13-Jul-2026 00:26:00] - Added compare_s98_vs_s97_forex.py; fair multi-pair results under dashboard/out/compare_s98_vs_s97_forex (s97 best FX basket; s98 gold specialist).
 
 [IST 13-Jul-2026 00:30:00] - Exness-aligned instrument specs in core.py (per-symbol pip/cost); fixed USDJPY heuristic pip 0.1?0.01; added audit_exness_pip_model.py; README contract-match table.
+
+[IST 13-Jul-2026 00:42:00] - README: documented per-pair/per-strategy backtest date windows (note EURUSD 1999+ vs others 2021+).

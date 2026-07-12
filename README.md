@@ -31,11 +31,36 @@ D:\Python\Python3_12_8\python.exe audit_exness_pip_model.py
 
 ## Head-to-head: s96 vs s97 vs s98 (all 8 pairs)
 
-**Data:** Exness structured history (full available span).  
+**Data:** Exness structured history (full available span per CSV — see windows below).  
 **Costs:** per-symbol class defaults; `pnl_R` stripped → **1×** `enrich_trades_pnl` (fair).  
 **Equity model:** start **$10,000**; risk **1% of initial ($100) per 1R** (fixed).  
 `return_pct` ≈ `total_R` under that model.  
 **Source:** `dashboard/out/full_pair_compare_s96_s97_s98/`
+
+### Backtest duration (data windows)
+
+Each strategy uses the **full CSV** available for its timeframe(s). Effective span = intersection of TFs it needs.
+
+| Strategy | Timeframes used | Typical window | Calendar span |
+|----------|-----------------|----------------|---------------|
+| **s96** | 4H + 1H + 15m + **5m** | Limited by **5m** start | ~**Jun/Jul 2021 → 1 Jul 2026** (~5.0–5.1 years) |
+| **s97** | **4H only** | Full 4H file | Most pairs **11 Mar 2021 → 1 Jul 2026** (~5.3 years); **EURUSD 4 Jan 1999 → 1 Jul 2026** (~27.5 years) |
+| **s98** | **1H** (4H bias resampled from 1H) | Full 1H file | Most pairs **11 Mar 2021 → 1 Jul 2026** (~5.3 years); **XAUUSD 2 Mar 2021 → 1 Jul 2026**; **EURUSD 4 Jan 1999 → 1 Jul 2026** (~27.5 years) |
+
+#### Per-pair CSV coverage (Exness library)
+
+| Pair | 4H (s97) | 1H (s98) | 5m (limits s96) | ~Years (1H/4H) |
+|------|----------|----------|-----------------|----------------|
+| GBPUSD | 2021-03-11 → 2026-07-01 | same | 2021-06-14 → 2026-07-01 | ~5.3 |
+| AUDUSD | 2021-03-11 → 2026-07-01 | same | 2021-06-14 → 2026-07-01 | ~5.3 |
+| **EURUSD** | **1999-01-04 → 2026-07-01** | **same** | **1999-01-04 → 2026-07-01** | **~27.5** |
+| NZDUSD | 2021-03-11 → 2026-07-01 | same | 2021-07-02 → 2026-07-01 | ~5.3 |
+| USDCAD | 2021-03-11 → 2026-07-01 | same | 2021-06-14 → 2026-07-01 | ~5.3 |
+| USDCHF | 2021-03-11 → 2026-07-01 | same | 2021-06-14 → 2026-07-01 | ~5.3 |
+| USDJPY | 2021-03-11 → 2026-07-01 | same | 2021-06-14 → 2026-07-01 | ~5.3 |
+| XAUUSD | 2021-03-02 → 2026-07-01 | same | 2021-07-02 → 2026-07-01 | ~5.3 |
+
+**Caveat:** EURUSD results for **s97/s98** cover a much longer history than the other pairs, so basket totals overweight EURUSD sample length. s96 is closer to apples-to-apples (~2021–2026 on all pairs via 5m).
 
 ### Basket summary
 

@@ -32,8 +32,9 @@ HOW TO FIX:
   3. Use close-only inversion; enter on the next bar after confirmation.
   4. Allow multiple days of trades instead of one break on first match.
 
-FIXED: Per-day NY loops; 1H bias from candles before session only; detect_fvg_as_of,
-ifvg_up_to (close-only), past_slice for SL; simulate_exits; one trade per day max.
+FIXED: Per-day NY loops; 1H bias from candles before session only; walk-forward
+detect_fvg_as_of / ifvg_up_to (no forward FVG windows); past_slice for SL;
+simulate_exits; one trade per day max.
 """
 
 import argparse
@@ -54,7 +55,6 @@ from causal_backtest import (
     ny_hour,
     ny_date,
     detect_fvg_as_of,
-    detect_fvgs_in_window,
     ifvg_up_to,
     index_at_or_after_timestamps,
     simulate_exits,
@@ -114,7 +114,7 @@ def find_macro_draw(candles_1h: list[Candle], orderflow: str) -> dict:
 # ---------------------------------------------------------------------------
 
 def find_post_open_fvg(candles: list[Candle], orderflow: str) -> Optional[dict]:
-    """Find first fresh FVG after 9:30 NY time aligned with orderflow (causal scan)."""
+    """Find first fresh FVG after 9:30 NY, discovered bar-by-bar (no forward peek)."""
     start = None
     for i, c in enumerate(candles):
         h = ny_hour(c.timestamp)
@@ -125,11 +125,14 @@ def find_post_open_fvg(candles: list[Candle], orderflow: str) -> Optional[dict]:
         return None
 
     end = min(start + 20, len(candles))
-    for fvg in detect_fvgs_in_window(candles, start, end):
-        if orderflow == "bullish" and fvg["direction"] == "bullish":
-            return fvg
-        if orderflow == "bearish" and fvg["direction"] == "bearish":
-            return fvg
+    for as_of in range(start + 2, end):
+        for fvg in detect_fvg_as_of(candles, as_of):
+            if fvg["idx"] < start:
+                continue
+            if orderflow == "bullish" and fvg["direction"] == "bullish":
+                return fvg
+            if orderflow == "bearish" and fvg["direction"] == "bearish":
+                return fvg
     return None
 
 
@@ -138,30 +141,36 @@ def find_post_open_fvg(candles: list[Candle], orderflow: str) -> Optional[dict]:
 # ---------------------------------------------------------------------------
 
 def check_1m_inversion(candles_1m: list[Candle], start_idx: int, max_bars: int = 30) -> Optional[dict]:
-    """Check if ALL micro FVGs in the pullback leg get inverted (close-only)."""
+    """Walk-forward: require all micro-FVGs formed so far to invert (no future peek)."""
     window_end = min(start_idx + max_bars, len(candles_1m))
-    micro_fvgs = detect_fvgs_in_window(candles_1m, start_idx, window_end)
-    if not micro_fvgs:
-        return None
+    for as_of in range(start_idx + 2, window_end):
+        micro_fvgs = [
+            f for f in detect_fvg_as_of(candles_1m, as_of)
+            if f["idx"] >= start_idx
+        ]
+        if not micro_fvgs:
+            continue
 
-    last_inv_idx = start_idx
-    for mfvg in micro_fvgs:
-        inv = None
-        for k in range(mfvg["idx"] + 1, window_end):
-            inv = ifvg_up_to(candles_1m, mfvg, k)
-            if inv:
-                last_inv_idx = max(last_inv_idx, inv["idx"])
+        last_inv_idx = start_idx
+        all_inverted = True
+        for mfvg in micro_fvgs:
+            inv = ifvg_up_to(candles_1m, mfvg, as_of)
+            if inv is None:
+                all_inverted = False
                 break
-        if inv is None:
-            return None
+            last_inv_idx = max(last_inv_idx, inv["idx"])
 
-    entry_candle = candles_1m[last_inv_idx]
-    return {
-        "entry_idx": last_inv_idx,
-        "entry_price": entry_candle.close,
-        "micro_fvgs_inverted": len(micro_fvgs),
-        "description": f"All {len(micro_fvgs)} micro-FVGs inverted at {entry_candle.close:.5f}",
-    }
+        if not all_inverted:
+            continue
+
+        entry_candle = candles_1m[last_inv_idx]
+        return {
+            "entry_idx": last_inv_idx,
+            "entry_price": entry_candle.close,
+            "micro_fvgs_inverted": len(micro_fvgs),
+            "description": f"All {len(micro_fvgs)} micro-FVGs inverted at {entry_candle.close:.5f}",
+        }
+    return None
 
 
 # ---------------------------------------------------------------------------

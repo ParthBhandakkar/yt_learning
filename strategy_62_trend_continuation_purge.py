@@ -149,7 +149,9 @@ def run_strategy(candles_1h: list[Candle], candles_5m: list[Candle], output_path
             continue
 
         bos_ts = h1_accum[bos["idx"]].timestamp
-        start_5m = next((i for i, c in enumerate(day_5m) if c.timestamp >= bos_ts), 0)
+        # BOS level is only actionable after the 1H candle closes.
+        next_1h_ts = bos_ts + 3600
+        start_5m = next((i for i, c in enumerate(day_5m) if c.timestamp >= next_1h_ts), 0)
 
         result = find_purge_entry_causal(day_5m, bos["level"], bos["type"], start_5m)
         if result is None:

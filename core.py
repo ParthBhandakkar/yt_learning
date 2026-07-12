@@ -628,8 +628,22 @@ def find_highest_tf_ifvg(
 # PnL helpers
 # ---------------------------------------------------------------------------
 
+# Exness XAUUSD contract (retail CFD):
+#   - Tick / point size = 0.01 USD (second decimal on the quote)
+#   - Exness "pip" for gold = 0.01 (1 pip move: 2350.00 -> 2350.01)
+#   - 1.0 lot = 100 troy oz; pip value ≈ $1.00 per Exness pip
+#   - Exness GBT also defines pip = 10 points; for XAUUSD the traded tick is 0.01
+# Framework metals "pip" stays at $1.00 so historical batch numbers stay comparable.
+# Convert: exness_pips = framework_pips / EXNESS_XAUUSD_PIP  (= framework_pips * 100)
+EXNESS_XAUUSD_PIP = 0.01
+
+
 def infer_pip_size(price: float) -> float:
-    """Guess pip size from price level (indices, metals, JPY, standard forex)."""
+    """Guess pip size from price level (indices, metals, JPY, standard forex).
+
+    For XAUUSD this returns 1.0 (one dollar), NOT the Exness tick of 0.01.
+    Use EXNESS_XAUUSD_PIP / price_to_exness_pips() when reporting broker pips.
+    """
     if price >= 1000:
         return 1.0
     if price >= 100:
@@ -637,6 +651,20 @@ def infer_pip_size(price: float) -> float:
     if price >= 10:
         return 0.01
     return 0.0001
+
+
+def price_to_exness_pips(price_move: float, ref_price: float = 2000.0) -> float:
+    """Convert a raw price move to Exness pip units for the instrument class."""
+    if ref_price >= 1000:
+        return price_move / EXNESS_XAUUSD_PIP
+    return price_move / infer_pip_size(ref_price)
+
+
+def framework_pips_to_exness(framework_pips: float, ref_price: float = 2000.0) -> float:
+    """Map framework metal pips ($1) to Exness gold pips ($0.01)."""
+    if ref_price >= 1000:
+        return framework_pips * (infer_pip_size(ref_price) / EXNESS_XAUUSD_PIP)
+    return framework_pips
 
 
 def trade_pnl_pips(trade: dict) -> float:
@@ -687,9 +715,14 @@ def trade_pnl_pips(trade: dict) -> float:
 # ---------------------------------------------------------------------------
 
 def _default_round_turn_cost_price(ref_price: float) -> float:
-    """Round-turn cost (spread + commission + slippage) in PRICE units by class."""
+    """Round-turn cost (spread + commission + slippage) in PRICE units by class.
+
+    XAUUSD (Exness Standard-style): avg spread often ~20-35 Exness pips
+    ($0.20-$0.35) plus a few cents slippage => ~$0.40 round-turn default.
+    Override with BT_COST_PRICE for Raw/Zero accounts (lower) or wide sessions.
+    """
     if ref_price >= 1000:        # metals like XAUUSD (~2000-3000)
-        return 0.40              # ~30c spread + ~10c slippage round-turn
+        return 0.40              # ~25-30 Exness pips spread + ~10c slippage
     if ref_price >= 100:         # JPY crosses (~150), some indices
         return 0.030
     if ref_price >= 10:          # e.g. silver (~25)

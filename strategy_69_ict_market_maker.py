@@ -161,7 +161,9 @@ def run_strategy(candles_4h: list[Candle], candles_15m: list[Candle], output_pat
             continue
 
         liq_ts = h4_accum[liq["idx"]].timestamp
-        start_15m = next((i for i, c in enumerate(day_15m) if c.timestamp >= liq_ts), 0)
+        # Liquidity level is only actionable after the 4H candle closes.
+        next_4h_ts = liq_ts + (4 * 3600)
+        start_15m = next((i for i, c in enumerate(day_15m) if c.timestamp >= next_4h_ts), 0)
 
         result = find_entry_15m_causal(day_15m, liq["level"], liq["type"], start_15m)
         if result is None:

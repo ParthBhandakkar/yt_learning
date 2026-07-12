@@ -31,7 +31,8 @@ HOW TO FIX:
   2. Map HTF events to exact 1m timestamps, not approximate index math.
   3. Loop per trading day; take all valid setups with proper exit simulation.
   4. Use close-only iFVG; confirm FVG/swing with +1 bar lag from core.py rules.
-  FIXED: Per-day loop, resample_as_of, map_tf_bar_to_1m_idx, ifvg_up_to, simulate_exits.
+  FIXED: Per-day loop, resample_as_of, map_tf_bar_close_to_1m_idx (entry after HTF close),
+  ifvg_up_to, simulate_exits.
 """
 
 import argparse
@@ -54,7 +55,7 @@ from causal_backtest import (
     resample_as_of,
     detect_fvg_as_of,
     ifvg_up_to,
-    map_tf_bar_to_1m_idx,
+    map_tf_bar_close_to_1m_idx,
     simulate_exits,
 )
 
@@ -148,7 +149,10 @@ def find_highest_tf_ifvg(
             inv = ifvg_up_to(tf_candles, fvg, tf_as_of)
             if inv is None or inv["idx"] != tf_as_of:
                 continue
-            entry_1m_idx = map_tf_bar_to_1m_idx(tf_candles[inv["idx"]], candles_1m)
+            # Enter only after the HTF inversion candle closes (not at its open).
+            entry_1m_idx = map_tf_bar_close_to_1m_idx(
+                tf_candles[inv["idx"]], candles_1m, tf_mult
+            )
             if entry_1m_idx < start_idx or entry_1m_idx > as_of_idx:
                 continue
             trade_dir = "long" if "bullish" in inv["direction"] else "short"

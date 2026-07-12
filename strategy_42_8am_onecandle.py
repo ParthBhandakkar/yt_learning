@@ -165,14 +165,17 @@ def run_strategy(candles_1h: list[Candle], candles_1m: list[Candle], output_path
 
         range_high = c8am.high
         range_low = c8am.low
-        range_ts = c8am.timestamp
+        # Range is only known after the 8AM 1H candle closes (next hour open).
+        range_ts = c8am.timestamp + 3600
 
         events_log = [{
             "timestamp": to_iso(range_ts),
             "type": "range_defined",
             "range_high": round(range_high, 5),
             "range_low": round(range_low, 5),
-            "description": f"8AM range: high={range_high:.5f}, low={range_low:.5f}",
+            "description": (
+                f"8AM range (after 1H close): high={range_high:.5f}, low={range_low:.5f}"
+            ),
         }]
 
         result = monitor_sweep_and_entry(candles_1m, range_high, range_low, range_ts, day)

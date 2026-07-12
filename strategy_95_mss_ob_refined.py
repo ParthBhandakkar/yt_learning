@@ -17,7 +17,8 @@ pullback entries. This version removes that filter and instead:
                           to ~82% and cuts variance. The edge is the EXPECTANCY
                           (~+0.22 to +0.29R/trade), not the win rate itself.
 
-Pipeline (fully causal, no lookahead):
+Pipeline (legacy default allows same-hour 1H MSS → 5M entry; use --strict-mss-causal
+for live-realistic timing that waits for the 1H candle to close):
   4H liquidity-sweep bias -> first 1H MSS within 16h (displacement-gated)
   -> 15M order block in OTE (0.62-0.79) -> 5M tap entry -> smart SL
   -> partial 0.5R + BE -> final 1.5R.

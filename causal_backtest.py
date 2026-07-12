@@ -350,3 +350,12 @@ def map_tf_bar_to_1m_idx(tf_bar: Candle, candles_1m: list[Candle]) -> int:
     """Find 1m index at or after HTF bar open timestamp."""
     idx = index_at_or_after(candles_1m, tf_bar.timestamp)
     return idx if idx < len(candles_1m) else len(candles_1m) - 1
+
+
+def map_tf_bar_close_to_1m_idx(
+    tf_bar: Candle, candles_1m: list[Candle], tf_minutes: int
+) -> int:
+    """Find 1m index at or after HTF bar close (live-realistic; no same-bar lookahead)."""
+    close_ts = tf_bar.timestamp + int(tf_minutes) * 60
+    idx = index_at_or_after(candles_1m, close_ts)
+    return idx if idx < len(candles_1m) else len(candles_1m) - 1

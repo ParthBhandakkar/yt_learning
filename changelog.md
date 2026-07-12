@@ -83,3 +83,5 @@
 [IST 12-Jul-2026 18:32:00] - Fresh Exness-cost batch of all 28 strategies (BT_COST_PRICE=0.45, no-resume) written to dashboard/out/batch_xauusd_exness*; s96 #1 total Exness PnL full+1y; s13 #1 PF; s28 timeout/fail.
 
 [IST 13-Jul-2026 00:10:00] - Fetched origin/live strategies strategy_96_mss_ob_tuned.py + strategy_97_trend_meanreversion.py; renumbered local unified strategy to strategy_98_*; Exness XAUUSD compare: remote s96 PF0.93/-610 Exness pips (19 trades), remote s97 PF0.77/-27.7k Exness pips — both underperform local s98.
+
+[IST 13-Jul-2026 00:23:00] - Added root README.md documenting Exness pip/cost conventions, causality limits, XAUUSD leaderboard (s98 best total PnL, s13 best PF, remote s96/s97 not gold winners), and s96/s97/s98 ID map.

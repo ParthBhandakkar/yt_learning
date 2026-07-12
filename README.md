@@ -2,105 +2,144 @@
 
 Causal backtests of YouTube/ICT-style strategies on Exness history, with realistic round-turn costs.
 
-## Exness XAUUSD conventions
+## Causality / leakage status (s96 / s97 / s98)
 
-| Item | Value |
-|------|-------|
-| Exness pip | `$0.01` (second decimal on the quote) |
-| Pip value | ≈ `$1` per Exness pip per **1.0 lot** (100 oz) |
-| Framework metals “pip” | `$1.00` (legacy batch units) |
-| Conversion | Exness pips = framework pips × **100** |
-| Default round-turn cost | `BT_COST_PRICE=0.45` (~45 Exness pips: spread + slippage) |
+| Strategy | Leakage-free design? | How entry/exit is gated | Notes |
+|----------|----------------------|-------------------------|-------|
+| **s96** Tuned MSS+OB | **Yes (by design)** | 5m search only **after 1H MSS candle closes**; strict OTE; session filter | Built to remove s95 same-hour lookahead |
+| **s97** Trend mean-rev | **Yes (by design)** | Indicators at bar `i`; signal on **close**; fill **next open**; stops use **prior-bar** ATR/SMA | ATR-normalized; no HTF peek |
+| **s98** Unified trail | **Yes (by design)** | **Completed 4H** bias only; 1H signal on close; fill **next 1H open**; ATR chandelier | Gold-first system |
+| Older ICT/scalps (many s01–s81) | **Mixed** | Some fixed (s06/s28/s42/s62/s69); s95 needs `--strict-mss-causal` | Do not assume all are clean |
 
-Override costs per run:
+## Exness contract match (per pair)
+
+Backtests use **price + R-multiples**, not lots. Pip **size** must match Exness.
+
+| Symbol | Exness pip | Contract / 1 lot | ≈$ / Exness pip @ 1 lot | Our model |
+|--------|------------|------------------|-------------------------|-----------|
+| EURUSD, GBPUSD, AUDUSD, NZDUSD | 0.0001 | 100,000 | $10 | Match |
+| USDCAD, USDCHF | 0.0001 | 100,000 | ~$10 / rate | Pip size match |
+| USDJPY | **0.01** | 100,000 | ~$6.67 @ 150 | Match |
+| XAUUSD | **0.01** | 100 oz | $1 | Broker pip 0.01; **stats unit $1** (×100) |
+
+Default RT **price** costs: FX majors ~0.00012 (~1.2 pips), JPY ~0.03 (~3 pips), gold ~0.40 (~40 Exness pips).  
+**Never** set one global `BT_COST_PRICE` when mixing gold and FX.
 
 ```powershell
-$env:BT_COST_PRICE = "0.45"
-$env:YT_DATA_ROOT = "O:\D temp\UltimateTradeBot\Data\Exness\structured\history"
+D:\Python\Python3_12_8\python.exe audit_exness_pip_model.py
 ```
 
-## Causality / lookahead (bias)
+## Head-to-head: s96 vs s97 vs s98 (all 8 pairs)
 
-**Not every strategy is proven fully bias-free.**
+**Data:** Exness structured history (full available span).  
+**Costs:** per-symbol class defaults; `pnl_R` stripped → **1×** `enrich_trades_pnl` (fair).  
+**Equity model:** start **$10,000**; risk **1% of initial ($100) per 1R** (fixed).  
+`return_pct` ≈ `total_R` under that model.  
+**Source:** `dashboard/out/full_pair_compare_s96_s97_s98/`
 
-What we did:
+### Basket summary
 
-- Fixed known HTF-close / LTF-open lookahead in **s06, s28, s42, s62, s69**.
-- **s95** supports `--strict-mss-causal` (batch ranking uses it).
-- Many newer strategies (**s90–s93, s97, s98**, remote **s96**) are written to be causal (closed-bar signals, next-bar fills).
-- Older ICT/scalp scripts may still have edge cases; treat integrity notices in each file seriously.
+| Strategy | Pairs +R | Trades | Total R | Return % (parallel books) | Avg R/trade | Worst pair max DD % |
+|----------|----------|-------:|--------:|--------------------------:|------------:|--------------------:|
+| s96 | 2 / 8 | 237 | **-38.3** | **-38.3%** | -0.162 | 22.0% |
+| **s97 Z=2.5** | **5 / 8** | 480 | **+30.3** | **+30.3%** | **+0.066** | **8.3%** |
+| s98 | 5 / 8 | 12,521 | +49.5 | +49.5% | +0.004 | 81.3% (FX bleed) |
 
-Do **not** assume “all strategies are leakage-free” without re-checking the specific script.
+**Basket takeaway:** **s97** is the best **forex basket** (highest avg R/trade, lowest DD, 5/8 pairs green). **s98** basket R is inflated by **XAUUSD only**; on FX it is unstable.
 
-## XAUUSD ranking (fair Exness cost model)
+### Best for what (recommended)
 
-Same harness: Exness history, `BT_COST_PRICE=0.45`, net PnL after costs.
+| Use case | Pick | Why |
+|----------|------|-----|
+| **XAUUSD (gold)** | **s98** | +164 R, +164% (1%/R model), PF 1.51, DD ~19% |
+| **FX multi-pair basket** | **s97 Z=2.5** | +30 R basket, +0.066 R/trade, DD ~8% |
+| **GBPUSD** | **s96** | +14.6 R, PF 2.69, DD 2.8% (best quality on that pair) |
+| **NZDUSD / USDCHF / USDJPY** | **s97** | Best total R with PF > 1 and small DD |
+| **EURUSD / USDCAD** | Prefer **s97** or **s96** for live | s98 can lead raw R but PF ≤ 1 and DD is large |
+| **AUDUSD** | None (all ≤ 0) | Least-bad: s97 |
 
-### Best on gold (full history)
+### Per-pair results (full metrics)
 
-| Rank by total PnL | Strategy | Role | Trades | PF | Exness pips (approx) |
-|-------------------|----------|------|-------:|---:|---------------------:|
-| **1** | **s98** Unified trend + liquidity + ATR trail | **Best total returns** | 982 | 1.50 | **+327,260** |
-| 2 | **s90** Donchian + ATR chandelier | Strong trend runner | 95 | 1.97 | +204,780 |
-| 3 | **s13** 3-step ICT Gold + SMT | **Best profit factor** | 53 | **5.45** | +124,570 |
-| 4 | **s91** MTF liquidity reclaim | Robust sample | 523 | 1.36 | +112,900 |
+#### s98 (ours)
 
-### Not the gold winner
+| Pair | Trades | WR% | PF | Total R | Return % | Max DD % | Net Exness pips | Max DD (Exness pips) |
+|------|-------:|----:|---:|--------:|---------:|---------:|----------------:|---------------------:|
+| GBPUSD | 1120 | 32.7 | 0.97 | +10.4 | +10.4 | 19.0 | -653 | 1444 |
+| AUDUSD | 1097 | 30.6 | 0.80 | -62.2 | -62.2 | 77.1 | -2712 | 3065 |
+| EURUSD | 4964 | 33.4 | 0.95 | +22.0 | +22.0 | 63.6 | -4406 | 9503 |
+| NZDUSD | 1109 | 32.0 | 0.79 | -76.7 | -76.7 | 81.3 | -2825 | 3103 |
+| USDCAD | 1083 | 32.7 | 0.92 | +12.3 | +12.3 | 37.0 | -1360 | 3005 |
+| USDCHF | 1121 | 31.8 | 0.84 | -25.9 | -25.9 | 51.2 | -2248 | 2745 |
+| USDJPY | 1045 | 34.6 | 1.07 | +5.4 | +5.4 | 33.8 | +1537 | 1643 |
+| **XAUUSD** | **982** | **39.6** | **1.51** | **+164.1** | **+164.1** | **19.1** | **+332,220** | **29,640** |
 
-| Strategy | Notes on XAUUSD |
-|----------|-----------------|
-| **s96** Tuned MSS + OB (remote) | FX-oriented; on gold ~PF 0.93–0.98, slight **net loss** (fair 1× cost) |
-| **s97** With-trend mean-reversion (remote) | Designed as multi-pair basket; **soft/negative on XAUUSD alone** |
-| High-count ICT/Judas/scalps (e.g. s65, s29, s01, s04, s56) | Bleed after realistic gold costs |
+#### s97 Z=2.5 (remote forex claim)
 
-### How to read “best”
+| Pair | Trades | WR% | PF | Total R | Return % | Max DD % | Net Exness pips | Max DD (Exness pips) |
+|------|-------:|----:|---:|--------:|---------:|---------:|----------------:|---------------------:|
+| GBPUSD | 41 | 82.9 | 2.44 | +11.4 | +11.4 | 1.1 | +929 | 301 |
+| AUDUSD | 38 | 57.9 | 0.92 | -1.8 | -1.8 | 4.8 | -64 | 322 |
+| EURUSD | 192 | 66.2 | 1.09 | +10.5 | +10.5 | 7.5 | +545 | 935 |
+| NZDUSD | 38 | 73.7 | 2.04 | +5.3 | +5.3 | 2.8 | +375 | 125 |
+| USDCAD | 39 | 53.9 | 0.88 | -2.8 | -2.8 | 5.2 | -96 | 326 |
+| USDCHF | 39 | 61.5 | 1.15 | +3.0 | +3.0 | 4.4 | +117 | 403 |
+| USDJPY | 52 | 76.9 | 1.98 | +10.4 | +10.4 | 3.5 | +1377 | 543 |
+| XAUUSD | 41 | 53.7 | 1.21 | -5.9 | -5.9 | 8.3 | +9810* | 23870 |
 
-- **Best money / total net PnL** → **s98**
-- **Best efficiency (PF)** → **s13** (small sample)
-- **Remote s96 is not best on gold** (easy to confuse with our older “s96” naming; unified system is **s98**)
+\*Gold Exness-pip totals can look large vs R because stop distances are wide in $0.01 pips; **trust R / return %** for cross-asset comparison.
 
-Fair-cost note: strategies that emit `pnl_R` were briefly over-charged 1.5× round-turn in enrich; re-scoring remotes at **1×** price-based cost does **not** change the ranking (s98 still wins; remote s96/s97 still lose on gold).
+#### s96 (remote MSS+OB)
 
-## Strategy ID map (recent)
+| Pair | Trades | WR% | PF | Total R | Return % | Max DD % | Net Exness pips | Max DD (Exness pips) |
+|------|-------:|----:|---:|--------:|---------:|---------:|----------------:|---------------------:|
+| **GBPUSD** | **24** | **62.5** | **2.69** | **+14.6** | **+14.6** | **2.8** | **+379** | **73** |
+| AUDUSD | 20 | 35.0 | 0.74 | -2.6 | -2.6 | 5.3 | -88 | 131 |
+| EURUSD | 97 | 34.0 | 0.65 | -21.9 | -21.9 | 22.0 | -606 | 606 |
+| NZDUSD | 18 | 16.7 | 0.18 | -13.0 | -13.0 | 13.7 | -273 | 289 |
+| USDCAD | 21 | 47.6 | 1.21 | +4.0 | +4.0 | 5.1 | +64 | 142 |
+| USDCHF | 21 | 28.6 | 0.46 | -9.2 | -9.2 | 10.6 | -206 | 241 |
+| USDJPY | 17 | 29.4 | 0.77 | -1.5 | -1.5 | 7.9 | -72 | 187 |
+| XAUUSD | 19 | 26.3 | 0.99 | -8.6 | -8.6 | 8.6 | -90 | 4710 |
 
-| ID | File | Origin |
-|----|------|--------|
-| s96 | `strategy_96_mss_ob_tuned.py` | Remote `live` (MSS+OB tuned) |
-| s97 | `strategy_97_trend_meanreversion.py` | Remote `live` (4H trend MR) |
-| s98 | `strategy_98_xau_trend_liquidity_trail.py` | Local unified XAUUSD system |
+### Winner by pair (raw total R)
 
-## How to batch-backtest on XAUUSD
+| Pair | Winner by total R | Live recommendation |
+|------|-------------------|---------------------|
+| GBPUSD | s96 | **s96** |
+| AUDUSD | s97 (least bad) | Avoid / tiny size |
+| EURUSD | s98 | Prefer **s97** (PF>1, DD 7.5% vs 63%) |
+| NZDUSD | s97 | **s97** |
+| USDCAD | s98 | Prefer **s96** (PF 1.21) or s97 caution |
+| USDCHF | s97 | **s97** |
+| USDJPY | s97 | **s97** |
+| XAUUSD | s98 | **s98** |
+
+## Strategy ID map
+
+| ID | File | Role |
+|----|------|------|
+| s96 | `strategy_96_mss_ob_tuned.py` | Remote MSS+OB; best on **GBPUSD** |
+| s97 | `strategy_97_trend_meanreversion.py` | Remote 4H trend MR; **best FX basket** |
+| s98 | `strategy_98_xau_trend_liquidity_trail.py` | Local unified; **best XAUUSD** |
+
+## How to reproduce
 
 ```powershell
 $env:YT_DATA_ROOT = "O:\D temp\UltimateTradeBot\Data\Exness\structured\history"
+# Do NOT set BT_COST_PRICE for mixed FX+gold runs
+D:\Python\Python3_12_8\python.exe full_pair_compare_s96_s97_s98.py
+D:\Python\Python3_12_8\python.exe audit_exness_pip_model.py
+```
+
+Gold-only historical batch (optional override):
+
+```powershell
 $env:BT_COST_PRICE = "0.45"
 D:\Python\Python3_12_8\python.exe batch_xauusd_backtest.py --exness-cost --windows 365,0
 ```
 
-Compare remote s96/s97 vs s98:
-
-```powershell
-D:\Python\Python3_12_8\python.exe compare_remote_live_strategies.py
-D:\Python\Python3_12_8\python.exe check_fair_cost_compare.py
-```
-
-Outputs land under `dashboard/out/` (e.g. `batch_xauusd_exness_summary.csv`, `compare_remote_live/`).
-
-## What winners share (XAUUSD)
-
-- Higher-timeframe bias (completed bars only)
-- Trade with trend or selective reclaim — not pure 1m scalp spam
-- Stops large enough vs gold spread; let winners run (trail) instead of tiny fixed 2R scalps
-- Next-bar open entry; one position
-
-## What losers share
-
-- Huge trade counts with small edge vs ~45 Exness-pip round-turn
-- Session Judas / US30 logic transplanted onto gold without HTF filter
-- Fixed 2R targets that cut runners
-- Cost-blind backtests
-
 ## Docs
 
-- `changelog.md` — append-only change log
-- `Q&A.md` — ranking / Exness / remote-compare decisions
+- `changelog.md` — append-only change log  
+- `Q&A.md` — ranking / Exness / compare decisions  
+- `dashboard/out/full_pair_compare_s96_s97_s98/` — CSV/JSON for this table  

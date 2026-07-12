@@ -637,33 +637,89 @@ def find_highest_tf_ifvg(
 # Convert: exness_pips = framework_pips / EXNESS_XAUUSD_PIP  (= framework_pips * 100)
 EXNESS_XAUUSD_PIP = 0.01
 
+# Exness-style retail CFD specs (pip SIZE + contract). Pip VALUE in account
+# currency depends on quote currency; we store the common USD-account figures.
+# Source: Exness Help Center contract specs / pip tables (majors, JPY, metals).
+EXNESS_INSTRUMENT_SPECS: dict[str, dict] = {
+    "EURUSD": {"pip": 0.0001, "contract": 100_000, "rt_cost_price": 0.00012, "pip_value_1lot_usd": 10.0},
+    "GBPUSD": {"pip": 0.0001, "contract": 100_000, "rt_cost_price": 0.00012, "pip_value_1lot_usd": 10.0},
+    "AUDUSD": {"pip": 0.0001, "contract": 100_000, "rt_cost_price": 0.00012, "pip_value_1lot_usd": 10.0},
+    "NZDUSD": {"pip": 0.0001, "contract": 100_000, "rt_cost_price": 0.00012, "pip_value_1lot_usd": 10.0},
+    "USDCAD": {"pip": 0.0001, "contract": 100_000, "rt_cost_price": 0.00015, "pip_value_1lot_usd": None},
+    "USDCHF": {"pip": 0.0001, "contract": 100_000, "rt_cost_price": 0.00015, "pip_value_1lot_usd": None},
+    "USDJPY": {"pip": 0.01, "contract": 100_000, "rt_cost_price": 0.030, "pip_value_1lot_usd": None},
+    # framework_pip: stats unit ($1). Broker pip remains EXNESS_XAUUSD_PIP.
+    "XAUUSD": {
+        "pip": EXNESS_XAUUSD_PIP,
+        "framework_pip": 1.0,
+        "contract": 100,
+        "rt_cost_price": 0.40,
+        "pip_value_1lot_usd": 1.0,
+    },
+    "XAGUSD": {"pip": 0.001, "contract": 5000, "rt_cost_price": 0.020, "pip_value_1lot_usd": None},
+}
 
-def infer_pip_size(price: float) -> float:
-    """Guess pip size from price level (indices, metals, JPY, standard forex).
 
-    For XAUUSD this returns 1.0 (one dollar), NOT the Exness tick of 0.01.
-    Use EXNESS_XAUUSD_PIP / price_to_exness_pips() when reporting broker pips.
+def normalize_symbol(symbol: Optional[str]) -> str:
+    if not symbol:
+        return ""
+    return "".join(ch for ch in str(symbol).upper() if ch.isalnum())
+
+
+def exness_spec(symbol: Optional[str]) -> Optional[dict]:
+    key = normalize_symbol(symbol)
+    if not key:
+        return None
+    if key in EXNESS_INSTRUMENT_SPECS:
+        return EXNESS_INSTRUMENT_SPECS[key]
+    # Soft match: symbol embeds a known key (e.g. filename stem)
+    for known, spec in EXNESS_INSTRUMENT_SPECS.items():
+        if known in key:
+            return spec
+    return None
+
+
+def infer_pip_size(price: float, symbol: Optional[str] = None) -> float:
+    """Pip size for PnL labeling.
+
+    Prefer Exness symbol specs when `symbol` is known.
+    XAUUSD keeps framework pip = $1.00 (not broker 0.01) for legacy stats.
+    Price heuristic is fallback only — USDJPY must NOT use 0.1 (Exness = 0.01).
     """
-    if price >= 1000:
+    spec = exness_spec(symbol)
+    if spec is not None:
+        if "framework_pip" in spec:
+            return float(spec["framework_pip"])
+        return float(spec["pip"])
+
+    # Heuristic fallback (no symbol): JPY-like prices use 0.01, not 0.1.
+    if price >= 1000:        # metals when symbol unknown → framework $1
         return 1.0
-    if price >= 100:
-        return 0.1
-    if price >= 10:
+    if price >= 50:          # JPY pairs (~100-200), some indices
         return 0.01
-    return 0.0001
+    if price >= 10:          # silver-like
+        return 0.01
+    return 0.0001            # standard FX majors
 
 
-def price_to_exness_pips(price_move: float, ref_price: float = 2000.0) -> float:
-    """Convert a raw price move to Exness pip units for the instrument class."""
+def price_to_exness_pips(
+    price_move: float, ref_price: float = 2000.0, symbol: Optional[str] = None
+) -> float:
+    """Convert a raw price move to Exness broker pip units."""
+    spec = exness_spec(symbol)
+    if spec is not None:
+        return price_move / float(spec["pip"])
     if ref_price >= 1000:
         return price_move / EXNESS_XAUUSD_PIP
-    return price_move / infer_pip_size(ref_price)
+    return price_move / infer_pip_size(ref_price, symbol=symbol)
 
 
-def framework_pips_to_exness(framework_pips: float, ref_price: float = 2000.0) -> float:
+def framework_pips_to_exness(
+    framework_pips: float, ref_price: float = 2000.0, symbol: Optional[str] = None
+) -> float:
     """Map framework metal pips ($1) to Exness gold pips ($0.01)."""
-    if ref_price >= 1000:
-        return framework_pips * (infer_pip_size(ref_price) / EXNESS_XAUUSD_PIP)
+    if (symbol and normalize_symbol(symbol).startswith("XAU")) or ref_price >= 1000:
+        return framework_pips * (infer_pip_size(ref_price, symbol=symbol) / EXNESS_XAUUSD_PIP)
     return framework_pips
 
 
@@ -684,7 +740,8 @@ def trade_pnl_pips(trade: dict) -> float:
         return 0.0
 
     ref = float(entry)
-    pip_size = infer_pip_size(ref)
+    sym = trade.get("symbol") or trade.get("pair")
+    pip_size = infer_pip_size(ref, symbol=sym)
     direction = (trade.get("direction") or "").lower()
     if direction in ("long", "bullish"):
         raw = float(exit_p) - ref
@@ -693,7 +750,7 @@ def trade_pnl_pips(trade: dict) -> float:
     else:
         return 0.0
     gross = raw / pip_size
-    cost = round_turn_cost_pips(ref)
+    cost = round_turn_cost_pips(ref, symbol=sym)
     return round(gross - cost, 1)
 
 
@@ -712,32 +769,37 @@ def trade_pnl_pips(trade: dict) -> float:
 # conservative-but-realistic. Override per run with the env vars below.
 #   BT_COST_PRICE       explicit round-turn cost in price units (highest priority)
 #   BT_SLIPPAGE_PRICE   extra slippage in price units added on top of class default
+#
+# WARNING: BT_COST_PRICE is in raw PRICE units. Never set one global value when
+# mixing XAUUSD (~0.40) and FX majors (~0.00012) — units are not comparable.
 # ---------------------------------------------------------------------------
 
-def _default_round_turn_cost_price(ref_price: float) -> float:
-    """Round-turn cost (spread + commission + slippage) in PRICE units by class.
+def _default_round_turn_cost_price(ref_price: float, symbol: Optional[str] = None) -> float:
+    """Round-turn cost (spread + commission + slippage) in PRICE units.
 
-    XAUUSD (Exness Standard-style): avg spread often ~20-35 Exness pips
-    ($0.20-$0.35) plus a few cents slippage => ~$0.40 round-turn default.
-    Override with BT_COST_PRICE for Raw/Zero accounts (lower) or wide sessions.
+    Prefer Exness symbol table; else class-by-price heuristic.
     """
+    spec = exness_spec(symbol)
+    if spec is not None and "rt_cost_price" in spec:
+        return float(spec["rt_cost_price"])
+
     if ref_price >= 1000:        # metals like XAUUSD (~2000-3000)
         return 0.40              # ~25-30 Exness pips spread + ~10c slippage
-    if ref_price >= 100:         # JPY crosses (~150), some indices
-        return 0.030
+    if ref_price >= 50:          # JPY pairs
+        return 0.030             # ~3 Exness pips
     if ref_price >= 10:          # e.g. silver (~25)
         return 0.020
     return 0.00012               # FX majors (~1.2 pip round-turn)
 
 
-def round_turn_cost_price(ref_price: float) -> float:
+def round_turn_cost_price(ref_price: float, symbol: Optional[str] = None) -> float:
     explicit = os.environ.get("BT_COST_PRICE")
     if explicit:
         try:
             return float(explicit)
         except ValueError:
             pass
-    base = _default_round_turn_cost_price(ref_price)
+    base = _default_round_turn_cost_price(ref_price, symbol=symbol)
     extra = os.environ.get("BT_SLIPPAGE_PRICE")
     if extra:
         try:
@@ -747,7 +809,7 @@ def round_turn_cost_price(ref_price: float) -> float:
     return base
 
 
-def round_turn_cost_pips(ref_price: float) -> float:
+def round_turn_cost_pips(ref_price: float, symbol: Optional[str] = None) -> float:
     """Round-turn cost expressed in the framework's pip unit for this price."""
     if ref_price <= 0:
         return 0.0
@@ -758,7 +820,11 @@ def round_turn_cost_pips(ref_price: float) -> float:
             mult = float(env_mult)
         except ValueError:
             mult = 1.0
-    return mult * round_turn_cost_price(ref_price) / infer_pip_size(ref_price)
+    return (
+        mult
+        * round_turn_cost_price(ref_price, symbol=symbol)
+        / infer_pip_size(ref_price, symbol=symbol)
+    )
 
 
 MIN_VALID_TRADE_TS = 86400  # 1970-01-02 UTC — reject epoch-0/garbage only, allow all real history (FX data goes back to 1971/1999)
@@ -834,7 +900,7 @@ def _gross_pnl_pips(trade: dict) -> Optional[float]:
     if entry is None or exit_p is None:
         return None
     ref = float(entry)
-    pip_size = infer_pip_size(ref)
+    pip_size = infer_pip_size(ref, symbol=trade.get("symbol") or trade.get("pair"))
     direction = (trade.get("direction") or "").lower()
     if direction in ("long", "bullish"):
         raw = float(exit_p) - ref
@@ -856,6 +922,7 @@ def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
     not cover its own trading cost is correctly counted as a loser.
     """
     for trade in trades:
+        sym = trade.get("symbol") or trade.get("pair")
         # Strategies with multi-leg exits (partial profit + breakeven, scaling)
         # cannot be represented by a single entry->exit price. They report their
         # realized result in 'pnl_R'; honor it here (net of round-turn cost, with
@@ -863,10 +930,10 @@ def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
         if trade.get("pnl_R") is not None and trade.get("entry_price") is not None \
                 and trade.get("stop_loss") is not None and _trade_has_valid_exit_time(trade):
             ref = float(trade["entry_price"])
-            pip = infer_pip_size(ref)
+            pip = infer_pip_size(ref, symbol=sym)
             risk_pips = abs(ref - float(trade["stop_loss"])) / pip
             gross_pips = float(trade["pnl_R"]) * risk_pips
-            cost_pips = round_turn_cost_pips(ref) * 1.5  # entry + two exits
+            cost_pips = round_turn_cost_pips(ref, symbol=sym) * 1.5  # entry + two exits
             net = round(gross_pips - cost_pips, 1)
             trade["pnl_gross_pips"] = round(gross_pips, 1)
             trade["cost_pips"] = round(cost_pips, 1)
@@ -889,7 +956,7 @@ def enrich_trades_pnl(trades: list[dict]) -> list[dict]:
         gross = _gross_pnl_pips(trade)
         if gross is not None and _trade_has_valid_exit_time(trade):
             ref = float(trade["entry_price"])
-            cost = round_turn_cost_pips(ref)
+            cost = round_turn_cost_pips(ref, symbol=sym)
             net = round(gross - cost, 1)
             trade["pnl_gross_pips"] = round(gross, 1)
             trade["cost_pips"] = round(cost, 1)

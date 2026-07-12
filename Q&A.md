@@ -34,3 +34,15 @@
 
 **Q:** New strategies on origin/live — how do they do on XAUUSD under Exness costs?
 **A:** Fetched strategy_96_mss_ob_tuned.py (MSS+OB tuned) and strategy_97_trend_meanreversion.py. Local unified strategy renumbered to s98 to avoid ID clash. Same BT_COST_PRICE=0.45. On XAUUSD: remote s96 ? 0 trades (1y) / 19 trades PF 0.93 full; remote s97 ? PF 0.74–0.77 and net loss (author noted XAUUSD soft). Local s98 still leads total returns.
+
+
+## 2026-07-13 — s98 vs remote s97 forex basket
+
+**Q:** How does our gold-best s98 compare to remote s97 on the 8-pair forex basket it claims?
+**A:** Fair 1x-cost re-run on Exness data. s97 Z=2.5 best cross-pair quality (+30.6R basket, +0.067R/trade, 5/8 pairs). s98 wins only via XAUUSD (+164R); FX-only about -94R. Use s97 for FX basket, s98 for gold.
+
+
+## 2026-07-13 — Exness pip/lot match per pair
+
+**Q:** Do our backtests use the same pip/contract conventions as Exness for each pair?
+**A:** Pip SIZE now matches via EXNESS_INSTRUMENT_SPECS in core.py (FX 0.0001, JPY 0.01, XAU 0.01 broker / $1 framework). Contract sizes documented (FX 100k, gold 100 oz). We do **not** simulate lot inventory — PnL is price/R based. Fixed prior USDJPY heuristic bug (0.1 ? 0.01). Never set one BT_COST_PRICE across gold+FX. Run udit_exness_pip_model.py to verify.

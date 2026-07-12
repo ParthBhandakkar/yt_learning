@@ -85,3 +85,7 @@
 [IST 13-Jul-2026 00:10:00] - Fetched origin/live strategies strategy_96_mss_ob_tuned.py + strategy_97_trend_meanreversion.py; renumbered local unified strategy to strategy_98_*; Exness XAUUSD compare: remote s96 PF0.93/-610 Exness pips (19 trades), remote s97 PF0.77/-27.7k Exness pips — both underperform local s98.
 
 [IST 13-Jul-2026 00:23:00] - Added root README.md documenting Exness pip/cost conventions, causality limits, XAUUSD leaderboard (s98 best total PnL, s13 best PF, remote s96/s97 not gold winners), and s96/s97/s98 ID map.
+
+[IST 13-Jul-2026 00:26:00] - Added compare_s98_vs_s97_forex.py; fair multi-pair results under dashboard/out/compare_s98_vs_s97_forex (s97 best FX basket; s98 gold specialist).
+
+[IST 13-Jul-2026 00:30:00] - Exness-aligned instrument specs in core.py (per-symbol pip/cost); fixed USDJPY heuristic pip 0.1?0.01; added audit_exness_pip_model.py; README contract-match table.

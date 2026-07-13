@@ -657,6 +657,13 @@ EXNESS_INSTRUMENT_SPECS: dict[str, dict] = {
         "pip_value_1lot_usd": 1.0,
     },
     "XAGUSD": {"pip": 0.001, "contract": 5000, "rt_cost_price": 0.020, "pip_value_1lot_usd": None},
+    # Exness crypto: pip size 0.1, contract 1 BTC; RT ~$20-40 typical Standard spread+slip.
+    "BTCUSD": {
+        "pip": 0.1,
+        "contract": 1,
+        "rt_cost_price": 25.0,
+        "pip_value_1lot_usd": 0.1,
+    },
 }
 
 
@@ -693,6 +700,8 @@ def infer_pip_size(price: float, symbol: Optional[str] = None) -> float:
         return float(spec["pip"])
 
     # Heuristic fallback (no symbol): JPY-like prices use 0.01, not 0.1.
+    if price >= 10_000:      # BTC-like when symbol unknown → Exness pip 0.1
+        return 0.1
     if price >= 1000:        # metals when symbol unknown → framework $1
         return 1.0
     if price >= 50:          # JPY pairs (~100-200), some indices
@@ -783,6 +792,8 @@ def _default_round_turn_cost_price(ref_price: float, symbol: Optional[str] = Non
     if spec is not None and "rt_cost_price" in spec:
         return float(spec["rt_cost_price"])
 
+    if ref_price >= 10_000:      # BTC-like
+        return 25.0
     if ref_price >= 1000:        # metals like XAUUSD (~2000-3000)
         return 0.40              # ~25-30 Exness pips spread + ~10c slippage
     if ref_price >= 50:          # JPY pairs

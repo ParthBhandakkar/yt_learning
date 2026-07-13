@@ -21,6 +21,7 @@ Backtests use **price + R-multiples**, not lots. Pip **size** must match Exness.
 | USDCAD, USDCHF | 0.0001 | 100,000 | ~$10 / rate | Pip size match |
 | USDJPY | **0.01** | 100,000 | ~$6.67 @ 150 | Match |
 | XAUUSD | **0.01** | 100 oz | $1 | Broker pip 0.01; **stats unit $1** (×100) |
+| BTCUSD | **0.1** | 1 BTC | $0.10 | Match; RT cost ~$25 price |
 
 Default RT **price** costs: FX majors ~0.00012 (~1.2 pips), JPY ~0.03 (~3 pips), gold ~0.40 (~40 Exness pips).  
 **Never** set one global `BT_COST_PRICE` when mixing gold and FX.
@@ -201,6 +202,67 @@ Same fair cost model as above. Each CSV is trimmed to **N days back from that fi
 
 \*Winner by total R but R ≤ 0 or PF ≤ 1 — treat as least-bad, not a live pick.
 
+## YouTuber expansion (s99–s102 vs s96/s97/s98)
+
+New strategies are **mechanical proxies** of discretionary YouTube teachings (not live 1:1 parity). Rules + source video are in each file header (dashboard `Video:` discovery).
+
+| ID | Creator | Mechanical proxy | Source video |
+|----|---------|------------------|--------------|
+| **s99** | Power of Stocks | Golden Setup: day-open + round-level break, 3R | [Token IQ Part-1](https://www.youtube.com/watch?v=8cbKitkmxFc) |
+| **s100** | TopG Traders | 4H BOS + S/D zone tap on 1H, 2R | [Course playlist](https://www.youtube.com/playlist?list=PLwdM5wWQGYyD46U5NBDjOuSV7PyEUJQ81) |
+| **s101** | Vinbull Trading Academy | 4H EMA bias + 1H engulf at swing S/R, 2R | [S/R PA](https://www.youtube.com/watch?v=P34rJtjc7kw) |
+| **s102** | Trading Techstreet | Prior-day H/L + pin/engulf break-entry scalp, 1.5R | [Gold/crypto analysis](https://www.youtube.com/watch?v=TUurudYuDtg) |
+| **s103** | Power of Stocks | **5EMA alert candle** (canonical mechanical; separate from s99) | same channel / 5EMA teaching |
+| **s104** | Power of Stocks | Inside-candle breakout (separate from s99/s103) | same channel |
+| **s105** | TopG Traders | **CHOCH reversal** (separate from s100 continuation) | same playlist |
+
+**Already covered in lab:** Faiz SMC (most s01–s81). **Gap filled:** the four creators above.
+
+**Markets:** 7 FX + XAUUSD + **BTCUSD** (Exness library).  
+**Harness:** `compare_youtuber_strats.py` → `dashboard/out/compare_youtuber_strats/`  
+**Windows:** full + 3m / 6m / 1y from data end ≈ **2026-07-10**.
+
+### Basket (9 pairs, parallel $10k / 1% per R)
+
+| Window | s96 | s97 | s98 | **s99** | s100 | s101 | s102 |
+|--------|----:|----:|----:|--------:|-----:|-----:|-----:|
+| full Total R | -39 | +35 | +95 | **+671** | -210 | -384 | -446 |
+| full worst DD% | 22 | **8** | 82 | 96 | 110 | 211 | 165 |
+| 1y Total R | -6 | +4 | **+113** | +6 | -5 | -87 | -62 |
+| 3m Total R | -4 | +1 | -0 | **+12** | -11 | -32 | +4 |
+
+**Caveats:** s99 full-history basket is inflated by **EURUSD’s long CSV** (same issue as earlier s97/s98 full runs) and very high trade count / drawdown — **not** a quality win. On **1y**, **s98** leads basket total R with better structure than s99.
+
+### XAUUSD (gold)
+
+| Window | Best | Total R | PF | DD% |
+|--------|------|--------:|---:|----:|
+| full | **s98** | +163 | 1.49 | 19% |
+| 1y | **s98** | +77 | 1.82 | 3.9% |
+| 6m | **s98** | +37 | 1.86 | 2.9% |
+| 3m | **s98** | +13 | 1.45 | 3.6% |
+
+s99 is #2 on gold most windows but with much larger DD than s98.
+
+### BTCUSD
+
+| Window | Best | Total R | Notes |
+|--------|------|--------:|-------|
+| full | **s99** | +144 | High trade count; DD ~33% |
+| 1y | **s98** | +15 | s102 close (+15 R, better PF 1.81) |
+| 6m | **s99** | +42 | s102 +10 R / PF 2.19 |
+| 3m | **s99** | +27 | — |
+
+### Live recommendation after this expansion
+
+| Use case | Pick |
+|----------|------|
+| **XAUUSD** | Still **s98** |
+| **FX basket quality** | Still **s97 Z=2.5** |
+| **GBPUSD** | Still **s96** (full history) |
+| **BTCUSD (exploratory)** | **s99** or **s102** on recent windows; treat as research only |
+| **s100 / s101** | Not recommended as-is (negative full baskets) |
+
 ## Strategy ID map
 
 | ID | File | Role |
@@ -208,16 +270,26 @@ Same fair cost model as above. Each CSV is trimmed to **N days back from that fi
 | s96 | `strategy_96_mss_ob_tuned.py` | Remote MSS+OB; best on **GBPUSD** |
 | s97 | `strategy_97_trend_meanreversion.py` | Remote 4H trend MR; **best FX basket** |
 | s98 | `strategy_98_xau_trend_liquidity_trail.py` | Local unified; **best XAUUSD** |
+| s99 | `strategy_99_pos_golden_setup.py` | Power of Stocks Golden Setup proxy |
+| s100 | `strategy_100_topg_structure_sd.py` | TopG structure S/D continuation proxy |
+| s101 | `strategy_101_vinbull_pa_sr.py` | Vinbull PA S/R proxy |
+| s102 | `strategy_102_techstreet_level_scalp.py` | Techstreet level scalp proxy |
+| s103 | `strategy_103_pos_5ema.py` | Power of Stocks **5EMA** (separate) |
+| s104 | `strategy_104_pos_inside_candle.py` | Power of Stocks **inside candle** (separate) |
+| s105 | `strategy_105_topg_choch_reversal.py` | TopG **CHOCH reversal** (separate) |
 
 ## How to reproduce
 
 ```powershell
 $env:YT_DATA_ROOT = "O:\D temp\UltimateTradeBot\Data\Exness\structured\history"
-# Do NOT set BT_COST_PRICE for mixed FX+gold runs
+# Do NOT set BT_COST_PRICE for mixed FX+gold+BTC runs
 D:\Python\Python3_12_8\python.exe full_pair_compare_s96_s97_s98.py
 # Phased 3m/6m/1y/2y/3y from each CSV's latest bar (optional OUT on D: if O: is full)
 $env:YT_WINDOW_OUT = "D:\temp\yt_learning_window_compare"
 D:\Python\Python3_12_8\python.exe full_pair_compare_windows.py
+# YouTuber proxies s99-s102 vs baselines (includes BTCUSD)
+$env:YT_YOUTUBER_OUT = "D:\temp\yt_learning_youtuber_compare"
+D:\Python\Python3_12_8\python.exe compare_youtuber_strats.py
 D:\Python\Python3_12_8\python.exe audit_exness_pip_model.py
 ```
 
@@ -234,4 +306,5 @@ D:\Python\Python3_12_8\python.exe batch_xauusd_backtest.py --exness-cost --windo
 - `Q&A.md` — ranking / Exness / compare decisions  
 - `dashboard/out/full_pair_compare_s96_s97_s98/` — full-span CSV/JSON  
 - `dashboard/out/full_pair_compare_windows/` — phased 3m/6m/1y/2y/3y summaries  
+- `dashboard/out/compare_youtuber_strats/` — s99–s102 vs s96/s97/s98 (+ BTCUSD)  
 

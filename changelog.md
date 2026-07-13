@@ -94,3 +94,7 @@
 
 [IST 13-Jul-2026 09:23:12] - Phased multi-pair backtest (3m/6m/1y/2y/3y from data end ~2026-07-10) via full_pair_compare_windows.py; mirrored summaries to dashboard/out/full_pair_compare_windows; README phased basket/XAUUSD/winner tables.
 
+
+[IST 13-Jul-2026 11:30:56] - Added YouTuber mechanical proxies s99 (Power of Stocks Golden Setup), s100 (TopG structure S/D), s101 (Vinbull PA S/R), s102 (Techstreet level scalp); BTCUSD Exness pip/cost specs; compare_youtuber_strats.py vs s96/s97/s98 on 9 pairs (full/3m/6m/1y); README results. Gold still prefers s98; FX quality still s97; s99 inflates full basket via EURUSD length + high DD.
+
+[IST 13-Jul-2026 11:38:05] - Split Power of Stocks into separate strategies: s99 Golden Setup, s103 5EMA, s104 inside-candle; added TopG CHOCH reversal as s105 (kept s100 continuation). Compare harness includes s99-s105. No merging of variants into one file.

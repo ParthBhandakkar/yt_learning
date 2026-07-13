@@ -6,6 +6,7 @@ Exness references (Help Center / contract specs):
   - Most FX: pip = 0.0001, contract = 100_000, ~$10/pip per 1.0 lot (XXXUSD)
   - JPY pairs: pip = 0.01, contract = 100_000, pip$ = 1000/USDJPY per lot
   - XAUUSD: pip = 0.01, contract = 100 oz, $1/pip per 1.0 lot
+  - BTCUSD: pip = 0.1, contract = 1 BTC
 """
 
 from __future__ import annotations
@@ -38,6 +39,7 @@ REF_PX = {
     "USDCHF": 0.8800,
     "USDJPY": 150.00,
     "XAUUSD": 2350.00,
+    "BTCUSD": 95000.00,
 }
 
 # Broker truth (Exness-style retail CFD)
@@ -50,6 +52,7 @@ EXNESS_TRUTH = {
     "USDCHF": {"pip": 0.0001, "contract": 100_000, "pip_value_1lot_usd": "~10/USDCHF"},
     "USDJPY": {"pip": 0.01, "contract": 100_000, "pip_value_1lot_usd": round(1000 / 150, 2)},
     "XAUUSD": {"pip": 0.01, "contract": 100, "pip_value_1lot_usd": 1.0},
+    "BTCUSD": {"pip": 0.1, "contract": 1, "pip_value_1lot_usd": 0.1},
 }
 
 
@@ -73,6 +76,8 @@ def main():
         pip_ok = abs(sym_pip - exn_pip) < 1e-12 or (
             sym == "XAUUSD" and abs(sym_pip - 1.0) < 1e-12  # framework metal unit
         )
+        if sym == "BTCUSD":
+            pip_ok = abs(sym_pip - 0.1) < 1e-12
         # For display: Exness RT pips using broker pip
         rt_exn = cost / exn_pip
         spec = EXNESS_INSTRUMENT_SPECS.get(sym, {})
@@ -81,10 +86,12 @@ def main():
             f"{'YES' if pip_ok else 'NO':>6s} {cost:10.5f} {rt_exn:10.2f} "
             f"{spec.get('contract', '?'):>8} {str(truth['pip_value_1lot_usd']):>10}"
         )
-        if abs(heur - exn_pip) > 1e-12 and sym != "XAUUSD":
+        if abs(heur - exn_pip) > 1e-12 and sym not in ("XAUUSD", "BTCUSD"):
             issues.append(f"{sym}: price-heuristic pip {heur} != Exness {exn_pip}")
         if sym == "XAUUSD" and abs(heur - 1.0) > 1e-12:
             issues.append("XAUUSD: expected framework pip 1.0")
+        if sym == "BTCUSD" and abs(heur - 0.1) > 1e-12:
+            issues.append("BTCUSD: expected heuristic pip 0.1")
         if abs(sym_pip - exn_pip) > 1e-12 and sym != "XAUUSD":
             issues.append(f"{sym}: symbol-aware pip {sym_pip} != Exness {exn_pip}")
         if sym == "XAUUSD" and abs(EXNESS_XAUUSD_PIP - 0.01) > 1e-12:

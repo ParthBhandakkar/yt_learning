@@ -52,3 +52,17 @@
 **Q:** Besides full history, can we see recent 3m / 6m / 1y / 2y / 3y results from the newest data?
 **A:** Yes. Anchor ~2026-07-10 (XAUUSD 1H max). Windows: 90/180/365/730/1095 days back per CSV. s98 leads basket total R every phase (gold-heavy); s97 remains best FX quality (avg R/trade + low DD on 2y/3y); s96 shines on GBPUSD from 1y+. See README phased section + dashboard/out/full_pair_compare_windows/.
 
+
+## 2026-07-13 — YouTuber strategy expansion
+
+**Q:** Can we encode Power of Stocks / TopG / Vinbull / Techstreet and compare to our baselines including BTC?
+**A:** Yes — as mechanical proxies (discretionary teachings compressed to causal rules). Files s99–s102 with Video: links for the dashboard. BTCUSD Exness pip=0.1, RT ~$25. Fair compare on 7 FX + XAU + BTC (full/3m/6m/1y). Results: s98 still best on gold; s97 best FX quality; s99 leads raw full basket R but with huge DD and EURUSD-length inflation — not a live pick; s100/s101 lose on full history; BTC exploratory edge to s99/s102 on recent windows. Repo was previously almost all Faiz SMC.
+
+**Q:** What is the Power of Stocks Golden Setup mechanical rule we used?
+**A:** UTC day open → nearest round band (BTC 500 / XAU 10 / FX 0.005) → bias from open vs mid → 1H close break of bias-side round → next-open fill → SL ~0.4*step (ATR floor) → 3R TP; max 2/day. Source: Token IQ Part-1 + Golden Setup playlist.
+
+
+## 2026-07-13 — Keep creator variants as separate files
+
+**Q:** Should Power of Stocks Golden Setup and 5EMA be one rewritten strategy?
+**A:** No — keep each as its own file (s99 Golden, s103 5EMA, s104 inside candle) and compare them. Same for TopG: s100 continuation S/D vs s105 CHOCH reversal. More strategies, fair comparison — do not overwrite one variant with another.

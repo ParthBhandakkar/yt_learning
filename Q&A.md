@@ -146,3 +146,6 @@
 
 **Q:** How is s98 deployed live on XAUUSD?
 **A:** `liveTrade/` with `STRATEGY_ID=s98`, `SYMBOLS=XAUUSD`, `FIXED_LOT=0.01` (margin sizing disabled). MT5 credentials copied from ExnessZeroLLMBOT into gitignored `liveTrade/.env`. Engine scans closed 1H bars, enters at market on signal, manages ATR chandelier trail. Run: `D:\Python\Python3_12_8\python.exe liveTrade/run.py` (or `--check` first). Logs: `liveTrade/logs/engine.log`.
+
+**Q:** How to smoke-test MT5 place/trail/close without disturbing live s98?
+**A:** `D:\Python\Python3_12_8\python.exe liveTrade/test_order_lifecycle.py` on the demo account. Uses magic **989898** and comment `smoke_lifecycle` (live s98 uses **980098**), fixed 0.01 lot, long then short: open → modify SL once → close. Aborts on non-demo accounts; cleans up in `finally`. Safe to run while `run.py` is live — engine only manages its own magic and won't trail test tickets.

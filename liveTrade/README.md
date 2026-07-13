@@ -64,6 +64,19 @@ as the backtest, so live = backtest.
    For s98 gold: ensure `STRATEGY_ID=s98`, `SYMBOLS=XAUUSD`, `FIXED_LOT=0.01`.
    Keep it running 24/7 (e.g. Windows Task Scheduler, or NSSM as a service).
 
+## Order lifecycle smoke test
+While the live engine runs, you can verify place / trail-SL / close on the **demo**
+account without interfering with s98 positions (test uses magic `989898`, live s98
+uses `980098`):
+
+```
+cd liveTrade
+D:\Python\Python3_12_8\python.exe test_order_lifecycle.py
+```
+
+Fixed **0.01** lot only; aborts on non-demo accounts. Cleans up test positions in
+`finally` even on failure.
+
 ## ⚠ Risk note
 At 1:2000 leverage, position notional = `margin × 2000`. A full stop-out can lose
 **several times** the ₹1000 margin. Use `MAX_DAILY_LOSS_INR`, `MAX_CONCURRENT_TRADES`,
@@ -80,4 +93,5 @@ and test on demo before risking real money. Backtests are not a guarantee of liv
 | `notifier.py` | email alerts |
 | `logging_setup.py` | per-TF logs + per-TF pass files |
 | `config.py` | loads `.env` |
+| `test_order_lifecycle.py` | one-shot demo place/trail/close smoke test (magic 989898) |
 | `logs/`, `passes/` | created at runtime |

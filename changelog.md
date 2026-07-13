@@ -112,3 +112,5 @@
 [IST 13-Jul-2026 13:05:00] - README: added scannable "Which strategy where" guide (live s98 gold + s97 FX vs research s131/s132 basket, s99/s131 3m, s115/s139 sparse); aligned YouTuber/mega live-recommendation sections to explicit research-library framing.
 
 [IST 13-Jul-2026 13:38:00] - liveTrade: wired Strategy 98 (XAUUSD 1H trend+liquidity+ATR trail) alongside legacy s95; STRATEGY_ID + FIXED_LOT in .env; detection_s98/engine_s98/trade_manager_s98; live deploy XAUUSD @ 0.01 lot (credentials from ExnessZeroLLMBOT path, gitignored .env).
+
+[IST 13-Jul-2026 13:45:00] - liveTrade: added test_order_lifecycle.py — demo-only 0.01 lot smoke test for long/short place, SL trail, and close on XAUUSD (magic 989898, distinct from live s98 980098); verified PASS on Exness-MT5Trial8.

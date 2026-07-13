@@ -135,3 +135,9 @@
 
 **Q:** Where are results stored?
 **A:** `D:\temp\yt_learning_mega_compare\` (full job dir) and mirrored CSVs/JSON in `dashboard/out/compare_mega_traders/`. Harness: `compare_mega_traders.py`.
+
+
+## 2026-07-13 — Which strategy where (live vs research)
+
+**Q:** Mega compare shows s131/s132 beating the basket and s99 leading 3m — should live picks change?
+**A:** No. **Live core stays s98 (gold) and s97 Z=2.5 (FX quality).** s131/s132 are **research** basket-R leaders (1y); s99/s131 are **research** 3m leaders. s98 basket was weak on 3m (−12R) but still #1 on gold 1y (+77R) — treat 3m as regime caveat, not a gold swap. s115/s139 are sparse high avg-R monitors only. All other s106–s139 proxies remain research library unless listed in README "Which strategy where".

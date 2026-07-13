@@ -2,6 +2,22 @@
 
 Causal backtests of YouTube/ICT-style strategies on Exness history, with realistic round-turn costs.
 
+## Which strategy where
+
+Mechanical proxies, fair `enrich_trades_pnl`, **1y** windows unless noted. Source: `dashboard/out/compare_mega_traders/` (+ earlier s96/s97/s98 compares).
+
+| Use case | Strategy | Why |
+|----------|----------|-----|
+| **Gold — live / primary** | **s98** | Still **#1 on XAUUSD** (+77R 1y, best PF/DD among gold leaders). Do **not** swap live gold for new YouTuber proxies. |
+| **FX — live / risk-adjusted** | **s97 Z=2.5** | Best **risk-adjusted FX basket** (small DD ~1%, solid avg R/trade). Primary live FX pick. |
+| **5-pair basket — research** | **s131**, **s132** | **s131** JadeCap session FVG led 1y basket (+131R); **s132** Marco liquidity trap second (+91R). Raw R leaders — **not** live replacements for s98/s97. |
+| **Short window (3m) — research** | **s99**, **s131** | **s99** POS Golden Setup and **s131** led 3m basket; **s98** was weak on 3m basket (−12R) — regime caveat only, **not** a reason to drop s98 on gold. |
+| **Sparse high avg-R — research** | **s115**, **s139** | **s115** Umar Asia–London sweep (+0.84 R/trade) and **s139** NBB 8:30 killzone (+0.73 R/trade) — few trades, interesting per-trade quality; monitor only. |
+
+**Live core (unchanged):** **s98** gold, **s97** FX quality, **s96** GBPUSD where noted below.
+
+**Research library only:** all other new YouTuber proxies (**s99–s102**, **s106–s139**) unless listed above — compare and paper-trade; do not treat as live until re-validated on your symbols and costs.
+
 ## Causality / leakage status (s96 / s97 / s98)
 
 | Strategy | Leakage-free design? | How entry/exit is gated | Notes |
@@ -253,15 +269,18 @@ s99 is #2 on gold most windows but with much larger DD than s98.
 | 6m | **s99** | +42 | s102 +10 R / PF 2.19 |
 | 3m | **s99** | +27 | — |
 
-### Live recommendation after this expansion
+### Live vs research (s99–s102)
 
-| Use case | Pick |
-|----------|------|
-| **XAUUSD** | Still **s98** |
-| **FX basket quality** | Still **s97 Z=2.5** |
-| **GBPUSD** | Still **s96** (full history) |
-| **BTCUSD (exploratory)** | **s99** or **s102** on recent windows; treat as research only |
-| **s100 / s101** | Not recommended as-is (negative full baskets) |
+See **[Which strategy where](#which-strategy-where)** for the live/research split. Summary:
+
+| Use case | Pick | Status |
+|----------|------|--------|
+| **XAUUSD** | **s98** | **Live** — s99 is #2 on gold but higher DD; not a live replacement |
+| **FX basket quality** | **s97 Z=2.5** | **Live** |
+| **GBPUSD** | **s96** (full history) | **Live** |
+| **3m basket research** | **s99** | **Research** — leads short window; s98 basket weak on 3m (regime caveat) |
+| **BTCUSD** | **s99** / **s102** | **Research only** on recent windows |
+| **s100 / s101** | — | Negative full baskets — research library only |
 
 ## Mega trader expansion (s106–s139 vs s96/s97/s98/s99)
 
@@ -324,14 +343,18 @@ Additional **mechanical proxies** from YouTube/Instagram creators (s106–s139).
 | **s97 Z=2.5** (baseline) | +5 | **+0.26** | **1.0%** |
 | s98 (baseline) | -23 | -0.04 | 20.9% |
 
-### Live recommendation after mega expansion
+### Live vs research (s106–s139)
 
-| Use case | Pick |
-|----------|------|
-| **XAUUSD** | Still **s98** |
-| **FX basket quality** | Still **s97 Z=2.5**; research add-on: **s131** / **s139** |
-| **BTCUSD (1y)** | **s132** (+48 R) or s99 (+37 R); high DD — research only |
-| **GBPUSD (1y)** | **s131** (+15 R) on this window |
+See **[Which strategy where](#which-strategy-where)**. Mega compare confirms live core unchanged; new batch wins on **research** axes only:
+
+| Use case | Pick | Status |
+|----------|------|--------|
+| **XAUUSD** | **s98** | **Live** — +77R 1y; s132 (+67R) and s131 (+51R) closest but did **not** beat s98 |
+| **FX basket quality** | **s97 Z=2.5** | **Live** — s131/s139/s115 beat raw R on FX3 but are sparse or higher-variance |
+| **5-pair basket R (1y)** | **s131**, **s132** | **Research** — basket leaders, not live replacements |
+| **Sparse avg-R (1y FX3)** | **s115**, **s139** | **Research** — high R/trade, low trade count |
+| **BTCUSD (1y)** | **s132**, **s99** | **Research only** — high DD |
+| **All other s106–s138** | — | **Research library** — not live picks unless re-validated |
 
 ## Strategy ID map
 

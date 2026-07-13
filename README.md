@@ -139,6 +139,68 @@ Each strategy uses the **full CSV** available for its timeframe(s). Effective sp
 | USDJPY | s97 | **s97** |
 | XAUUSD | s98 | **s98** |
 
+## Phased windows (from latest data end)
+
+Same fair cost model as above. Each CSV is trimmed to **N days back from that file’s own max timestamp** (anchor ≈ **2026-07-10** from XAUUSD 1H).
+
+| Phase | Days | Typical start → end |
+|-------|-----:|---------------------|
+| **3m** | 90 | 2026-04-12 → 2026-07-10 |
+| **6m** | 180 | 2026-01-11 → 2026-07-10 |
+| **1y** | 365 | 2025-07-10 → 2026-07-10 |
+| **2y** | 730 | 2024-07-10 → 2026-07-10 |
+| **3y** | 1095 | 2023-07-11 → 2026-07-10 |
+
+**Source:** `dashboard/out/full_pair_compare_windows/` (`summary.csv`, `basket.csv`, `best_per_pair.csv`)  
+**Harness:** `full_pair_compare_windows.py`
+
+### Basket by phase (8 pairs, parallel $10k / 1% per R books)
+
+| Phase | Strategy | Pairs +R | Trades | Total R | Return % | Avg R/trade | Worst pair DD % |
+|-------|----------|----------|-------:|--------:|---------:|------------:|----------------:|
+| 3m | s96 | 0 / 8 | 4 | -4.2 | -4.2% | -1.05 | 1.1% |
+| 3m | s97 Z=2.5 | 3 / 8 | 8 | +0.4 | +0.4% | +0.06 | 1.0% |
+| 3m | **s98** | **3 / 8** | 378 | **+9.2** | **+9.2%** | +0.03 | 11.4% |
+| 6m | s96 | 2 / 8 | 6 | -1.4 | -1.4% | -0.24 | 2.1% |
+| 6m | s97 Z=2.5 | 4 / 8 | 19 | +1.5 | +1.5% | +0.08 | 2.1% |
+| 6m | **s98** | **5 / 8** | 783 | **+46.1** | **+46.1%** | +0.06 | 21.8% |
+| 1y | s96 | 4 / 8 | 26 | -6.3 | -6.3% | -0.24 | 4.3% |
+| 1y | s97 Z=2.5 | 5 / 8 | 49 | +1.7 | +1.7% | +0.03 | 4.7% |
+| 1y | **s98** | **5 / 8** | 1559 | **+97.8** | **+97.8%** | +0.06 | 20.9% |
+| 2y | s96 | 2 / 8 | 58 | -19.6 | -19.6% | -0.34 | 9.4% |
+| 2y | s97 Z=2.5 | 5 / 8 | 112 | +8.7 | +8.7% | **+0.08** | **5.2%** |
+| 2y | **s98** | **7 / 8** | 3171 | **+170.2** | **+170.2%** | +0.06 | 37.2% |
+| 3y | s96 | 2 / 8 | 94 | -25.4 | -25.4% | -0.27 | 12.5% |
+| 3y | s97 Z=2.5 | 5 / 8 | 181 | +17.4 | +17.4% | **+0.10** | **5.3%** |
+| 3y | **s98** | **5 / 8** | 4761 | **+124.4** | **+124.4%** | +0.03 | 49.6% |
+
+**Phased takeaway:** On recent windows, **s98 basket total R** leads every phase (gold + some FX runs), but **s97** stays the better **FX quality** pick (higher avg R/trade, much lower DD on 2y/3y). **s96** remains sparse on short windows; strength shows on **GBPUSD** from 1y+.
+
+### XAUUSD by phase (gold)
+
+| Phase | s96 R | s97 R | **s98 R** | s98 PF | s98 DD % | s98 trades |
+|-------|------:|------:|----------:|-------:|---------:|-----------:|
+| 3m | 0 | +0.2 | **+13.4** | 1.45 | 3.6% | 45 |
+| 6m | 0 | +0.4 | **+36.5** | 1.86 | 2.9% | 84 |
+| 1y | 0 | +1.2 | **+77.4** | 1.82 | 3.9% | 169 |
+| 2y | -5.3 | -0.8 | **+100.1** | 1.66 | 8.2% | 352 |
+| 3y | -4.2 | -3.2 | **+117.1** | 1.60 | 10.4% | 529 |
+
+### Winner by pair × phase (raw total R)
+
+| Pair | 3m | 6m | 1y | 2y | 3y |
+|------|----|----|----|----|----|
+| GBPUSD | s98* | s98* | **s96** | **s96** | **s96** |
+| AUDUSD | s98 | s98 | s98 | s98* | s97* |
+| EURUSD | s96* | s98 | s98* | s98* | **s97** |
+| NZDUSD | s97* | s97* | s98* | s98* | **s97** |
+| USDCAD | **s98** | **s98** | **s98** | **s98** | **s98** |
+| USDCHF | s97 | s98 | **s97** | s98* | s98* |
+| USDJPY | s97 | s96 | s96 | **s98** | **s98** |
+| XAUUSD | **s98** | **s98** | **s98** | **s98** | **s98** |
+
+\*Winner by total R but R ≤ 0 or PF ≤ 1 — treat as least-bad, not a live pick.
+
 ## Strategy ID map
 
 | ID | File | Role |
@@ -153,6 +215,9 @@ Each strategy uses the **full CSV** available for its timeframe(s). Effective sp
 $env:YT_DATA_ROOT = "O:\D temp\UltimateTradeBot\Data\Exness\structured\history"
 # Do NOT set BT_COST_PRICE for mixed FX+gold runs
 D:\Python\Python3_12_8\python.exe full_pair_compare_s96_s97_s98.py
+# Phased 3m/6m/1y/2y/3y from each CSV's latest bar (optional OUT on D: if O: is full)
+$env:YT_WINDOW_OUT = "D:\temp\yt_learning_window_compare"
+D:\Python\Python3_12_8\python.exe full_pair_compare_windows.py
 D:\Python\Python3_12_8\python.exe audit_exness_pip_model.py
 ```
 
@@ -167,4 +232,6 @@ D:\Python\Python3_12_8\python.exe batch_xauusd_backtest.py --exness-cost --windo
 
 - `changelog.md` — append-only change log  
 - `Q&A.md` — ranking / Exness / compare decisions  
-- `dashboard/out/full_pair_compare_s96_s97_s98/` — CSV/JSON for this table  
+- `dashboard/out/full_pair_compare_s96_s97_s98/` — full-span CSV/JSON  
+- `dashboard/out/full_pair_compare_windows/` — phased 3m/6m/1y/2y/3y summaries  
+

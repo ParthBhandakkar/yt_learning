@@ -91,3 +91,6 @@
 [IST 13-Jul-2026 00:30:00] - Exness-aligned instrument specs in core.py (per-symbol pip/cost); fixed USDJPY heuristic pip 0.1?0.01; added audit_exness_pip_model.py; README contract-match table.
 
 [IST 13-Jul-2026 00:42:00] - README: documented per-pair/per-strategy backtest date windows (note EURUSD 1999+ vs others 2021+).
+
+[IST 13-Jul-2026 09:23:12] - Phased multi-pair backtest (3m/6m/1y/2y/3y from data end ~2026-07-10) via full_pair_compare_windows.py; mirrored summaries to dashboard/out/full_pair_compare_windows; README phased basket/XAUUSD/winner tables.
+

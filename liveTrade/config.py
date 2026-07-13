@@ -67,8 +67,9 @@ class Config:
     one_trade_per_pair: bool = field(default_factory=lambda: _b("ONE_TRADE_PER_PAIR", True))
     max_concurrent: int = field(default_factory=lambda: _i("MAX_CONCURRENT_TRADES", 5))
     max_daily_loss: float = field(default_factory=lambda: _f("MAX_DAILY_LOSS_INR", 10000))
-    max_risk_inr: float = field(default_factory=lambda: _f("MAX_RISK_INR", 500))
-    max_risk_pct: float = field(default_factory=lambda: _f("MAX_RISK_PCT", 2.0))
+    # Defaults: %-only cap in the 5–20% band (INR=0 so flat Rs cap does not undercut %)
+    max_risk_inr: float = field(default_factory=lambda: _f("MAX_RISK_INR", 0))
+    max_risk_pct: float = field(default_factory=lambda: _f("MAX_RISK_PCT", 15.0))
 
     poll_seconds: int = field(default_factory=lambda: _i("POLL_SECONDS", 15))
     candle_close_lag: int = field(default_factory=lambda: _i("CANDLE_CLOSE_LAG_SEC", 8))

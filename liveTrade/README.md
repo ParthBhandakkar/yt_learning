@@ -20,9 +20,10 @@ as the backtest, so live = backtest.
 - **ATR chandelier trail** for exit (no fixed TP); `trade_manager_s98.py`.
 - **Fixed lot** via `FIXED_LOT=0.01` recommended for gold live.
 - **Risk caps:** `MAX_RISK_INR` and `MAX_RISK_PCT` skip entries when 0.01-lot SL loss
-  would exceed the cap (defaults Rs500 / 2% — backtest sizes by 1% per R, so fixed lot
-  can diverge on wide structural stops). `S98_MAX_ENTRY_DELAY_SEC` rejects late entries
-  after engine restart (backtest fills at next 1H open).
+  would exceed the cap. Defaults: `MAX_RISK_INR=0` (disabled) + `MAX_RISK_PCT=15`
+  (in the 5–20% band). Effective cap = min of enabled limits. Wide Donchian/structural
+  stops can still exceed this and get skipped. `S98_MAX_ENTRY_DELAY_SEC` (default 900)
+  rejects late entries after engine restart (backtest fills at next 1H open).
 
 ## What s95 does
 - **Scans each timeframe only when its candle has CLOSED** — 4H every 4h, 1H every

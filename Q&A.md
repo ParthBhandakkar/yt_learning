@@ -160,3 +160,10 @@
 
 **Q:** What to do with an open position that already has a wide SL?
 **A:** Trailing tightened SL (4122 â†’ ~4053) per ATR chandelier; still large vs equity. New guards do not retroactively fix open tickets â€” **consider manual close** if risk is unacceptable, then **restart** `run.py` after pulling the update so guards apply to future entries.
+
+
+## 2026-07-13 — Live risk % band
+
+**Q:** Keep late-entry guard but don't cap risk at only 2%?
+**A:** Yes. Root issue on the wide-SL short was mainly **~50 min late entry after restart**, not the SL formula. Keep `S98_MAX_ENTRY_DELAY_SEC=900`. Risk cap moved to **MAX_RISK_PCT=15** (user band 5–20%); `MAX_RISK_INR=0` so the old Rs500 floor does not undercut the %. Extreme ~60% equity SL distances are still blocked; moderate structural stops within ~15% of balance can trade.
+

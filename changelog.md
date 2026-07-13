@@ -116,3 +116,6 @@
 [IST 13-Jul-2026 13:45:00] - liveTrade: added test_order_lifecycle.py — demo-only 0.01 lot smoke test for long/short place, SL trail, and close on XAUUSD (magic 989898, distinct from live s98 980098); verified PASS on Exness-MT5Trial8.
 
 [IST 13-Jul-2026 23:45:00] - liveTrade s98: MAX_RISK_INR / MAX_RISK_PCT pre-trade guard (defaults Rs500 / 2% equity), S98_MAX_ENTRY_DELAY_SEC rejects late entries after restart, signal-bar freshness check, persisted last-signal state; fixed trade_email Strategy95 label for s98; test_risk_guard.py.
+
+[IST 13-Jul-2026 23:33:52] - liveTrade risk caps: MAX_RISK_PCT raised to 15% (5-20% band), MAX_RISK_INR=0 so % alone applies; keep S98_MAX_ENTRY_DELAY_SEC=900 for late-restart protection. Updated .env / .env.example / config defaults.
+

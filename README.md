@@ -263,6 +263,76 @@ s99 is #2 on gold most windows but with much larger DD than s98.
 | **BTCUSD (exploratory)** | **s99** or **s102** on recent windows; treat as research only |
 | **s100 / s101** | Not recommended as-is (negative full baskets) |
 
+## Mega trader expansion (s106–s139 vs s96/s97/s98/s99)
+
+Additional **mechanical proxies** from YouTube/Instagram creators (s106–s139). Rules + source in each file header.
+
+| ID | Creator | Mechanical proxy |
+|----|---------|------------------|
+| **s106** | Shreya FRX | London-session FVG pullback (4H EMA bias, 1.8R) |
+| **s107** | Shreya FRX | Liquidity sweep + post-sweep FVG confluence (2R) |
+| **s110** | Thoughts Magic Trading | 4H trendline tap + 1H rejection bounce (2R) |
+| **s111** | MambaFX | 48-bar S/R breakout expansion (2R; 5m teaching on 1H) |
+| **s112** | Booming Bulls | UTC 00–05 morning range breakout (2R) |
+| **s113** | Booming Bulls | Impulse break + retest sniper (2.5R) |
+| **s114** | Stock Learners (Gautam Jha) | PDH/PDL sweep + trigger break (2R) |
+| **s115** | Umar Punjabi | Asia box London sweep + BOS retest |
+| **s120** | Fabio Valentini | IVB NY opening-range breakout (2.5R) |
+| **s121** | Fabio Valentini | AMT failed-breakout mean reversion |
+| **s122** | TG Capital (Tyler) | London Trident stacked EMA + FVG (3R cap) |
+| **s123** | Umar Ashraf | Break-and-hold at PDH/PDL (2.5R) |
+| **s124** | Brando (Elite Options) | HTF S/R momentum breakout adapted for FX/gold (3R) |
+| **s125** | Trader Kane | Lab model reversal (range/SMT proxy) |
+| **s126** | Trader Kane | Lab model continuation |
+| **s127** | Trader Kane | PO3 50% manipulation reversal |
+| **s130** | JadeCap (Kyle Ng) | Prior-day swing SFP / daily sweep (2R) |
+| **s131** | JadeCap (Kyle Ng) | Session liquidity sweep + aligned FVG (2R) |
+| **s132** | Marco Trades | Liquidity trap reversal (2R) |
+| **s133** | Marco Trades | Impulse zone + CHOCH retest (2R) |
+| **s134** | Alex Temiz (AT09) | First-red-day fade after extended rally (2R) |
+| **s135** | Alex Temiz (AT09) | Key resistance + lower-high short (2R) |
+| **s136** | Andrea Cimi | Cash-session ORB with volume initiative proxy (2R) |
+| **s137** | Andrea Cimi | PDH/PDL sweep + reclaim (2R) |
+| **s138** | Marci Silfrain | Top-down weekly bias + 1H EMA pullback (2R) |
+| **s139** | Omor NBB Trader | 8:30 NY kill-zone PD sweep + FVG (2R) |
+
+**Markets:** GBPUSD, EURUSD, USDJPY, XAUUSD, BTCUSD.  
+**Harness:** `compare_mega_traders.py` → `dashboard/out/compare_mega_traders/`  
+**Windows:** 3m + 1y from data end ≈ **2026-07-10**. s96 (5m stack) on **XAUUSD only**.
+
+### Basket (5 pairs, parallel $10k / 1% per R)
+
+| Window | Best basket R | Runner-up | s98 | s97 | s99 |
+|--------|--------------:|----------|----:|----:|----:|
+| **3m** | **s99 +28** | s131 +24 | -12 | +1 | **+28** |
+| **1y** | **s131 +131** | s132 +91 | +69 | +9 | +40 |
+
+### XAUUSD — does anything beat s98?
+
+| Window | **s98** | Best new challenger | New R | Notes |
+|--------|--------:|--------------------|------:|-------|
+| **3m** | +13 (PF 1.45) | s134 Temiz FRD | +20 | Tiny sample (31 trades) |
+| **1y** | **+77 (PF 1.82, DD 3.9%)** | s132 Marco trap | +67 | s131 +51 R; **s98 still #1** |
+
+### FX quality (GBPUSD + EURUSD + USDJPY, 1y)
+
+| Strategy | FX3 total R | Avg R/trade | Worst pair DD % |
+|----------|------------:|------------:|----------------:|
+| **s131** JadeCap FVG | **+34** | +0.30 | 9.1% |
+| s139 NBB kill-zone | +10 | **+0.73** | 2.4% |
+| s115 Umar Punjabi | +7 | **+0.84** | 2.1% |
+| **s97 Z=2.5** (baseline) | +5 | **+0.26** | **1.0%** |
+| s98 (baseline) | -23 | -0.04 | 20.9% |
+
+### Live recommendation after mega expansion
+
+| Use case | Pick |
+|----------|------|
+| **XAUUSD** | Still **s98** |
+| **FX basket quality** | Still **s97 Z=2.5**; research add-on: **s131** / **s139** |
+| **BTCUSD (1y)** | **s132** (+48 R) or s99 (+37 R); high DD — research only |
+| **GBPUSD (1y)** | **s131** (+15 R) on this window |
+
 ## Strategy ID map
 
 | ID | File | Role |
@@ -277,6 +347,32 @@ s99 is #2 on gold most windows but with much larger DD than s98.
 | s103 | `strategy_103_pos_5ema.py` | Power of Stocks **5EMA** (separate) |
 | s104 | `strategy_104_pos_inside_candle.py` | Power of Stocks **inside candle** (separate) |
 | s105 | `strategy_105_topg_choch_reversal.py` | TopG **CHOCH reversal** (separate) |
+| s106 | `strategy_106_shreya_frx_london_fvg.py` | Shreya FRX London FVG |
+| s107 | `strategy_107_shreya_frx_sweep_fvg.py` | Shreya FRX sweep + FVG |
+| s110 | `strategy_110_tmt_trendline_bounce.py` | TMT trendline bounce |
+| s111 | `strategy_111_mamba_breakout_sr.py` | MambaFX S/R breakout |
+| s112 | `strategy_112_bb_morning_range.py` | Booming Bulls morning range |
+| s113 | `strategy_113_bb_sniper_retest.py` | Booming Bulls sniper retest |
+| s114 | `strategy_114_sl_pdh_sweep.py` | Stock Learners PDH/PDL sweep |
+| s115 | `strategy_115_up_asia_london_sweep.py` | Umar Punjabi Asia-London sweep |
+| s120 | `strategy_120_fabio_orb_ivb.py` | Fabio IVB ORB |
+| s121 | `strategy_121_fabio_amt_meanrev.py` | Fabio AMT mean reversion |
+| s122 | `strategy_122_tg_trident.py` | TG Capital Trident |
+| s123 | `strategy_123_umar_break_hold.py` | Umar Ashraf break-and-hold |
+| s124 | `strategy_124_brando_sr_breakout.py` | Brando S/R momentum breakout |
+| s125 | `strategy_125_kane_lab_reversal.py` | Kane Lab reversal |
+| s126 | `strategy_126_kane_lab_continuation.py` | Kane Lab continuation |
+| s127 | `strategy_127_kane_po3_fifty.py` | Kane PO3 50% |
+| s130 | `strategy_130_jadecap_daily_sweep.py` | JadeCap daily sweep |
+| s131 | `strategy_131_jadecap_session_fvg.py` | JadeCap session FVG |
+| s132 | `strategy_132_marco_liquidity_trap.py` | Marco liquidity trap |
+| s133 | `strategy_133_marco_sd_choch.py` | Marco CHOCH retest |
+| s134 | `strategy_134_temiz_first_red_day.py` | Temiz first red day |
+| s135 | `strategy_135_temiz_level_lower_high.py` | Temiz lower-high short |
+| s136 | `strategy_136_cimi_orb.py` | Cimi ORB |
+| s137 | `strategy_137_cimi_sweep_reclaim.py` | Cimi sweep reclaim |
+| s138 | `strategy_138_silfrain_trend_pullback.py` | Silfrain trend pullback |
+| s139 | `strategy_139_nbb_830_killzone.py` | NBB 8:30 kill-zone FVG |
 
 ## How to reproduce
 
@@ -290,6 +386,9 @@ D:\Python\Python3_12_8\python.exe full_pair_compare_windows.py
 # YouTuber proxies s99-s102 vs baselines (includes BTCUSD)
 $env:YT_YOUTUBER_OUT = "D:\temp\yt_learning_youtuber_compare"
 D:\Python\Python3_12_8\python.exe compare_youtuber_strats.py
+# Mega compare s106-s139 vs s96/s97/s98/s99 (5 pairs, 3m+1y)
+$env:YT_MEGA_OUT = "D:\temp\yt_learning_mega_compare"
+D:\Python\Python3_12_8\python.exe compare_mega_traders.py
 D:\Python\Python3_12_8\python.exe audit_exness_pip_model.py
 ```
 
@@ -307,4 +406,5 @@ D:\Python\Python3_12_8\python.exe batch_xauusd_backtest.py --exness-cost --windo
 - `dashboard/out/full_pair_compare_s96_s97_s98/` — full-span CSV/JSON  
 - `dashboard/out/full_pair_compare_windows/` — phased 3m/6m/1y/2y/3y summaries  
 - `dashboard/out/compare_youtuber_strats/` — s99–s102 vs s96/s97/s98 (+ BTCUSD)  
+- `dashboard/out/compare_mega_traders/` — s106–s139 mega compare (5 pairs, 3m+1y)  
 

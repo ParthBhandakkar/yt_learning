@@ -36,9 +36,10 @@ def _tf_const(tf: str):
 
 
 class MT5Client:
-    def __init__(self):
+    def __init__(self, magic: int = 950095):
         self.connected = False
         self._symbol_cache: dict[str, Optional[str]] = {}
+        self.magic = magic
 
     # ------------------------------------------------------------------ connect
     def connect(self) -> bool:
@@ -130,7 +131,6 @@ class MT5Client:
         t = mt5.symbol_info_tick(broker_sym)
         return t
 
-    # ------------------------------------------------------------------ sizing
     def lots_for_margin(self, symbol: str, direction: str, price: float, margin_inr: float) -> float:
         """Volume whose required margin ~= margin_inr, using MT5's own margin model
         (which already reflects the account's 1:LEVERAGE)."""
@@ -148,6 +148,20 @@ class MT5Client:
         lots = min(lots, si.volume_max, CONFIG.max_lot)
         return round(lots, 2)
 
+    def lots_fixed(self, symbol: str) -> float:
+        """Return configured fixed lot, clamped to broker symbol limits."""
+        broker_sym = self.resolve_symbol(symbol)
+        si = mt5.symbol_info(broker_sym)
+        if si is None:
+            return 0.0
+        lots = CONFIG.fixed_lot
+        step = si.volume_step or 0.01
+        vmin = si.volume_min or 0.01
+        vmax = min(si.volume_max, CONFIG.max_lot)
+        lots = max(vmin, round(lots / step) * step)
+        lots = min(lots, vmax)
+        return round(lots, 2)
+
     # ------------------------------------------------------------------ orders
     def open_trade(self, symbol: str, direction: str, lots: float, sl: float, tp: float, comment: str):
         broker_sym = self.resolve_symbol(symbol)
@@ -162,7 +176,7 @@ class MT5Client:
             "sl": float(sl),
             "tp": float(tp),
             "deviation": 30,
-            "magic": 950095,
+            "magic": self.magic,
             "comment": comment[:30],
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": self._filling(broker_sym),
@@ -192,20 +206,22 @@ class MT5Client:
             "position": position.ticket,
             "price": tick.bid if is_long else tick.ask,
             "deviation": 30,
-            "magic": 950095,
+            "magic": self.magic,
             "comment": "s95 partial",
             "type_time": mt5.ORDER_TIME_GTC,
             "type_filling": self._filling(broker_sym),
         }
         return mt5.order_send(req)
 
-    def open_positions(self, magic: int = 950095):
+    def open_positions(self, magic: int | None = None):
+        m = self.magic if magic is None else magic
         pos = mt5.positions_get()
-        return [p for p in (pos or []) if p.magic == magic]
+        return [p for p in (pos or []) if p.magic == m]
 
-    def position_for_symbol(self, symbol: str, magic: int = 950095):
+    def position_for_symbol(self, symbol: str, magic: int | None = None):
+        m = self.magic if magic is None else magic
         broker_sym = self.resolve_symbol(symbol)
-        for p in self.open_positions(magic):
+        for p in self.open_positions(m):
             if p.symbol == broker_sym:
                 return p
         return None
@@ -225,3 +241,10 @@ class MT5Client:
         if mode and (mode & 1):
             return mt5.ORDER_FILLING_FOK
         return mt5.ORDER_FILLING_RETURN
+
+
+def lots_for_trade(client: MT5Client, symbol: str, direction: str, price: float) -> float:
+    """Fixed lot when FIXED_LOT > 0, else margin-based sizing."""
+    if CONFIG.fixed_lot > 0:
+        return client.lots_fixed(symbol)
+    return client.lots_for_margin(symbol, direction, price, CONFIG.margin_per_trade)

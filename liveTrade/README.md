@@ -1,11 +1,26 @@
-# liveTrade — Strategy 95 live runner (MT5 / Exness)
+# liveTrade — Strategy 95 / 98 live runner (MT5 / Exness)
 
-Runs the validated **Strategy 95** (4H liquidity sweep → 1H displacement MSS →
+Runs validated strategies live, 24/7, through your MT5 (Exness) terminal.
+
+| Strategy | ID | Symbol(s) | Cadence |
+|----------|-----|-----------|---------|
+| MSS/OB refined (forex basket) | **s95** (default legacy) | EURUSD, GBPUSD, … | 4H → 1H → 15M → 5M |
+| XAUUSD trend + liquidity + ATR trail | **s98** (gold live) | XAUUSD | 1H signal, ATR trail exit |
+
+Set `STRATEGY_ID=s98` in `.env` for gold. Use `FIXED_LOT=0.01` for fixed sizing (disables margin-based lots).
+
+## Strategy 95 (legacy)
 15M order block in OTE → 5M tap) live, 24/7, across multiple symbols, executing
 through your MT5 (Exness) terminal. Signals use the **exact same detection code**
 as the backtest, so live = backtest.
 
-## What it does
+## Strategy 98 (gold live)
+- **1H closed-candle scan** only (4H bias resampled from 1H, same as backtest).
+- Entry at market when the signal bar closes (backtest: next 1H open).
+- **ATR chandelier trail** for exit (no fixed TP); `trade_manager_s98.py`.
+- **Fixed lot** via `FIXED_LOT=0.01` recommended for gold live.
+
+## What s95 does
 - **Scans each timeframe only when its candle has CLOSED** — 4H every 4h, 1H every
   hour, 15M every 15m, 5M every 5m — and never looks at the still-forming candle.
 - Stages independently per symbol with a 16h setup expiry (TTL):
@@ -44,8 +59,9 @@ as the backtest, so live = backtest.
    places no orders. Watch `logs/` and `passes/`.
 6. When satisfied, set `DRY_RUN=false` (ideally first on a **demo** account) and run:
    ```
-   python run.py
+   D:\Python\Python3_12_8\python.exe run.py
    ```
+   For s98 gold: ensure `STRATEGY_ID=s98`, `SYMBOLS=XAUUSD`, `FIXED_LOT=0.01`.
    Keep it running 24/7 (e.g. Windows Task Scheduler, or NSSM as a service).
 
 ## ⚠ Risk note

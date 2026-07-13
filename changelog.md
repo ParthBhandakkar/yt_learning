@@ -110,3 +110,5 @@
 [IST 13-Jul-2026 12:22:08] - Added compare_mega_traders.py harness (s106-s139 + baselines s96/s97/s98/s99 on GBPUSD/EURUSD/USDJPY/XAUUSD/BTCUSD; windows 3m+1y; s96 gold-only). Results mirrored to dashboard/out/compare_mega_traders. Key findings: s98 still #1 XAUUSD 1y (+77R); s131 best 5-pair basket (+131R 1y) and FX3 (+34R); s97 still best FX quality (avg R + lowest DD). README mega-expansion tables added.
 
 [IST 13-Jul-2026 13:05:00] - README: added scannable "Which strategy where" guide (live s98 gold + s97 FX vs research s131/s132 basket, s99/s131 3m, s115/s139 sparse); aligned YouTuber/mega live-recommendation sections to explicit research-library framing.
+
+[IST 13-Jul-2026 13:38:00] - liveTrade: wired Strategy 98 (XAUUSD 1H trend+liquidity+ATR trail) alongside legacy s95; STRATEGY_ID + FIXED_LOT in .env; detection_s98/engine_s98/trade_manager_s98; live deploy XAUUSD @ 0.01 lot (credentials from ExnessZeroLLMBOT path, gitignored .env).

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-liveTrade entrypoint — run Strategy 95 live on MT5 (Exness), 24/7.
+liveTrade entrypoint — run Strategy 95 or 98 live on MT5 (Exness), 24/7.
 
     python run.py            # uses .env (DRY_RUN respected)
     python run.py --check    # one-shot connectivity + config check, then exit
@@ -12,41 +12,61 @@ import sys
 
 from config import CONFIG
 from logging_setup import get_engine_logger
+from mt5_client import MT5Client, lots_for_trade
 
 log = get_engine_logger()
 
 
 def check():
-    from mt5_client import MT5Client
     log.info("=== liveTrade config / connectivity check ===")
+    log.info(f"Strategy          : {CONFIG.strategy_id}")
     log.info(f"Symbols           : {CONFIG.symbols}")
     log.info(f"DRY_RUN           : {CONFIG.dry_run}")
-    log.info(f"Margin/trade      : Rs {CONFIG.margin_per_trade:.0f}  | leverage 1:{CONFIG.leverage:.0f}  | max_lot {CONFIG.max_lot}")
-    log.info(f"Guards            : one_per_pair={CONFIG.one_trade_per_pair} max_concurrent={CONFIG.max_concurrent} max_daily_loss=Rs{CONFIG.max_daily_loss:.0f}")
+    if CONFIG.fixed_lot > 0:
+        log.info(f"Lot sizing        : FIXED {CONFIG.fixed_lot} (max_lot cap {CONFIG.max_lot})")
+    else:
+        log.info(
+            f"Lot sizing        : margin Rs {CONFIG.margin_per_trade:.0f}  | "
+            f"leverage 1:{CONFIG.leverage:.0f}  | max_lot {CONFIG.max_lot}"
+        )
+    log.info(
+        f"Guards            : one_per_pair={CONFIG.one_trade_per_pair} "
+        f"max_concurrent={CONFIG.max_concurrent} max_daily_loss=Rs{CONFIG.max_daily_loss:.0f}"
+    )
     log.info(f"Email configured  : {CONFIG.email_ready()}")
-    c = MT5Client()
+    magic = 980098 if CONFIG.strategy_id == "s98" else 950095
+    c = MT5Client(magic=magic)
     if not c.connect():
         log.error("MT5 connect FAILED. Check terminal is open/logged in and MT5_* in .env.")
         return 1
     for s in CONFIG.symbols:
         resolved = c.resolve_symbol(s)
-        df = c.fetch_closed(s, "5m", 5) if resolved else None
+        tf = "1h" if CONFIG.strategy_id == "s98" else "5m"
+        df = c.fetch_closed(s, tf, 5) if resolved else None
         last = df.index[-1] if df is not None and len(df) else "—"
-        lots = c.lots_for_margin(s, "long", float(df["close"].iloc[-1]), CONFIG.margin_per_trade) if df is not None and len(df) else 0
-        log.info(f"  {s:<8} -> {resolved or 'NOT FOUND':<12} last_closed_5m={last} sample_lots={lots}")
+        lots = (
+            lots_for_trade(c, s, "long", float(df["close"].iloc[-1]))
+            if df is not None and len(df)
+            else 0
+        )
+        log.info(f"  {s:<8} -> {resolved or 'NOT FOUND':<12} last_closed_{tf}={last} lots={lots}")
     c.shutdown()
     log.info("Check complete.")
     return 0
 
 
 def main():
-    ap = argparse.ArgumentParser(description="Strategy 95 live trader (MT5/Exness)")
+    ap = argparse.ArgumentParser(description="Strategy live trader (MT5/Exness)")
     ap.add_argument("--check", action="store_true", help="connectivity/config check then exit")
     args = ap.parse_args()
     if args.check:
         sys.exit(check())
-    from engine import Engine
-    Engine().start()
+    if CONFIG.strategy_id == "s98":
+        from engine_s98 import EngineS98
+        EngineS98().start()
+    else:
+        from engine import Engine
+        Engine().start()
 
 
 if __name__ == "__main__":

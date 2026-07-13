@@ -43,6 +43,9 @@ def _s(name: str, default: str = "") -> str:
 
 @dataclass
 class Config:
+    # Strategy selection (s95 = legacy multi-TF MSS/OB; s98 = XAUUSD trend+liquidity+ATR trail)
+    strategy_id: str = field(default_factory=lambda: _s("STRATEGY_ID", "s95").lower())
+
     # MT5
     mt5_login: int = field(default_factory=lambda: _i("MT5_LOGIN", 0))
     mt5_password: str = field(default_factory=lambda: _s("MT5_PASSWORD"))
@@ -58,6 +61,7 @@ class Config:
     margin_per_trade: float = field(default_factory=lambda: _f("MARGIN_PER_TRADE_INR", 1000))
     leverage: float = field(default_factory=lambda: _f("LEVERAGE", 2000))
     max_lot: float = field(default_factory=lambda: _f("MAX_LOT", 50))
+    fixed_lot: float = field(default_factory=lambda: _f("FIXED_LOT", 0))
 
     dry_run: bool = field(default_factory=lambda: _b("DRY_RUN", True))
     one_trade_per_pair: bool = field(default_factory=lambda: _b("ONE_TRADE_PER_PAIR", True))
@@ -80,6 +84,17 @@ class Config:
     bias_ttl_hours: float = field(default_factory=lambda: _f("BIAS_TTL_HOURS", 16))
     min_displacement_pct: float = field(default_factory=lambda: _f("MIN_DISPLACEMENT_PCT", 0.10))
     sl_buffer_pips: float = field(default_factory=lambda: _f("FOREX_SL_BUFFER_PIPS", 15))
+
+    # Strategy 98 params (defaults match strategy_98_xau_trend_liquidity_trail.py backtest)
+    s98_htf_ema: int = field(default_factory=lambda: _i("S98_HTF_EMA", 50))
+    s98_range_lookback: int = field(default_factory=lambda: _i("S98_RANGE_LOOKBACK", 20))
+    s98_donchian: int = field(default_factory=lambda: _i("S98_DONCHIAN", 20))
+    s98_atr_len: int = field(default_factory=lambda: _i("S98_ATR_LEN", 14))
+    s98_atr_mult_init: float = field(default_factory=lambda: _f("S98_ATR_MULT_INIT", 1.5))
+    s98_atr_mult_trail: float = field(default_factory=lambda: _f("S98_ATR_MULT_TRAIL", 3.0))
+    s98_also_breakout: bool = field(default_factory=lambda: _b("S98_ALSO_BREAKOUT", True))
+    s98_session_filter: bool = field(default_factory=lambda: _b("S98_SESSION_FILTER", False))
+    s98_use_pd_filter: bool = field(default_factory=lambda: _b("S98_USE_PD_FILTER", True))
 
     def email_ready(self) -> bool:
         return all([self.smtp_host, self.smtp_user, self.smtp_pass, self.email_to])

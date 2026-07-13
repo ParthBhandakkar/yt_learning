@@ -141,3 +141,8 @@
 
 **Q:** Mega compare shows s131/s132 beating the basket and s99 leading 3m — should live picks change?
 **A:** No. **Live core stays s98 (gold) and s97 Z=2.5 (FX quality).** s131/s132 are **research** basket-R leaders (1y); s99/s131 are **research** 3m leaders. s98 basket was weak on 3m (−12R) but still #1 on gold 1y (+77R) — treat 3m as regime caveat, not a gold swap. s115/s139 are sparse high avg-R monitors only. All other s106–s139 proxies remain research library unless listed in README "Which strategy where".
+
+## 2026-07-13 — liveTrade s98 gold deploy
+
+**Q:** How is s98 deployed live on XAUUSD?
+**A:** `liveTrade/` with `STRATEGY_ID=s98`, `SYMBOLS=XAUUSD`, `FIXED_LOT=0.01` (margin sizing disabled). MT5 credentials copied from ExnessZeroLLMBOT into gitignored `liveTrade/.env`. Engine scans closed 1H bars, enters at market on signal, manages ATR chandelier trail. Run: `D:\Python\Python3_12_8\python.exe liveTrade/run.py` (or `--check` first). Logs: `liveTrade/logs/engine.log`.

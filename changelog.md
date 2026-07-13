@@ -114,3 +114,5 @@
 [IST 13-Jul-2026 13:38:00] - liveTrade: wired Strategy 98 (XAUUSD 1H trend+liquidity+ATR trail) alongside legacy s95; STRATEGY_ID + FIXED_LOT in .env; detection_s98/engine_s98/trade_manager_s98; live deploy XAUUSD @ 0.01 lot (credentials from ExnessZeroLLMBOT path, gitignored .env).
 
 [IST 13-Jul-2026 13:45:00] - liveTrade: added test_order_lifecycle.py — demo-only 0.01 lot smoke test for long/short place, SL trail, and close on XAUUSD (magic 989898, distinct from live s98 980098); verified PASS on Exness-MT5Trial8.
+
+[IST 13-Jul-2026 23:45:00] - liveTrade s98: MAX_RISK_INR / MAX_RISK_PCT pre-trade guard (defaults Rs500 / 2% equity), S98_MAX_ENTRY_DELAY_SEC rejects late entries after restart, signal-bar freshness check, persisted last-signal state; fixed trade_email Strategy95 label for s98; test_risk_guard.py.

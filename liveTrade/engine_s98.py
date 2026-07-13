@@ -6,14 +6,21 @@ chandelier ATR trail (no fixed TP).
 """
 from __future__ import annotations
 
+import json
 import time
 from datetime import datetime, timezone
+from pathlib import Path
 
 from config import CONFIG
 from detection_s98 import detect_signal
 from logging_setup import get_engine_logger, record_pass, record_trade
 from mt5_client import MT5Client, TF_MINUTES, lots_for_trade
 from notifier import send_email, trade_email
+from risk_guard import (
+    assess_entry_risk,
+    entry_delay_ok,
+    signal_matches_last_closed_bar,
+)
 from trade_manager_s98 import MAGIC, TradeManagerS98
 
 try:
@@ -23,6 +30,7 @@ except Exception:
 
 log = get_engine_logger()
 UTC = timezone.utc
+SIGNAL_STATE_PATH = Path(__file__).resolve().parent / "passes" / "s98_signal_state.json"
 
 
 def _floor_utc(dt: datetime, minutes: int) -> datetime:
@@ -35,7 +43,21 @@ class EngineS98:
         self.client = MT5Client(magic=MAGIC)
         self.tm = TradeManagerS98(self.client)
         self.last_boundary: datetime | None = None
-        self.last_signal_time: dict[str, str] = {}
+        self.last_signal_time: dict[str, str] = self._load_signal_state()
+
+    def _load_signal_state(self) -> dict[str, str]:
+        try:
+            data = json.load(open(SIGNAL_STATE_PATH))
+            return {str(k): str(v) for k, v in data.items()}
+        except Exception:
+            return {}
+
+    def _save_signal_state(self):
+        try:
+            SIGNAL_STATE_PATH.parent.mkdir(exist_ok=True)
+            json.dump(self.last_signal_time, open(SIGNAL_STATE_PATH, "w"), indent=1)
+        except Exception as e:
+            log.error(f"signal state save failed: {e}")
 
     def start(self):
         if not self.client.connect():
@@ -47,10 +69,15 @@ class EngineS98:
             "Strategy98 liveTrade STARTED",
             f"Engine started.\nSymbols: {', '.join(CONFIG.symbols)}\n"
             f"DRY_RUN={CONFIG.dry_run} | lot={lot_desc}\n"
+            f"Risk caps: Rs{CONFIG.max_risk_inr:.0f} and/or {CONFIG.max_risk_pct:.1f}% equity | "
+            f"max entry delay {CONFIG.s98_max_entry_delay_sec}s after 1H close\n"
             f"Account: {getattr(acc, 'login', '?')} {getattr(acc, 'currency', '?')} "
             f"bal={getattr(acc, 'balance', '?')}",
         )
-        log.info(f"liveTrade s98 started | DRY_RUN={CONFIG.dry_run} | symbols={CONFIG.symbols} | lot={lot_desc}")
+        log.info(
+            f"liveTrade s98 started | DRY_RUN={CONFIG.dry_run} | symbols={CONFIG.symbols} | lot={lot_desc} | "
+            f"risk_cap=Rs{CONFIG.max_risk_inr:.0f}/{CONFIG.max_risk_pct:.1f}%"
+        )
         try:
             self._loop()
         except KeyboardInterrupt:
@@ -106,12 +133,28 @@ class EngineS98:
             return
 
         sig_time = signal["signal_time"]
+        last_bar = df1.index[-1]
+        if not signal_matches_last_closed_bar(sig_time, last_bar):
+            tlog.warning(
+                f"{sym}: signal bar {sig_time} is not the latest closed 1H ({last_bar}) — skip stale signal"
+            )
+            return
+
+        ok_delay, delay_sec = entry_delay_ok(sig_time, now, CONFIG.s98_max_entry_delay_sec)
+        if not ok_delay:
+            tlog.warning(
+                f"{sym}: entry too late ({delay_sec:.0f}s after signal close; "
+                f"max {CONFIG.s98_max_entry_delay_sec}s) — skip (restart/stale entry guard)"
+            )
+            return
+
         if self.last_signal_time.get(sym) == sig_time:
             tlog.info(f"{sym}: signal already acted on ({sig_time})")
             return
 
         self._execute(sym, signal, tlog, now)
         self.last_signal_time[sym] = sig_time
+        self._save_signal_state()
 
     def _execute(self, sym: str, signal: dict, tlog, now: datetime):
         direction = signal["direction"]
@@ -141,6 +184,30 @@ class EngineS98:
         if lots <= 0:
             tlog.error(f"{sym}: lot size 0 — skip")
             return
+
+        acc = self.client.account_info()
+        balance = float(getattr(acc, "balance", 0) or 0)
+        risk_ok, risk_reason, loss_at_sl, risk_cap = assess_entry_risk(
+            self.client, sym, direction, entry, sl, lots, balance
+        )
+        if not risk_ok:
+            tlog.warning(f"{sym}: RISK GUARD — skip entry | {risk_reason}")
+            record_pass(
+                "1h",
+                {
+                    **base,
+                    "event": "risk_guard_skip",
+                    "loss_at_sl": loss_at_sl,
+                    "risk_cap": risk_cap,
+                    "reason": risk_reason,
+                },
+            )
+            return
+
+        tlog.info(
+            f"{sym}: risk OK — loss@SL Rs{loss_at_sl:.0f} (cap Rs{risk_cap:.0f}) "
+            f"SL dist {abs(entry - sl):.2f} pts setup={signal['setup']}"
+        )
 
         if CONFIG.dry_run:
             tlog.info(f"[DRY RUN] {sym} {direction.upper()} entry~{entry:.2f} SL {sl:.2f} lots={lots}")

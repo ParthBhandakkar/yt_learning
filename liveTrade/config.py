@@ -67,6 +67,8 @@ class Config:
     one_trade_per_pair: bool = field(default_factory=lambda: _b("ONE_TRADE_PER_PAIR", True))
     max_concurrent: int = field(default_factory=lambda: _i("MAX_CONCURRENT_TRADES", 5))
     max_daily_loss: float = field(default_factory=lambda: _f("MAX_DAILY_LOSS_INR", 10000))
+    max_risk_inr: float = field(default_factory=lambda: _f("MAX_RISK_INR", 500))
+    max_risk_pct: float = field(default_factory=lambda: _f("MAX_RISK_PCT", 2.0))
 
     poll_seconds: int = field(default_factory=lambda: _i("POLL_SECONDS", 15))
     candle_close_lag: int = field(default_factory=lambda: _i("CANDLE_CLOSE_LAG_SEC", 8))
@@ -95,6 +97,7 @@ class Config:
     s98_also_breakout: bool = field(default_factory=lambda: _b("S98_ALSO_BREAKOUT", True))
     s98_session_filter: bool = field(default_factory=lambda: _b("S98_SESSION_FILTER", False))
     s98_use_pd_filter: bool = field(default_factory=lambda: _b("S98_USE_PD_FILTER", True))
+    s98_max_entry_delay_sec: int = field(default_factory=lambda: _i("S98_MAX_ENTRY_DELAY_SEC", 900))
 
     def email_ready(self) -> bool:
         return all([self.smtp_host, self.smtp_user, self.smtp_pass, self.email_to])

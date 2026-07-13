@@ -33,7 +33,28 @@ def send_email(subject: str, body: str) -> bool:
 
 def trade_email(t: dict) -> None:
     dry = "[DRY RUN] " if t.get("dry_run") else ""
-    subject = f"{dry}Strategy95 {t['direction'].upper()} {t['symbol']} @ {t['entry']:.5f}"
+    strat_id = str(t.get("strategy", CONFIG.strategy_id)).lower()
+    labels = {"s98": "Strategy 98", "s95": "Strategy 95"}
+    strat_label = labels.get(strat_id, f"Strategy {strat_id}")
+    subject = f"{dry}{strat_label} {t['direction'].upper()} {t['symbol']} @ {t['entry']:.5f}"
+    if strat_id == "s98":
+        body = (
+            f"{dry}{strat_label} trade executed\n"
+            f"--------------------------------\n"
+            f"Symbol      : {t['symbol']}\n"
+            f"Direction   : {t['direction'].upper()}\n"
+            f"Entry       : {t['entry']:.5f}\n"
+            f"Stop Loss   : {t['sl']:.5f}\n"
+            f"Take Profit : {t['tp']:.5f}  (ATR trail — no fixed TP)\n"
+            f"Lots        : {t.get('lots', 0)}\n"
+            f"Risk (pts)  : {t.get('risk_price', abs(t['entry'] - t['sl'])):.2f}\n"
+            f"Setup       : {t.get('setup', '')}\n"
+            f"Signal bar  : {t.get('signal_time', '')}\n"
+            f"Time (UTC)  : {t.get('time_utc', '')}\n"
+            f"\nManagement: ATR chandelier trail (see trade_manager_s98)\n"
+        )
+        send_email(subject, body)
+        return
     body = (
         f"{dry}Strategy 95 trade executed\n"
         f"--------------------------------\n"

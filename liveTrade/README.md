@@ -19,6 +19,10 @@ as the backtest, so live = backtest.
 - Entry at market when the signal bar closes (backtest: next 1H open).
 - **ATR chandelier trail** for exit (no fixed TP); `trade_manager_s98.py`.
 - **Fixed lot** via `FIXED_LOT=0.01` recommended for gold live.
+- **Risk caps:** `MAX_RISK_INR` and `MAX_RISK_PCT` skip entries when 0.01-lot SL loss
+  would exceed the cap (defaults Rs500 / 2% — backtest sizes by 1% per R, so fixed lot
+  can diverge on wide structural stops). `S98_MAX_ENTRY_DELAY_SEC` rejects late entries
+  after engine restart (backtest fills at next 1H open).
 
 ## What s95 does
 - **Scans each timeframe only when its candle has CLOSED** — 4H every 4h, 1H every
@@ -79,8 +83,11 @@ Fixed **0.01** lot only; aborts on non-demo accounts. Cleans up test positions i
 
 ## ⚠ Risk note
 At 1:2000 leverage, position notional = `margin × 2000`. A full stop-out can lose
-**several times** the ₹1000 margin. Use `MAX_DAILY_LOSS_INR`, `MAX_CONCURRENT_TRADES`,
-and test on demo before risking real money. Backtests are not a guarantee of live results.
+**several times** the ₹1000 margin. Use `MAX_DAILY_LOSS_INR`, `MAX_RISK_INR`, `MAX_RISK_PCT`,
+`MAX_CONCURRENT_TRADES`, and test on demo before risking real money. Strategy 98 uses
+structural stops beyond swing extremes — with `FIXED_LOT=0.01` a wide Donchian stop can
+risk thousands of INR (~60% of a ₹9k demo) even though the lot looks small. Backtests
+size positions at ~1% of equity per 1R; live fixed-lot does not. Backtests are not a guarantee of live results.
 
 ## Files
 | file | purpose |

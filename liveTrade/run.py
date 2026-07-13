@@ -31,8 +31,11 @@ def check():
         )
     log.info(
         f"Guards            : one_per_pair={CONFIG.one_trade_per_pair} "
-        f"max_concurrent={CONFIG.max_concurrent} max_daily_loss=Rs{CONFIG.max_daily_loss:.0f}"
+        f"max_concurrent={CONFIG.max_concurrent} max_daily_loss=Rs{CONFIG.max_daily_loss:.0f} "
+        f"max_risk=Rs{CONFIG.max_risk_inr:.0f}/{CONFIG.max_risk_pct:.1f}%"
     )
+    if CONFIG.strategy_id == "s98":
+        log.info(f"s98 entry delay   : {CONFIG.s98_max_entry_delay_sec}s max after 1H close")
     log.info(f"Email configured  : {CONFIG.email_ready()}")
     magic = 980098 if CONFIG.strategy_id == "s98" else 950095
     c = MT5Client(magic=magic)

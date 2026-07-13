@@ -149,3 +149,14 @@
 
 **Q:** How to smoke-test MT5 place/trail/close without disturbing live s98?
 **A:** `D:\Python\Python3_12_8\python.exe liveTrade/test_order_lifecycle.py` on the demo account. Uses magic **989898** and comment `smoke_lifecycle` (live s98 uses **980098**), fixed 0.01 lot, long then short: open → modify SL once → close. Aborts on non-demo accounts; cleans up in `finally`. Safe to run while `run.py` is live — engine only manages its own magic and won't trail test tickets.
+
+## 2026-07-13 — s98 wide SL / ~Rs6000 risk on 0.01 lot
+
+**Q:** Live s98 SHORT showed SL ~4122 on entry ~3994 (~128 pts) and MT5 ~Rs6000 risk on 0.01 lot — bug or intended?
+**A:** **Intended by strategy design, problematic for fixed-lot live.** Donchian breakout SHORT uses `max(structural swing high, entry + 1.5×ATR)` as stop. Setup was `donchian_breakout`; structural stop beyond prior 20-bar high (~4122) is correct per backtest logic. Backtests size at **~1% of equity per 1R** (`full_pair_compare_s96_s97_s98.py`); `FIXED_LOT=0.01` does **not** scale down when SL is wide — so ~128 pts × ~Rs47/pt ≈ **Rs6000** (~64% of Rs9.3k demo) is consistent math, not an MT5 display glitch.
+
+**Q:** Was the entry a stale signal after power-cut restart?
+**A:** **Partially.** Signal bar was the correct latest closed 1H (`16:00 UTC`, closed `17:00`). Engine restarted at `17:50 UTC` (~50 min after the backtest fill window at next 1H open). SL was computed from that bar's structure, not from a hours-old wrong bar — but **late restart entry** diverges from backtest timing. Fix: `S98_MAX_ENTRY_DELAY_SEC` (default 900s) + `MAX_RISK_INR` / `MAX_RISK_PCT` guards skip such entries on restart.
+
+**Q:** What to do with an open position that already has a wide SL?
+**A:** Trailing tightened SL (4122 → ~4053) per ATR chandelier; still large vs equity. New guards do not retroactively fix open tickets — **consider manual close** if risk is unacceptable, then **restart** `run.py` after pulling the update so guards apply to future entries.

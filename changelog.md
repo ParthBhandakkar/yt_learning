@@ -122,3 +122,6 @@
 
 [IST 14-Jul-2026 16:46:06] - liveTrade logs/cycle lines/emails use IST (UTC+05:30); candle scheduling and risk guards remain UTC.
 
+
+[IST 14-Jul-2026 16:47:09] - liveTrade IST timestamps use ordinal human format (e.g. 16th July 2026 9:15:44 IST).
+

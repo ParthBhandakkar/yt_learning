@@ -36,20 +36,29 @@ class ISTFormatter(logging.Formatter):
     """Format log asctime in IST regardless of the OS local timezone."""
 
     def formatTime(self, record, datefmt=None):
-        dt = datetime.fromtimestamp(record.created, tz=IST)
-        if datefmt:
-            return dt.strftime(datefmt)
-        return dt.strftime("%Y-%m-%d %H:%M:%S")
+        return format_ist(datetime.fromtimestamp(record.created, tz=timezone.utc))
 
 
-_FMT = ISTFormatter("%(asctime)s IST | %(levelname)s | %(message)s", "%Y-%m-%d %H:%M:%S")
+_FMT = ISTFormatter("%(asctime)s | %(levelname)s | %(message)s")
+
+
+def _day_ordinal(day: int) -> str:
+    if 11 <= (day % 100) <= 13:
+        suffix = "th"
+    else:
+        suffix = {1: "st", 2: "nd", 3: "rd"}.get(day % 10, "th")
+    return f"{day}{suffix}"
 
 
 def format_ist(dt: datetime) -> str:
-    """Human-readable IST string for cycle / email lines."""
+    """Human-readable IST, e.g. '16th July 2026 9:15:44 IST'."""
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
-    return dt.astimezone(IST).strftime("%Y-%m-%d %H:%M:%S IST")
+    local = dt.astimezone(IST)
+    return (
+        f"{_day_ordinal(local.day)} {local.strftime('%B %Y')} "
+        f"{local.hour}:{local.strftime('%M:%S')} IST"
+    )
 
 
 def _make_logger(name: str, filename: str) -> logging.Logger:

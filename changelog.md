@@ -119,3 +119,6 @@
 
 [IST 13-Jul-2026 23:33:52] - liveTrade risk caps: MAX_RISK_PCT raised to 15% (5-20% band), MAX_RISK_INR=0 so % alone applies; keep S98_MAX_ENTRY_DELAY_SEC=900 for late-restart protection. Updated .env / .env.example / config defaults.
 
+
+[IST 14-Jul-2026 16:46:06] - liveTrade logs/cycle lines/emails use IST (UTC+05:30); candle scheduling and risk guards remain UTC.
+

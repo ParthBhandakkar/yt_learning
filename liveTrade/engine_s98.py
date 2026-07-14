@@ -13,7 +13,7 @@ from pathlib import Path
 
 from config import CONFIG
 from detection_s98 import detect_signal
-from logging_setup import get_engine_logger, record_pass, record_trade
+from logging_setup import format_ist, get_engine_logger, record_pass, record_trade
 from mt5_client import MT5Client, TF_MINUTES, lots_for_trade
 from notifier import send_email, trade_email
 from risk_guard import (
@@ -104,7 +104,7 @@ class EngineS98:
 
     def _run_1h_cycle(self, now: datetime):
         tlog = get_engine_logger()
-        tlog.info(f"=== 1h cycle @ {now.isoformat()} ===")
+        tlog.info(f"=== 1h cycle @ {format_ist(now)} ===")
         for sym in CONFIG.symbols:
             try:
                 self._cycle_1h(sym, now, tlog)
@@ -177,6 +177,7 @@ class EngineS98:
             "setup": signal["setup"],
             "signal_time": signal["signal_time"],
             "time_utc": now.isoformat(),
+            "time_ist": format_ist(now),
             "strategy": "s98",
         }
         record_pass("1h", {**base, "event": "entry_signal"})

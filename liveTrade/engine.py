@@ -18,7 +18,7 @@ from datetime import datetime, timedelta, timezone
 import pandas as pd
 
 from config import CONFIG
-from logging_setup import get_engine_logger, get_tf_logger, record_pass, record_trade
+from logging_setup import format_ist, get_engine_logger, get_tf_logger, record_pass, record_trade
 import detection as D
 from detection import BIAS_TTL_HOURS, FINAL_R, PARTIAL_R
 from mt5_client import MT5Client, TF_MINUTES
@@ -107,7 +107,7 @@ class Engine:
     # ---------------------------------------------------------------- cycles
     def _run_tf_cycle(self, tf: str, now: datetime):
         tlog = get_tf_logger(tf)
-        tlog.info(f"=== {tf} cycle @ {now.isoformat()} ===")
+        tlog.info(f"=== {tf} cycle @ {format_ist(now)} ===")
         for sym in CONFIG.symbols:
             try:
                 if tf == "4h":
@@ -224,7 +224,8 @@ class Engine:
         base = {"symbol": sym, "direction": direction, "entry": entry, "sl": sl, "tp": tp,
                 "lots": lots, "risk_pips": risk_pips, "margin": CONFIG.margin_per_trade,
                 "leverage": CONFIG.leverage, "partial_r": PARTIAL_R, "final_r": FINAL_R,
-                "time_utc": now.isoformat(), "swept_level": f"{lvl.price:.5f}",
+                "time_utc": now.isoformat(), "time_ist": format_ist(now),
+                "swept_level": f"{lvl.price:.5f}",
                 "sweep_dir": track.bias.direction.value, "mss_price": f"{track.mss.mss.break_price:.5f}"}
         record_pass("5m", {**base, "event": "entry_signal"})
 

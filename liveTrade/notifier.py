@@ -50,7 +50,7 @@ def trade_email(t: dict) -> None:
             f"Risk (pts)  : {t.get('risk_price', abs(t['entry'] - t['sl'])):.2f}\n"
             f"Setup       : {t.get('setup', '')}\n"
             f"Signal bar  : {t.get('signal_time', '')}\n"
-            f"Time (UTC)  : {t.get('time_utc', '')}\n"
+            f"Time (IST)  : {t.get('time_ist', t.get('time_utc', ''))}\n"
             f"\nManagement: ATR chandelier trail (see trade_manager_s98)\n"
         )
         send_email(subject, body)
@@ -66,7 +66,7 @@ def trade_email(t: dict) -> None:
         f"Lots        : {t.get('lots', 0)}\n"
         f"Risk (pips) : {t.get('risk_pips', 0):.1f}\n"
         f"Est. margin : Rs {t.get('margin', 0):.0f}  (1:{t.get('leverage', 2000):.0f})\n"
-        f"Time (UTC)  : {t.get('time_utc', '')}\n"
+        f"Time (IST)  : {t.get('time_ist', t.get('time_utc', ''))}\n"
         f"\nSetup:\n"
         f"  4H sweep of {t.get('swept_level', '')} ({t.get('sweep_dir', '')})\n"
         f"  1H displacement MSS @ {t.get('mss_price', '')}\n"

@@ -125,3 +125,39 @@
 
 [IST 14-Jul-2026 16:47:09] - liveTrade IST timestamps use ordinal human format (e.g. 16th July 2026 9:15:44 IST).
 
+
+[IST 14-Jul-2026 22:26:46] - BTCUSD leakage-free strategy tournament: btc_research_engine.py, btc_strategy_candidates.py, btc_strategy_tournament.py, strategy_140_btc_walkforward_champion.py + unit tests. Select freeze: daily Donchian+ATR trail pyramid_max_3 (+67,395 net points on 2024-07-13..2025-07-12). Sealed final 2025-07-13..2026-07-12: -14,574 points (target 1.0-1.2M MISSED). Artifacts in dashboard/out/btc_strategy_tournament/. Research only; live gold remains s98.
+
+[IST 14-Jul-2026 23:15:00] - BTC round-two statistical validation: btc_stat_validation.py + test_btc_stat_validation.py (calendar WF folds, purged CPCV, bootstrap CIs, DSR, PBO, eligibility gates, ranking, cost/delay stress). 31 unit tests passing.
+
+[IST 14-Jul-2026 23:20:00] - Causal BTC feature store: btc_feature_store.py + test_btc_feature_store.py (event_time/available_time provenance, backward merge_asof joins, OHLCV/volatility, funding, 1m microstructure, on-chain/macro publication lags, ETH/cross-venue predictors, train-only preprocessing). 9 unit tests passing.
+
+[IST 14-Jul-2026 23:30:00] - BTC round-two regime/model/candidate layers: btc_regimes.py, btc_models.py, btc_round2_candidates.py + focused tests (causal frozen regimes, calibrated meta-labelers with uplift selection, multi-TF candidate screen grid including microstructure and legacy wrappers). 19 unit tests passing.
+
+[IST 14-Jul-2026 23:45:00] - BTC round-two orchestrator: btc_round2_tournament.py stages ingest/build-features/screen/validate/freeze/replay with --offline/--quick; artifacts under dashboard/out/btc_round2/; freezes strategy_141 only when eligibility gates pass.
+
+[IST 15-Jul-2026 01:23:40] - BTCUSD round-two complete: engine repairs (HTF 1d->1w, fill-time stops, ranking gates), research .venv, data/feature/regime/model/stat modules, btc_round2_tournament pipeline. Freeze: no_deployable_champion (no s141). Best experimental squeeze_1d ~+155k OOS pts @ $25 RT; DSR/concentration gates failed. Artifacts dashboard/out/btc_round2/.
+
+[IST 15-Jul-2026 13:30:33] - BTCUSD round-three research (no leverage): btc_round3_candidates.py, btc_stacking.py, btc_round3_tournament.py; engine pyramid_unlimited; hourly funding ingest fix; academic sleeves (seasonality/ITSM/TOC) net-negative after $25 RT; best stacked 1y ~368k pts @ peak 91 units (gap ~632k to 1M); status=no_deployable_champion (0 eligible, all fail DSR). Artifacts in dashboard/out/btc_round3/.
+
+[IST 15-Jul-2026 15:23:06] - BTCUSD round-four complete (single-unit, no pyramiding): tracks max-capture / lead-lag / ML meta / aggTrades micro screened+validated under round-2 gates. Freeze status=frozen -> strategy_141_btc_adaptive_ensemble.py (regswitch_xwide_1d): OOS +141.9k @$25, DSR 0.814, PBO 0.091; 1y ~+75.6k (gap ~924k to 1M). Micro/lead-lag/ML failed to close gap. Artifacts dashboard/out/btc_round4/.
+[IST 15-Jul-2026 17:50:00] - BTCUSD round-five: migrated research cache to O:\\D temp\\Data\\btc_research_data; fixed real-IS PBO + lead-lag coarse-join leakage; archived dead root scripts to scripts/archive/; ceiling analysis shows 1d impossible for 1M/yr; novel CUSUM/HMM/funding/volcomp/giveback/leadlag screened — status=no_deployable_champion (no s142); best ~60.5k 1y. Artifacts dashboard/out/btc_round5/.
+[IST 15-Jul-2026 18:51:23] - BTCUSD round-six complete: fixed zig-zag ceiling + engine exits (max_hold/giveback/breakeven/flip) + independent event labels; PBO over all folds; data ingest (agg gaps, full 1m klines 2021-07..2026-07, ETH 1h); three tournament iterations over SAR/meta/CUSUM/cascade/router/infobar/ETH/path/EMA-ADX/BB-meta. status=no_deployable_champion (no s142); best r4_xwide_1d ~66.4k 1y (gap ~934k); irreducible under single-unit/$25 RT/gates. Artifacts dashboard/out/btc_round6/ + canvas btc-round6-research.canvas.tsx.
+
+[IST 15-Jul-2026 23:42:08] - BTCUSD round-seven complete: engine flip/time-exit accounting + deferred breakeven; cost-aware EV gate; per-family PBO; Binance Vision 5m OI/L-S/taker metrics (~529k rows) + spot basis + DVOL + F&G; families OI-squeeze/basis/L-S/funding/EV-ML/jump/ensemble; three tournament loops + $5/$10 RT sensitivity. status=no_deployable_champion (no s142); best still r4_xwide_1d ~66.4k 1y (gap ~934k, below s141); novel derivatives only small honest positives. Artifacts dashboard/out/btc_round7/ + canvas btc-round7-research.canvas.tsx.
+
+[IST 16-Jul-2026 01:35:00] - BTCUSD round-eight Phase-4 foundation: scripts/ingest_btc_round8.py (resumable premiumIndexKlines 1m Vision ingest, bookDepth probe, Bybit 1h, on-chain daily, Deribit skew/IV-RV builder, --smoke); btc_round8_candidates.py (12 families + R2/R3 wraps + feature/bar helpers); test_btc_round8_candidates.py (6 contract tests pass).
+
+[IST 16-Jul-2026 03:45:00] - BTCUSD round-nine candidates foundation: btc_round9_candidates.py (28 signal families — classic TA, paper-driven, youtuber proxies, optional GP/LightGBM; FAMILY_BUILDERS + generate/run/grid); test_btc_round9_candidates.py (6 contract tests pass).
+
+
+[IST 16-Jul-2026 06:07:28] - BTCUSD round-nine complete: R8 defect fixes + causal features; exhaustive TA/youtuber/paper/ML candidates (btc_round9_*); dual-track tournament (3 loops). status=no_deployable_champion (no s142); best elliott_15m ~120.9k 1y (fails family PBO/regime conc.); portfolio 9-sleeve optimistic ~438k 1y (fails mean DSR/PBO). Artifacts dashboard/out/btc_round9/ + canvas btc-round9-research.canvas.tsx.
+
+
+[IST 16-Jul-2026 06:14:17] - Round-9 causality audit fixes: zigzag pivots now carry confirm_idx (no unconfirmed lookahead); ML sleeves train only on labels known at fit time; PDH/pivot points use full prior-day OHLC; run_round9_candidate auto-builds feature frames for freeze/S142. Regression tests added; honest tournament re-screen started.
+
+[IST 16-Jul-2026 07:38:00] - Round-9 honest re-tournament complete after causality fixes (3 loops + cost/portfolio/freeze/report). status=no_deployable_champion (no s142); best experimental qhi_1h ~72.4k 1y (under R8 baseline ~76.9k); portfolio 12-sleeve optimistic ~394k 1y (fails mean DSR/PBO). Pre-fix elliott_15m ~120.9k discarded as leaky; docs/canvas updated.
+
+
+[IST 17-Jul-2026 23:15:06] - Independent verification of drawdown_analysis_verified.md: real s98 ATR-trail gold remains profitable (+162.6R PF1.49 full / +82.3R PF1.97 1y); other doc judged a fixed-target reframe, not the strategy. Added verify_drawdown_claims.py + drawdown_analysis_response.md.
+

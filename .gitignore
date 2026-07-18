@@ -6,3 +6,6 @@ dashboard/out/
 venv/
 *.pyc
 .env
+# Large data files (> 50 MB) excluded from Git
+data/*/1m/
+data/*/5m/

@@ -88,6 +88,18 @@ class Config:
     min_displacement_pct: float = field(default_factory=lambda: _f("MIN_DISPLACEMENT_PCT", 0.10))
     sl_buffer_pips: float = field(default_factory=lambda: _f("FOREX_SL_BUFFER_PIPS", 15))
 
+    # Strategy 97 params (defaults match strategy_97_trend_meanreversion.py backtest)
+    s97_trend_ema: int = field(default_factory=lambda: _i("S97_TREND_EMA", 200))
+    s97_sma_n: int = field(default_factory=lambda: _i("S97_SMA_N", 20))
+    s97_atr_n: int = field(default_factory=lambda: _i("S97_ATR_N", 14))
+    s97_z_entry: float = field(default_factory=lambda: _f("S97_Z_ENTRY", 2.0))
+    s97_z_exit: float = field(default_factory=lambda: _f("S97_Z_EXIT", 0.5))
+    s97_k_sl: float = field(default_factory=lambda: _f("S97_K_SL", 2.5))
+    s97_max_hold_bars: int = field(default_factory=lambda: _i("S97_MAX_HOLD_BARS", 48))
+    # EMA200 is recursive (adjust=False); fetch enough closed 4H bars that it
+    # converges to the full-history backtest value. >=800 matches; 1500 = safety.
+    s97_fetch_bars: int = field(default_factory=lambda: _i("S97_FETCH_BARS", 1500))
+
     # Strategy 98 params (defaults match strategy_98_xau_trend_liquidity_trail.py backtest)
     s98_htf_ema: int = field(default_factory=lambda: _i("S98_HTF_EMA", 50))
     s98_range_lookback: int = field(default_factory=lambda: _i("S98_RANGE_LOOKBACK", 20))

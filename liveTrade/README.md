@@ -1,105 +1,138 @@
-# liveTrade — Strategy 95 / 98 live runner (MT5 / Exness)
+# liveTrade — Strategy 97 / 98 live runner (MT5 / Exness, Windows)
 
-Runs validated strategies live, 24/7, through your MT5 (Exness) terminal.
+Runs the validated strategies live, 24/7, through your MT5 (Exness) terminal.
+Pick the strategy with a command-line argument.
 
-| Strategy | ID | Symbol(s) | Cadence |
-|----------|-----|-----------|---------|
-| MSS/OB refined (forex basket) | **s95** (default legacy) | EURUSD, GBPUSD, … | 4H → 1H → 15M → 5M |
-| XAUUSD trend + liquidity + ATR trail | **s98** (gold live) | XAUUSD | 1H signal, ATR trail exit |
+| Strategy | `--strategy` | Symbols | Cadence | Exit logic |
+|----------|:-----------:|---------|---------|-----------|
+| With-trend mean-reversion basket | **97** | EURUSD, GBPUSD, USDJPY, USDCHF, AUDUSD, NZDUSD, USDCAD, XAUUSD | **4H** closed candle | fixed ATR stop + dynamic mean-revert TP + 48-bar time stop |
+| XAUUSD trend + liquidity + ATR trail | **98** | XAUUSD | **1H** closed candle | ATR chandelier trailing stop (no fixed TP) |
 
-Set `STRATEGY_ID=s98` in `.env` for gold. Use `FIXED_LOT=0.01` for fixed sizing (disables margin-based lots).
+```bat
+python run.py --strategy 97          :: mean-reversion basket
+python run.py --strategy 98          :: gold trend + ATR trail
+python run.py --strategy 97 --check  :: connectivity/config check, then exit
+```
 
-## Strategy 95 (legacy)
-15M order block in OTE → 5M tap) live, 24/7, across multiple symbols, executing
-through your MT5 (Exness) terminal. Signals use the **exact same detection code**
-as the backtest, so live = backtest.
+`--strategy` overrides `STRATEGY_ID` in `.env`. `95` (legacy MSS/OB) is still available but unused.
 
-## Strategy 98 (gold live)
-- **1H closed-candle scan** only (4H bias resampled from 1H, same as backtest).
-- Entry at market when the signal bar closes (backtest: next 1H open).
-- **ATR chandelier trail** for exit (no fixed TP); `trade_manager_s98.py`.
-- **Fixed lot** via `FIXED_LOT=0.01` recommended for gold live.
-- **Risk caps:** `MAX_RISK_INR` and `MAX_RISK_PCT` skip entries when 0.01-lot SL loss
-  would exceed the cap. Defaults: `MAX_RISK_INR=0` (disabled) + `MAX_RISK_PCT=15`
-  (in the 5–20% band). Effective cap = min of enabled limits. Wide Donchian/structural
-  stops can still exceed this and get skipped. `S98_MAX_ENTRY_DELAY_SEC` (default 900)
-  rejects late entries after engine restart (backtest fills at next 1H open).
+---
 
-## What s95 does
-- **Scans each timeframe only when its candle has CLOSED** — 4H every 4h, 1H every
-  hour, 15M every 15m, 5M every 5m — and never looks at the still-forming candle.
-- Stages independently per symbol with a 16h setup expiry (TTL):
-  - **4H** → finds the liquidity-sweep bias  → `passes/4h_passes.jsonl`
-  - **1H** → displacement-gated MSS          → `passes/1h_passes.jsonl`
-  - **15M** → order block in the OTE zone     → `passes/15m_passes.jsonl`
-  - **5M** → fresh tap → **executes the trade** → `passes/5m_passes.jsonl`
-- **Logs every timeframe cycle** to `logs/<tf>.log` (plus `logs/engine.log`).
-- **Sizing:** margin-based fixed stake — ₹`MARGIN_PER_TRADE_INR` at `LEVERAGE` (1:2000),
-  lot size derived from MT5's own margin model, capped by `MAX_LOT`.
-- **Management:** at +0.5R it closes 50% and moves the stop to **breakeven**; the
-  runner targets +1.5R (set as the order TP). State persists across restarts.
-- **Email** on every execution (and on partial/breakeven, start-up).
-- **Safety:** one trade per pair, max concurrent trades, daily-loss pause, and a
-  `DRY_RUN` mode that logs signals but places NO orders.
+## Live == backtest (verified)
 
-## Setup (Windows PC with MT5/Exness running)
-1. Install Python 3.10–3.12 and the MT5 terminal (logged into your Exness account).
+The live signal code reuses the **exact indicator math and entry rule** from the
+backtests, evaluated only on **closed** candles.
+
+- **Strategy 97:** `detection_s97.py` calls the backtest's own ATR and replicates
+  its SMA/EMA and the `z = (close-SMA)/ATR` fade rule. Verified by
+  `test_s97_parity.py`: replaying the 4H history bar-by-bar reproduces
+  **1019 / 1020 (99.9%)** of backtest entries across all 8 pairs; the single
+  difference is one USDJPY signal sitting exactly on the z-threshold (sub-pip
+  float boundary), not a logic error.
+- **EMA200 is recursive** (`adjust=False`), so live must load enough history for
+  it to converge to the full-history backtest value. `test_s97_window.py` shows
+  240 bars gives 185 signal diffs, **≥800 bars gives an exact match**. The engine
+  fetches **1500** 4H bars per scan (`S97_FETCH_BARS`) for a safe margin.
+- **Strategy 98:** `detection_s98.py` reuses `strategy_98_xau_trend_liquidity_trail.py`
+  directly on the last closed 1H bar.
+
+Run the parity checks anytime (they need only the CSVs, not MT5):
+
+```
+python test_s97_parity.py     :: live entries vs backtest entries, per pair
+python test_s97_window.py     :: how many bars EMA200 needs to converge
+```
+
+---
+
+## What each strategy does live
+
+### Strategy 97 (4H mean-reversion basket)
+- Every 4H close: EMA200 sets the trend; a pullback stretched to `z ≥ 2.0` ATRs
+  against the mean is **faded with the trend** (long dips in uptrends, short rips
+  in downtrends).
+- **Entry** at market right after the signal bar closes (backtest fills next-bar
+  open — same risk distance `2.5×ATR = 1R`).
+- **Exit** managed to match the backtest exactly:
+  - hard ATR stop placed on the broker (enforced intrabar),
+  - dynamic **mean-revert TP** = `SMA ± 0.5×ATR`, recomputed and pushed to the
+    broker on **every** closed 4H bar,
+  - **time stop**: flat at market after 48 bars.
+- One position per pair; up to `MAX_CONCURRENT_TRADES` open at once.
+
+### Strategy 98 (gold, 1H)
+- 1H closed-candle scan (4H bias resampled from 1H). Entry at market on the
+  signal bar close. Exit via `trade_manager_s98.py` ATR chandelier trail.
+- Use `FIXED_LOT=0.01`, `SYMBOLS=` (auto → XAUUSD), `MAX_CONCURRENT_TRADES=1`.
+
+Both engines:
+- **Only scan closed candles** (the forming bar is always dropped).
+- Log every cycle to `logs/` and every signal/trade to `passes/*.jsonl`.
+- Enforce guards: one-trade-per-pair, max-concurrent, daily-loss pause, `DRY_RUN`.
+- Email on start / execution / exit (if SMTP configured).
+- Persist open-position state so a restart resumes management (`passes/positions_state_s9*.json`).
+
+---
+
+## Setup (Windows PC with MT5 / Exness running)
+
+1. Install Python 3.10–3.12 and the MT5 terminal, logged into your **demo** Exness account.
 2. In this folder:
-   ```
+   ```bat
    python -m venv .venv
    .venv\Scripts\activate
    pip install -r requirements.txt
    ```
-3. Copy `.env.example` to `.env` and fill it in (MT5 login/server, symbols, email…).
-   - If your terminal is already logged in you can leave `MT5_LOGIN/PASSWORD/SERVER` blank.
-   - Exness symbols sometimes have a suffix (e.g. `EURUSDm`); set `MT5_SYMBOL_SUFFIX` or
-     leave blank to auto-resolve.
+3. Copy `.env.example` to `.env` and fill it in:
+   - Leave `MT5_LOGIN/PASSWORD/SERVER` blank to attach to the already-logged-in terminal.
+   - Leave `SYMBOLS` blank to auto-select the strategy's basket.
+   - Exness symbols may have a suffix (e.g. `EURUSDm`); set `MT5_SYMBOL_SUFFIX` or leave blank to auto-resolve.
+   - For s98: `MAX_CONCURRENT_TRADES=1`, `FIXED_LOT=0.01`.
 4. **Validate first:**
+   ```bat
+   python run.py --strategy 97 --check
    ```
-   python run.py --check
+   Confirms MT5 connects, every symbol resolves, closed 4H candles are fetched, and shows a sample lot size.
+5. **Run in DRY_RUN** (`DRY_RUN=true`) for a while — logs signals + emails, places no orders. Watch `logs/` and `passes/`.
+6. Go live on the **demo** account: set `DRY_RUN=false` and run continuously:
+   ```bat
+   run_forever.bat 97
    ```
-   Confirms MT5 connects, every symbol resolves, candles are fetched, and shows a
-   sample lot size.
-5. **Run in DRY_RUN** (`DRY_RUN=true`) for a while — it logs signals + emails but
-   places no orders. Watch `logs/` and `passes/`.
-6. When satisfied, set `DRY_RUN=false` (ideally first on a **demo** account) and run:
-   ```
-   D:\Python\Python3_12_8\python.exe run.py
-   ```
-   For s98 gold: ensure `STRATEGY_ID=s98`, `SYMBOLS=XAUUSD`, `FIXED_LOT=0.01`.
-   Keep it running 24/7 (e.g. Windows Task Scheduler, or NSSM as a service).
+   `run_forever.bat` restarts the engine automatically if it exits. Edit the
+   `PYTHON` line inside it if you use a specific interpreter path. Alternatively
+   register `python run.py --strategy 97` with Windows Task Scheduler (at logon,
+   restart on failure) or NSSM as a service.
 
-## Order lifecycle smoke test
-While the live engine runs, you can verify place / trail-SL / close on the **demo**
-account without interfering with s98 positions (test uses magic `989898`, live s98
-uses `980098`):
+---
 
+## Order lifecycle smoke test (demo only)
+Verify place / modify-SL / close on the demo account without touching live positions
+(test uses magic `989898`):
+```bat
+python test_order_lifecycle.py
 ```
-cd liveTrade
-D:\Python\Python3_12_8\python.exe test_order_lifecycle.py
-```
-
-Fixed **0.01** lot only; aborts on non-demo accounts. Cleans up test positions in
-`finally` even on failure.
 
 ## ⚠ Risk note
-At 1:2000 leverage, position notional = `margin × 2000`. A full stop-out can lose
-**several times** the ₹1000 margin. Use `MAX_DAILY_LOSS_INR`, `MAX_RISK_INR`, `MAX_RISK_PCT`,
-`MAX_CONCURRENT_TRADES`, and test on demo before risking real money. Strategy 98 uses
-structural stops beyond swing extremes — with `FIXED_LOT=0.01` a wide Donchian stop can
-risk thousands of INR (~60% of a ₹9k demo) even though the lot looks small. Backtests
-size positions at ~1% of equity per 1R; live fixed-lot does not. Backtests are not a guarantee of live results.
+At 1:2000 leverage, notional = `margin × 2000`; a full stop-out can lose several
+times the margin. The verified edge is **thin** and cost-sensitive (see
+`../drawdown_analysis_verified.md`): keep risk small (1–2% per trade — 10% risk
+produced 60–98% drawdowns in simulation), use `MAX_DAILY_LOSS_INR` and
+`MAX_CONCURRENT_TRADES`, and test on demo first. Backtests are not a guarantee of
+live results.
 
 ## Files
 | file | purpose |
 |------|---------|
-| `run.py` | entrypoint (`--check` for diagnostics) |
-| `engine.py` | 24/7 scheduler, per-TF cadence, staging, execution |
-| `detection.py` | adapter over the real Strategy 95 detection |
-| `mt5_client.py` | MT5 connect, closed-candle fetch, sizing, orders |
-| `trade_manager.py` | partial @0.5R + breakeven, state persistence |
-| `notifier.py` | email alerts |
-| `logging_setup.py` | per-TF logs + per-TF pass files |
-| `config.py` | loads `.env` |
-| `test_order_lifecycle.py` | one-shot demo place/trail/close smoke test (magic 989898) |
+| `run.py` | entrypoint — `--strategy 97|98`, `--check` |
+| `engine_s97.py` / `engine_s98.py` | 24/7 scheduler per strategy (4H / 1H closed-candle cadence) |
+| `detection_s97.py` / `detection_s98.py` | live signal = exact backtest logic on closed bars |
+| `trade_manager_s97.py` / `trade_manager_s98.py` | exit management (stop/TP/time-stop ; ATR trail) |
+| `mt5_client.py` | MT5 connect, closed-candle fetch, sizing, place/modify/close |
+| `notifier.py` | strategy-aware email alerts |
+| `logging_setup.py` | per-timeframe logs + per-timeframe pass files |
+| `config.py` | loads `.env` (typed) |
+| `test_s97_parity.py` | proves live entries == backtest entries |
+| `test_s97_window.py` | proves EMA200 fetch-window convergence |
+| `test_order_lifecycle.py` | demo place/trail/close smoke test |
+| `run_forever.bat` | Windows auto-restart loop |
 | `logs/`, `passes/` | created at runtime |

@@ -31,7 +31,17 @@ def send_email(subject: str, body: str) -> bool:
         return False
 
 
+def _fmt(price, digits=5):
+    try:
+        return f"{float(price):.{digits}f}"
+    except (TypeError, ValueError):
+        return str(price)
+
+
 def trade_email(t: dict) -> None:
+    """Strategy-aware trade alert. Works for s95 / s97 / s98."""
+    strat = t.get("strategy", "s95")
+    label = {"s95": "Strategy95", "s97": "Strategy97", "s98": "Strategy98"}.get(strat, strat)
     dry = "[DRY RUN] " if t.get("dry_run") else ""
     strat_id = str(t.get("strategy", CONFIG.strategy_id)).lower()
     labels = {"s98": "Strategy 98", "s95": "Strategy 95"}

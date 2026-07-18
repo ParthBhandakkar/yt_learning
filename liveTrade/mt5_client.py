@@ -213,6 +213,26 @@ class MT5Client:
         }
         return mt5.order_send(req)
 
+    def close_position(self, position, comment: str = "close"):
+        """Close the full remaining volume of a position at market."""
+        broker_sym = position.symbol
+        tick = mt5.symbol_info_tick(broker_sym)
+        is_long = position.type == mt5.POSITION_TYPE_BUY
+        req = {
+            "action": mt5.TRADE_ACTION_DEAL,
+            "symbol": broker_sym,
+            "volume": float(position.volume),
+            "type": mt5.ORDER_TYPE_SELL if is_long else mt5.ORDER_TYPE_BUY,
+            "position": position.ticket,
+            "price": tick.bid if is_long else tick.ask,
+            "deviation": 30,
+            "magic": self.magic,
+            "comment": comment[:30],
+            "type_time": mt5.ORDER_TIME_GTC,
+            "type_filling": self._filling(broker_sym),
+        }
+        return mt5.order_send(req)
+
     def open_positions(self, magic: int | None = None):
         m = self.magic if magic is None else magic
         pos = mt5.positions_get()

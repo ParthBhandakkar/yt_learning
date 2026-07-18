@@ -84,7 +84,7 @@ JOBS_LOCK = threading.Lock()
 # ---------------------------------------------------------------------------
 
 PATTERN_FILE = re.compile(r"strategy_(\d+)_.*\.py$")
-PATTERN_CSV = re.compile(r'parser\.add_argument\("(--csv\w*)".*?help="(.*?)"')
+PATTERN_CSV = re.compile(r'(?:parser|p)\.add_argument\("(--csv\w*)".*?help="(.*?)"')
 PATTERN_NAME = re.compile(r'"""\s*\n\s*(.*?)\s*\n', re.DOTALL)
 PATTERN_VIDEO = re.compile(r"Video:\s*(https?://\S+)")
 

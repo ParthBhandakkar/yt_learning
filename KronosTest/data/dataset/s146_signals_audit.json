@@ -1,0 +1,110 @@
+{
+  "created_utc": "2026-08-21T10:15:55.656993Z",
+  "source_run": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\data\\s146_running_extreme\\runs\\s146-20260820T091500Z",
+  "rows": 1167,
+  "feature_count": 28,
+  "features": [
+    "f_campaign_age_hours",
+    "f_campaign_zone_count",
+    "f_dest_zone_age_hours",
+    "f_dest_zone_height_r",
+    "f_direction",
+    "f_entry_zone_age_hours",
+    "f_entry_zone_height_r",
+    "f_has_liquidity_pool",
+    "f_hour_cos",
+    "f_hour_sin",
+    "f_hour_utc",
+    "f_is_long",
+    "f_is_running_extreme",
+    "f_model_aggressive_liquidation",
+    "f_model_conservative_mss",
+    "f_reward_points",
+    "f_reward_risk",
+    "f_risk_points",
+    "f_risk_rel_price",
+    "f_spread_pct_of_risk",
+    "f_spread_points",
+    "f_stop_basis_15m_zone_distal_plus_buffer",
+    "f_stop_basis_liquidity_pool",
+    "f_stop_basis_signal_bar_extreme",
+    "f_stop_basis_swept_level",
+    "f_stop_pad_r",
+    "f_wait_minutes",
+    "f_weekday"
+  ],
+  "label_columns": [
+    "label_r",
+    "label_win",
+    "label_exit_reason",
+    "label_mfe_r",
+    "label_mae_r",
+    "label_bars_held_5m"
+  ],
+  "context_bars_required": {
+    "5m": 512,
+    "15m": 256,
+    "4h": 128
+  },
+  "forecast_bars_5m": 96,
+  "split": {
+    "cutoff_epoch": 1774940100,
+    "cutoff_utc": "2026-03-31T06:55:00Z",
+    "fraction": 0.6,
+    "train": 700,
+    "test": 467
+  },
+  "coverage": {
+    "context_complete_rows": 1167,
+    "context_incomplete_rows": 0,
+    "forecast_window_ok_rows": 1167
+  },
+  "join": {
+    "signals_without_trade": 0,
+    "trades_without_signal": 0
+  },
+  "leakage_checks": {
+    "features_named_after_post_signal_fields": [],
+    "post_signal_field_count": 29,
+    "signal_time_field_allowlist": [
+      "signal_id",
+      "trade_id",
+      "symbol",
+      "broker_symbol",
+      "direction",
+      "model",
+      "signal_time_utc",
+      "signal_bar_open_utc",
+      "alert_time_utc",
+      "trigger",
+      "stop_price",
+      "structural_stop",
+      "effective_stop",
+      "destination_target",
+      "destination_reward_risk",
+      "confirmation_level",
+      "swept_level",
+      "entry_zone",
+      "entry_zone_id",
+      "destination_zone",
+      "destination_zone_id",
+      "campaign_id",
+      "campaign_started_at_utc",
+      "campaign_zone_count",
+      "running_extreme_zone_id",
+      "running_extreme_proximal",
+      "entry_zone_is_running_extreme",
+      "stop_basis",
+      "stop_liquidity_pool",
+      "spread_at_signal_points",
+      "spread_at_signal_price",
+      "spread_pct_of_structural_risk",
+      "spread_cost_limit",
+      "execution_status"
+    ]
+  },
+  "known_limitations": [
+    "Outcomes come from the checked-in replay, which is native-bar based with a deliberately pessimistic stop-first same-bar rule.",
+    "Rows are the 1,167 trades the portfolio gates actually admitted. Skipping a trade would in reality free a slot for another signal; that second-order portfolio effect is not modelled here."
+  ]
+}

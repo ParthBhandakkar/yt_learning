@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>S146 Running Extreme · Run Explorer</title><link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header><div><p class="eyebrow">STRATEGY 146 · READ ONLY</p><h1>Running Extreme</h1></div><div class="run-picker"><label for="run">Backtest run</label><select id="run"><option>Loading…</option></select></div></header>
+<main>
+  <div id="notice" class="notice" hidden></div>
+  <section class="hero"><div><h2 id="run-title">Run explorer</h2><p id="run-meta" class="muted">Discovering completed runs…</p></div><div id="meta-tags" class="tags"></div></section>
+  <section id="kpis" class="kpis" aria-label="Performance indicators"></section>
+  <section class="panel"><div class="panel-head"><div><p class="overline">CUMULATIVE PERFORMANCE</p><h2>Equity & drawdown in R</h2></div></div><div id="equity" class="chart"></div></section>
+  <section class="breakdown-grid"><article class="panel"><div class="panel-head"><h2>Symbols</h2></div><div id="symbols" class="breakdown"></div></article><article class="panel"><div class="panel-head"><h2>Entry models</h2></div><div id="models" class="breakdown"></div></article><article class="panel"><div class="panel-head"><h2>Exit reasons</h2></div><div id="exits" class="breakdown"></div></article></section>
+  <section class="panel trades-panel"><div class="panel-head trade-head"><div><p class="overline">EXECUTION LOG</p><h2>Trades <span id="trade-count" class="muted"></span></h2></div><div class="filters"><input id="search" type="search" placeholder="Search any trade field…"><select id="symbol"><option value="">All symbols</option></select><select id="model"><option value="">All models</option></select><select id="exit"><option value="">All exits</option></select><select id="outcome"><option value="">All outcomes</option></select></div></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Entry UTC</th><th>Symbol</th><th>Side</th><th>Model</th><th class="num">Entry</th><th class="num">Stop</th><th class="num">Exit</th><th class="num">R</th><th>Result</th><th></th></tr></thead><tbody id="trades"></tbody></table></div>
+    <div class="pager"><button id="prev">← Previous</button><span id="page-label">Page 1</span><button id="next">Next →</button><select id="page-size" aria-label="Rows per page"><option>25</option><option selected>50</option><option>100</option><option>250</option></select></div>
+  </section>
+  <section class="panel log-panel"><div class="panel-head trade-head"><div><p class="overline">DETECTOR LOG</p><h2>All detector signals <span id="signal-count" class="muted"></span></h2></div><div class="filters"><input id="signal-search" type="search" placeholder="Search signals…"><select id="signal-symbol"><option value="">All symbols</option></select><select id="signal-status"><option value="">All statuses</option></select></div></div>
+    <div class="table-wrap"><table><thead><tr><th>#</th><th>Signal UTC</th><th>Symbol</th><th>Direction</th><th>Model</th><th>Entry zone</th><th>Status</th><th>Rejection</th></tr></thead><tbody id="signals"></tbody></table></div>
+    <div class="pager"><button id="signal-prev">← Previous</button><span id="signal-page-label">Page 1</span><button id="signal-next">Next →</button><select id="signal-page-size" aria-label="Signal rows per page"><option>25</option><option selected>50</option><option>100</option><option>250</option></select></div>
+  </section>
+  <section class="panel log-panel"><div class="panel-head trade-head"><div><p class="overline">EVENT STREAM</p><h2>All events <span id="event-count" class="muted"></span></h2></div><div class="filters"><input id="event-search" type="search" placeholder="Search events…"><select id="event-symbol"><option value="">All symbols</option></select><select id="event-type"><option value="">All event types</option></select></div></div>
+    <div class="table-wrap"><table><thead><tr><th>Time UTC</th><th>Event</th><th>Symbol</th><th>Signal / trade / zone</th><th>Reason / context</th><th>Payload</th></tr></thead><tbody id="events"></tbody></table></div>
+    <div class="pager"><button id="event-prev">← Previous</button><span id="event-page-label">Page 1</span><button id="event-next">Next →</button><select id="event-page-size" aria-label="Event rows per page"><option>25</option><option selected>50</option><option>100</option><option>250</option></select></div>
+  </section>
+</main>
+<dialog id="detail"><div class="modal-head"><div><p class="overline">TRADE INSPECTOR</p><h2 id="detail-title">Trade detail</h2></div><button id="close-detail" class="icon" aria-label="Close">×</button></div><div id="detail-body"></div></dialog>
+<footer>Local read-only dashboard · No data is modified</footer><script src="app.js"></script>
+</body></html>

@@ -1,0 +1,66 @@
+{
+  "created_utc": "2026-08-21T12:38:02.265904Z",
+  "phase": "phase8_forecast_accuracy",
+  "cutoff_epoch": 1774940100,
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCHF",
+    "AUDUSD",
+    "NZDUSD",
+    "USDCAD"
+  ],
+  "windows_requested": 350,
+  "windows_built": 350,
+  "lookback": 512,
+  "horizon": 96,
+  "paths_per_window": 10,
+  "temperature": 1.0,
+  "top_p": 0.9,
+  "seed": 2026,
+  "results": [
+    {
+      "name": "zero_shot",
+      "tokenizer": "NeoQuasar/Kronos-Tokenizer-base",
+      "model": "NeoQuasar/Kronos-small",
+      "windows_scored": 350,
+      "mae_normalized": 1.805079,
+      "rmse_normalized": 2.42265,
+      "naive_last_close_mae": 0.693516,
+      "skill_vs_naive": -1.602793,
+      "terminal_coverage": 0.182857,
+      "directional_accuracy": {
+        "1": 0.488304,
+        "6": 0.479651,
+        "12": 0.451149,
+        "48": 0.504298,
+        "96": 0.510029
+      }
+    },
+    {
+      "name": "fine_tuned",
+      "tokenizer": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\KronosTest\\data\\models\\s146_5m\\tokenizer\\best_model",
+      "model": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\KronosTest\\data\\models\\s146_5m\\basemodel\\best_model",
+      "windows_scored": 350,
+      "mae_normalized": 1.325193,
+      "rmse_normalized": 1.926677,
+      "naive_last_close_mae": 0.693516,
+      "skill_vs_naive": -0.910833,
+      "terminal_coverage": 0.162857,
+      "directional_accuracy": {
+        "1": 0.47076,
+        "6": 0.497093,
+        "12": 0.454023,
+        "48": 0.455587,
+        "96": 0.475645
+      }
+    }
+  ],
+  "how_to_read": [
+    "skill_vs_naive > 0 means the forecast beats predicting no change. At or below 0 the model adds nothing over the last close.",
+    "directional_accuracy near 0.5 means no directional information.",
+    "Metrics are on the context-standardised scale so symbols with different price levels contribute comparably.",
+    "All windows start after the fine-tune cutoff, so the fine-tuned model has not seen them."
+  ]
+}

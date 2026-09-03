@@ -1,0 +1,189 @@
+{
+  "created_utc": "2026-08-21T13:39:15.206124Z",
+  "phase": "phase7_significance",
+  "dataset": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\KronosTest\\data\\dataset\\s146_signals.csv",
+  "forecasts": "data\\forecasts\\kronos_finetuned.csv",
+  "iterations": 300,
+  "min_kept_fraction": 0.25,
+  "seed": 2026,
+  "test_unfiltered": {
+    "trades": 467,
+    "net_r": -14.006219,
+    "average_r": -0.029992,
+    "win_rate": 0.415418,
+    "profit_factor": 0.948695,
+    "max_drawdown_r": 27.794582,
+    "gross_win_r": 258.993781,
+    "gross_loss_r": 273.0
+  },
+  "findings": {
+    "s146_only::logistic": {
+      "kept_trades": 154,
+      "kept_fraction": 0.3298,
+      "observed_net_r": 11.334,
+      "observed_average_r": 0.073597,
+      "random_subset_null": {
+        "iterations": 300,
+        "null_mean_net_r": -3.1781,
+        "null_std_net_r": 12.8275,
+        "null_p05_net_r": -23.59,
+        "null_p50_net_r": -2.797,
+        "null_p95_net_r": 17.3118,
+        "observed_net_r": 11.334,
+        "p_value": 0.14
+      },
+      "permutation_null": {
+        "iterations": 300,
+        "null_mean_net_r": -5.5471,
+        "null_std_net_r": 11.5316,
+        "null_p05_net_r": -23.0044,
+        "null_p50_net_r": -6.034,
+        "null_p95_net_r": 13.0142,
+        "observed_net_r": 11.334,
+        "p_value": 0.09
+      },
+      "verdict": "indistinguishable from noise"
+    },
+    "s146_only::gbdt": {
+      "kept_trades": 151,
+      "kept_fraction": 0.3233,
+      "observed_net_r": 0.8327,
+      "observed_average_r": 0.005514,
+      "random_subset_null": {
+        "iterations": 300,
+        "null_mean_net_r": -4.1463,
+        "null_std_net_r": 11.673,
+        "null_p05_net_r": -22.2882,
+        "null_p50_net_r": -5.2131,
+        "null_p95_net_r": 15.1719,
+        "observed_net_r": 0.8327,
+        "p_value": 0.3633
+      },
+      "permutation_null": {
+        "iterations": 300,
+        "null_mean_net_r": -5.2902,
+        "null_std_net_r": 12.8894,
+        "null_p05_net_r": -22.6461,
+        "null_p50_net_r": -5.3444,
+        "null_p95_net_r": 17.789,
+        "observed_net_r": 0.8327,
+        "p_value": 0.31
+      },
+      "verdict": "indistinguishable from noise"
+    },
+    "kronos_only::logistic": {
+      "kept_trades": 122,
+      "kept_fraction": 0.2612,
+      "observed_net_r": -1.9689,
+      "observed_average_r": -0.016139,
+      "random_subset_null": {
+        "iterations": 300,
+        "null_mean_net_r": -3.4613,
+        "null_std_net_r": 11.8771,
+        "null_p05_net_r": -24.0109,
+        "null_p50_net_r": -3.3367,
+        "null_p95_net_r": 16.2255,
+        "observed_net_r": -1.9689,
+        "p_value": 0.4467
+      },
+      "permutation_null": {
+        "iterations": 300,
+        "null_mean_net_r": -3.5164,
+        "null_std_net_r": 10.1316,
+        "null_p05_net_r": -20.2001,
+        "null_p50_net_r": -3.1914,
+        "null_p95_net_r": 12.827,
+        "observed_net_r": -1.9689,
+        "p_value": 0.45
+      },
+      "verdict": "indistinguishable from noise"
+    },
+    "kronos_only::gbdt": {
+      "kept_trades": 150,
+      "kept_fraction": 0.3212,
+      "observed_net_r": -23.9592,
+      "observed_average_r": -0.159728,
+      "random_subset_null": {
+        "iterations": 300,
+        "null_mean_net_r": -4.8509,
+        "null_std_net_r": 11.7042,
+        "null_p05_net_r": -23.2086,
+        "null_p50_net_r": -5.866,
+        "null_p95_net_r": 13.9773,
+        "observed_net_r": -23.9592,
+        "p_value": 0.9533
+      },
+      "permutation_null": {
+        "iterations": 300,
+        "null_mean_net_r": -4.6727,
+        "null_std_net_r": 10.8091,
+        "null_p05_net_r": -22.2236,
+        "null_p50_net_r": -4.7628,
+        "null_p95_net_r": 13.9821,
+        "observed_net_r": -23.9592,
+        "p_value": 0.96
+      },
+      "verdict": "indistinguishable from noise"
+    },
+    "combined::logistic": {
+      "kept_trades": 129,
+      "kept_fraction": 0.2762,
+      "observed_net_r": 3.1988,
+      "observed_average_r": 0.024797,
+      "random_subset_null": {
+        "iterations": 300,
+        "null_mean_net_r": -5.0926,
+        "null_std_net_r": 12.0783,
+        "null_p05_net_r": -23.4941,
+        "null_p50_net_r": -4.9607,
+        "null_p95_net_r": 15.2028,
+        "observed_net_r": 3.1988,
+        "p_value": 0.2567
+      },
+      "permutation_null": {
+        "iterations": 300,
+        "null_mean_net_r": -5.2774,
+        "null_std_net_r": 11.635,
+        "null_p05_net_r": -24.3999,
+        "null_p50_net_r": -5.3734,
+        "null_p95_net_r": 13.5162,
+        "observed_net_r": 3.1988,
+        "p_value": 0.25
+      },
+      "verdict": "indistinguishable from noise"
+    },
+    "combined::gbdt": {
+      "kept_trades": 177,
+      "kept_fraction": 0.379,
+      "observed_net_r": -8.1702,
+      "observed_average_r": -0.046159,
+      "random_subset_null": {
+        "iterations": 300,
+        "null_mean_net_r": -4.5739,
+        "null_std_net_r": 11.5707,
+        "null_p05_net_r": -22.8829,
+        "null_p50_net_r": -4.5057,
+        "null_p95_net_r": 15.7271,
+        "observed_net_r": -8.1702,
+        "p_value": 0.6167
+      },
+      "permutation_null": {
+        "iterations": 300,
+        "null_mean_net_r": -4.0745,
+        "null_std_net_r": 12.2181,
+        "null_p05_net_r": -24.4614,
+        "null_p50_net_r": -3.4287,
+        "null_p95_net_r": 14.3374,
+        "observed_net_r": -8.1702,
+        "p_value": 0.64
+      },
+      "verdict": "indistinguishable from noise"
+    }
+  },
+  "how_to_read": [
+    "p_value is the share of noise runs that matched or beat the measured net R. Above 0.05 means the result is not distinguishable from luck.",
+    "The random-subset null asks whether the kept trades beat an equally sized random selection.",
+    "The permutation null asks whether fitting on real labels beats fitting the same pipeline on shuffled labels.",
+    "With 467 test trades and ~30% kept, the null standard deviation is large; that width, not the headline number, is the story."
+  ]
+}

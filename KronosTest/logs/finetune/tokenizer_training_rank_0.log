@@ -1,0 +1,624 @@
+2026-08-21 17:04:47 - tokenizer_training_rank_0 - INFO - === Tokenizer Training Started ===
+2026-08-21 17:04:47 - tokenizer_training_rank_0 - INFO - Experiment Name: smoke
+2026-08-21 17:04:47 - tokenizer_training_rank_0 - INFO - Log Directory: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\logs\finetune
+2026-08-21 17:04:47 - tokenizer_training_rank_0 - INFO - Rank: 0
+2026-08-21 17:04:47 - tokenizer_training_rank_0 - INFO - Timestamp: 2026-08-21 17:04:47
+2026-08-21 17:04:47 - tokenizer_training_rank_0 - INFO - Starting tokenizer training...
+2026-08-21 17:04:58 - tokenizer_training_rank_0 - INFO - 
+--- Epoch 1/1 Summary ---
+Validation Loss: 0.0051
+Epoch Time: 0:00:02
+Total Training Time: 0:00:02
+
+2026-08-21 17:04:59 - tokenizer_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\smoke\tokenizer\best_model (validation loss: 0.0051)
+2026-08-21 17:05:48 - tokenizer_training_rank_0 - INFO - === Tokenizer Training Started ===
+2026-08-21 17:05:48 - tokenizer_training_rank_0 - INFO - Experiment Name: s146_5m
+2026-08-21 17:05:48 - tokenizer_training_rank_0 - INFO - Log Directory: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\logs\finetune
+2026-08-21 17:05:48 - tokenizer_training_rank_0 - INFO - Rank: 0
+2026-08-21 17:05:48 - tokenizer_training_rank_0 - INFO - Timestamp: 2026-08-21 17:05:48
+2026-08-21 17:05:48 - tokenizer_training_rank_0 - INFO - Starting tokenizer training...
+2026-08-21 17:06:02 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 50/2445] LR: 0.000042, Loss: -0.0264
+2026-08-21 17:06:02 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0695
+  - Recon Loss Pre: 0.0108
+  - Recon Loss All: 0.0059
+2026-08-21 17:06:07 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 100/2445] LR: 0.000098, Loss: -0.0277
+2026-08-21 17:06:07 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0698
+  - Recon Loss Pre: 0.0091
+  - Recon Loss All: 0.0052
+2026-08-21 17:06:12 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 150/2445] LR: 0.000159, Loss: -0.0281
+2026-08-21 17:06:12 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0697
+  - Recon Loss Pre: 0.0087
+  - Recon Loss All: 0.0048
+2026-08-21 17:06:17 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 200/2445] LR: 0.000197, Loss: -0.0291
+2026-08-21 17:06:17 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0700
+  - Recon Loss Pre: 0.0076
+  - Recon Loss All: 0.0042
+2026-08-21 17:06:22 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 250/2445] LR: 0.000200, Loss: -0.0289
+2026-08-21 17:06:22 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0699
+  - Recon Loss Pre: 0.0077
+  - Recon Loss All: 0.0044
+2026-08-21 17:06:27 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 300/2445] LR: 0.000200, Loss: -0.0295
+2026-08-21 17:06:27 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0701
+  - Recon Loss Pre: 0.0071
+  - Recon Loss All: 0.0039
+2026-08-21 17:06:32 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 350/2445] LR: 0.000200, Loss: -0.0291
+2026-08-21 17:06:32 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0700
+  - Recon Loss Pre: 0.0075
+  - Recon Loss All: 0.0043
+2026-08-21 17:06:37 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 400/2445] LR: 0.000200, Loss: -0.0291
+2026-08-21 17:06:37 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0700
+  - Recon Loss Pre: 0.0074
+  - Recon Loss All: 0.0045
+2026-08-21 17:06:42 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 450/2445] LR: 0.000199, Loss: -0.0295
+2026-08-21 17:06:42 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0702
+  - Recon Loss Pre: 0.0071
+  - Recon Loss All: 0.0041
+2026-08-21 17:06:47 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 500/2445] LR: 0.000199, Loss: -0.0301
+2026-08-21 17:06:47 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0703
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0037
+2026-08-21 17:06:52 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 550/2445] LR: 0.000199, Loss: -0.0298
+2026-08-21 17:06:52 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0703
+  - Recon Loss Pre: 0.0068
+  - Recon Loss All: 0.0040
+2026-08-21 17:06:57 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 600/2445] LR: 0.000199, Loss: -0.0300
+2026-08-21 17:06:57 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0704
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0039
+2026-08-21 17:07:02 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 650/2445] LR: 0.000198, Loss: -0.0297
+2026-08-21 17:07:02 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0069
+  - Recon Loss All: 0.0041
+2026-08-21 17:07:07 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 700/2445] LR: 0.000198, Loss: -0.0301
+2026-08-21 17:07:07 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0039
+2026-08-21 17:07:12 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 750/2445] LR: 0.000197, Loss: -0.0304
+2026-08-21 17:07:12 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0036
+2026-08-21 17:07:17 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 800/2445] LR: 0.000197, Loss: -0.0296
+2026-08-21 17:07:17 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0070
+  - Recon Loss All: 0.0042
+2026-08-21 17:07:21 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 850/2445] LR: 0.000196, Loss: -0.0304
+2026-08-21 17:07:21 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0035
+2026-08-21 17:07:26 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 900/2445] LR: 0.000196, Loss: -0.0303
+2026-08-21 17:07:26 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0037
+2026-08-21 17:07:31 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 950/2445] LR: 0.000195, Loss: -0.0300
+2026-08-21 17:07:31 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0067
+  - Recon Loss All: 0.0039
+2026-08-21 17:07:36 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1000/2445] LR: 0.000194, Loss: -0.0299
+2026-08-21 17:07:36 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0070
+  - Recon Loss All: 0.0039
+2026-08-21 17:07:41 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1050/2445] LR: 0.000193, Loss: -0.0303
+2026-08-21 17:07:41 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0037
+2026-08-21 17:07:45 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1100/2445] LR: 0.000193, Loss: -0.0304
+2026-08-21 17:07:45 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0036
+2026-08-21 17:07:50 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1150/2445] LR: 0.000192, Loss: -0.0295
+2026-08-21 17:07:50 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0073
+  - Recon Loss All: 0.0042
+2026-08-21 17:07:55 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1200/2445] LR: 0.000191, Loss: -0.0301
+2026-08-21 17:07:55 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0037
+2026-08-21 17:08:00 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1250/2445] LR: 0.000190, Loss: -0.0307
+2026-08-21 17:08:00 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0034
+2026-08-21 17:08:04 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1300/2445] LR: 0.000189, Loss: -0.0303
+2026-08-21 17:08:04 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0036
+2026-08-21 17:08:09 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1350/2445] LR: 0.000188, Loss: -0.0307
+2026-08-21 17:08:09 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0035
+2026-08-21 17:08:14 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1400/2445] LR: 0.000187, Loss: -0.0304
+2026-08-21 17:08:14 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0036
+2026-08-21 17:08:19 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1450/2445] LR: 0.000186, Loss: -0.0310
+2026-08-21 17:08:19 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0058
+  - Recon Loss All: 0.0032
+2026-08-21 17:08:24 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1500/2445] LR: 0.000184, Loss: -0.0302
+2026-08-21 17:08:24 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0039
+2026-08-21 17:08:29 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1550/2445] LR: 0.000183, Loss: -0.0302
+2026-08-21 17:08:29 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0038
+2026-08-21 17:08:34 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1600/2445] LR: 0.000182, Loss: -0.0307
+2026-08-21 17:08:34 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:08:38 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1650/2445] LR: 0.000181, Loss: -0.0307
+2026-08-21 17:08:38 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:08:44 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1700/2445] LR: 0.000179, Loss: -0.0304
+2026-08-21 17:08:44 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0037
+2026-08-21 17:08:49 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1750/2445] LR: 0.000178, Loss: -0.0311
+2026-08-21 17:08:49 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0056
+  - Recon Loss All: 0.0031
+2026-08-21 17:08:55 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1800/2445] LR: 0.000177, Loss: -0.0304
+2026-08-21 17:08:55 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0036
+2026-08-21 17:09:00 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1850/2445] LR: 0.000175, Loss: -0.0309
+2026-08-21 17:09:00 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0058
+  - Recon Loss All: 0.0033
+2026-08-21 17:09:05 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1900/2445] LR: 0.000174, Loss: -0.0304
+2026-08-21 17:09:05 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0037
+2026-08-21 17:09:11 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 1950/2445] LR: 0.000172, Loss: -0.0304
+2026-08-21 17:09:11 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0037
+2026-08-21 17:09:16 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2000/2445] LR: 0.000171, Loss: -0.0307
+2026-08-21 17:09:16 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0034
+2026-08-21 17:09:21 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2050/2445] LR: 0.000169, Loss: -0.0305
+2026-08-21 17:09:21 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0036
+2026-08-21 17:09:26 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2100/2445] LR: 0.000167, Loss: -0.0307
+2026-08-21 17:09:26 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0033
+2026-08-21 17:09:31 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2150/2445] LR: 0.000166, Loss: -0.0306
+2026-08-21 17:09:31 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0035
+2026-08-21 17:09:36 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2200/2445] LR: 0.000164, Loss: -0.0306
+2026-08-21 17:09:36 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0036
+2026-08-21 17:09:41 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2250/2445] LR: 0.000162, Loss: -0.0308
+2026-08-21 17:09:41 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0033
+2026-08-21 17:09:45 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2300/2445] LR: 0.000161, Loss: -0.0307
+2026-08-21 17:09:46 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:09:50 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2350/2445] LR: 0.000159, Loss: -0.0305
+2026-08-21 17:09:50 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0035
+2026-08-21 17:09:55 - tokenizer_training_rank_0 - INFO - [Epoch 1/3, Step 2400/2445] LR: 0.000157, Loss: -0.0311
+2026-08-21 17:09:55 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0056
+  - Recon Loss All: 0.0030
+2026-08-21 17:10:08 - tokenizer_training_rank_0 - INFO - 
+--- Epoch 1/3 Summary ---
+Validation Loss: 0.0035
+Epoch Time: 0:04:11
+Total Training Time: 0:04:11
+
+2026-08-21 17:10:08 - tokenizer_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\s146_5m\tokenizer\best_model (validation loss: 0.0035)
+2026-08-21 17:10:08 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 5/2445] LR: 0.000155, Loss: -0.0300
+2026-08-21 17:10:08 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0067
+  - Recon Loss All: 0.0038
+2026-08-21 17:10:14 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 55/2445] LR: 0.000153, Loss: -0.0306
+2026-08-21 17:10:14 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:10:19 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 105/2445] LR: 0.000152, Loss: -0.0307
+2026-08-21 17:10:19 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0036
+2026-08-21 17:10:24 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 155/2445] LR: 0.000150, Loss: -0.0306
+2026-08-21 17:10:25 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0035
+2026-08-21 17:10:29 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 205/2445] LR: 0.000148, Loss: -0.0307
+2026-08-21 17:10:29 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0034
+2026-08-21 17:10:35 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 255/2445] LR: 0.000146, Loss: -0.0308
+2026-08-21 17:10:35 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0033
+2026-08-21 17:10:40 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 305/2445] LR: 0.000144, Loss: -0.0311
+2026-08-21 17:10:40 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0709
+  - Recon Loss Pre: 0.0056
+  - Recon Loss All: 0.0031
+2026-08-21 17:10:46 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 355/2445] LR: 0.000142, Loss: -0.0307
+2026-08-21 17:10:46 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:10:51 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 405/2445] LR: 0.000140, Loss: -0.0310
+2026-08-21 17:10:51 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0055
+  - Recon Loss All: 0.0032
+2026-08-21 17:10:57 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 455/2445] LR: 0.000138, Loss: -0.0302
+2026-08-21 17:10:57 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0037
+2026-08-21 17:11:01 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 505/2445] LR: 0.000136, Loss: -0.0312
+2026-08-21 17:11:02 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0708
+  - Recon Loss Pre: 0.0054
+  - Recon Loss All: 0.0031
+2026-08-21 17:11:06 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 555/2445] LR: 0.000134, Loss: -0.0306
+2026-08-21 17:11:06 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:11:11 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 605/2445] LR: 0.000132, Loss: -0.0309
+2026-08-21 17:11:11 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0057
+  - Recon Loss All: 0.0031
+2026-08-21 17:11:17 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 655/2445] LR: 0.000129, Loss: -0.0307
+2026-08-21 17:11:17 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0033
+2026-08-21 17:11:22 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 705/2445] LR: 0.000127, Loss: -0.0305
+2026-08-21 17:11:23 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0033
+2026-08-21 17:11:28 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 755/2445] LR: 0.000125, Loss: -0.0305
+2026-08-21 17:11:28 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0034
+2026-08-21 17:11:33 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 805/2445] LR: 0.000123, Loss: -0.0303
+2026-08-21 17:11:33 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0036
+2026-08-21 17:11:41 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 855/2445] LR: 0.000121, Loss: -0.0305
+2026-08-21 17:11:41 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0035
+2026-08-21 17:11:49 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 905/2445] LR: 0.000119, Loss: -0.0306
+2026-08-21 17:11:49 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0033
+2026-08-21 17:11:57 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 955/2445] LR: 0.000117, Loss: -0.0305
+2026-08-21 17:11:57 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:12:06 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1005/2445] LR: 0.000114, Loss: -0.0297
+2026-08-21 17:12:06 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0072
+  - Recon Loss All: 0.0039
+2026-08-21 17:12:12 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1055/2445] LR: 0.000112, Loss: -0.0307
+2026-08-21 17:12:12 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0032
+2026-08-21 17:12:17 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1105/2445] LR: 0.000110, Loss: -0.0304
+2026-08-21 17:12:17 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0035
+2026-08-21 17:12:22 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1155/2445] LR: 0.000108, Loss: -0.0306
+2026-08-21 17:12:22 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0033
+2026-08-21 17:12:26 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1205/2445] LR: 0.000106, Loss: -0.0309
+2026-08-21 17:12:27 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0057
+  - Recon Loss All: 0.0031
+2026-08-21 17:12:31 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1255/2445] LR: 0.000103, Loss: -0.0306
+2026-08-21 17:12:31 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:12:37 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1305/2445] LR: 0.000101, Loss: -0.0305
+2026-08-21 17:12:37 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0035
+2026-08-21 17:12:44 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1355/2445] LR: 0.000099, Loss: -0.0307
+2026-08-21 17:12:44 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:12:50 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1405/2445] LR: 0.000097, Loss: -0.0301
+2026-08-21 17:12:50 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0036
+2026-08-21 17:12:55 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1455/2445] LR: 0.000095, Loss: -0.0306
+2026-08-21 17:12:55 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0033
+2026-08-21 17:13:01 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1505/2445] LR: 0.000092, Loss: -0.0306
+2026-08-21 17:13:01 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0033
+2026-08-21 17:13:13 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1555/2445] LR: 0.000090, Loss: -0.0304
+2026-08-21 17:13:13 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0034
+2026-08-21 17:13:17 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1605/2445] LR: 0.000088, Loss: -0.0299
+2026-08-21 17:13:18 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0067
+  - Recon Loss All: 0.0039
+2026-08-21 17:13:22 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1655/2445] LR: 0.000086, Loss: -0.0310
+2026-08-21 17:13:22 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0057
+  - Recon Loss All: 0.0030
+2026-08-21 17:13:27 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1705/2445] LR: 0.000084, Loss: -0.0305
+2026-08-21 17:13:27 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0033
+2026-08-21 17:13:32 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1755/2445] LR: 0.000081, Loss: -0.0307
+2026-08-21 17:13:32 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0033
+2026-08-21 17:13:37 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1805/2445] LR: 0.000079, Loss: -0.0298
+2026-08-21 17:13:37 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0069
+  - Recon Loss All: 0.0040
+2026-08-21 17:13:42 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1855/2445] LR: 0.000077, Loss: -0.0304
+2026-08-21 17:13:42 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0035
+2026-08-21 17:13:47 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1905/2445] LR: 0.000075, Loss: -0.0304
+2026-08-21 17:13:47 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0035
+2026-08-21 17:13:52 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 1955/2445] LR: 0.000073, Loss: -0.0306
+2026-08-21 17:13:52 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0034
+2026-08-21 17:13:59 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2005/2445] LR: 0.000071, Loss: -0.0308
+2026-08-21 17:13:59 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0031
+2026-08-21 17:14:05 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2055/2445] LR: 0.000069, Loss: -0.0302
+2026-08-21 17:14:05 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0036
+2026-08-21 17:14:10 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2105/2445] LR: 0.000067, Loss: -0.0309
+2026-08-21 17:14:10 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0058
+  - Recon Loss All: 0.0032
+2026-08-21 17:14:18 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2155/2445] LR: 0.000064, Loss: -0.0298
+2026-08-21 17:14:18 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0073
+  - Recon Loss All: 0.0036
+2026-08-21 17:14:25 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2205/2445] LR: 0.000062, Loss: -0.0304
+2026-08-21 17:14:25 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0034
+2026-08-21 17:14:31 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2255/2445] LR: 0.000060, Loss: -0.0307
+2026-08-21 17:14:31 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:14:39 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2305/2445] LR: 0.000058, Loss: -0.0302
+2026-08-21 17:14:39 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0036
+2026-08-21 17:14:47 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2355/2445] LR: 0.000056, Loss: -0.0307
+2026-08-21 17:14:47 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:14:54 - tokenizer_training_rank_0 - INFO - [Epoch 2/3, Step 2405/2445] LR: 0.000054, Loss: -0.0308
+2026-08-21 17:14:54 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0032
+2026-08-21 17:15:10 - tokenizer_training_rank_0 - INFO - 
+--- Epoch 2/3 Summary ---
+Validation Loss: 0.0034
+Epoch Time: 0:05:02
+Total Training Time: 0:05:02
+
+2026-08-21 17:15:10 - tokenizer_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\s146_5m\tokenizer\best_model (validation loss: 0.0034)
+2026-08-21 17:15:12 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 10/2445] LR: 0.000052, Loss: -0.0303
+2026-08-21 17:15:12 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0035
+2026-08-21 17:15:17 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 60/2445] LR: 0.000050, Loss: -0.0306
+2026-08-21 17:15:17 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0033
+2026-08-21 17:15:23 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 110/2445] LR: 0.000049, Loss: -0.0307
+2026-08-21 17:15:23 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:15:29 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 160/2445] LR: 0.000047, Loss: -0.0304
+2026-08-21 17:15:29 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0035
+2026-08-21 17:15:34 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 210/2445] LR: 0.000045, Loss: -0.0307
+2026-08-21 17:15:34 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:15:40 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 260/2445] LR: 0.000043, Loss: -0.0304
+2026-08-21 17:15:40 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0035
+2026-08-21 17:15:45 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 310/2445] LR: 0.000041, Loss: -0.0305
+2026-08-21 17:15:46 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0033
+2026-08-21 17:15:51 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 360/2445] LR: 0.000039, Loss: -0.0305
+2026-08-21 17:15:51 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0034
+2026-08-21 17:15:57 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 410/2445] LR: 0.000038, Loss: -0.0307
+2026-08-21 17:15:57 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:16:02 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 460/2445] LR: 0.000036, Loss: -0.0307
+2026-08-21 17:16:02 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:16:08 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 510/2445] LR: 0.000034, Loss: -0.0305
+2026-08-21 17:16:08 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:16:14 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 560/2445] LR: 0.000033, Loss: -0.0307
+2026-08-21 17:16:14 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0031
+2026-08-21 17:16:19 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 610/2445] LR: 0.000031, Loss: -0.0306
+2026-08-21 17:16:19 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0033
+2026-08-21 17:16:24 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 660/2445] LR: 0.000029, Loss: -0.0305
+2026-08-21 17:16:24 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:16:29 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 710/2445] LR: 0.000028, Loss: -0.0303
+2026-08-21 17:16:29 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0035
+2026-08-21 17:16:35 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 760/2445] LR: 0.000026, Loss: -0.0301
+2026-08-21 17:16:35 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0068
+  - Recon Loss All: 0.0036
+2026-08-21 17:16:40 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 810/2445] LR: 0.000025, Loss: -0.0299
+2026-08-21 17:16:40 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0069
+  - Recon Loss All: 0.0038
+2026-08-21 17:16:45 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 860/2445] LR: 0.000023, Loss: -0.0308
+2026-08-21 17:16:45 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0031
+2026-08-21 17:16:51 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 910/2445] LR: 0.000022, Loss: -0.0306
+2026-08-21 17:16:51 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0034
+2026-08-21 17:16:56 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 960/2445] LR: 0.000021, Loss: -0.0312
+2026-08-21 17:16:56 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0054
+  - Recon Loss All: 0.0029
+2026-08-21 17:17:02 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1010/2445] LR: 0.000019, Loss: -0.0305
+2026-08-21 17:17:02 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0033
+2026-08-21 17:17:07 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1060/2445] LR: 0.000018, Loss: -0.0303
+2026-08-21 17:17:07 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0035
+2026-08-21 17:17:12 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1110/2445] LR: 0.000017, Loss: -0.0307
+2026-08-21 17:17:12 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0032
+2026-08-21 17:17:18 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1160/2445] LR: 0.000016, Loss: -0.0305
+2026-08-21 17:17:18 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0032
+2026-08-21 17:17:23 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1210/2445] LR: 0.000014, Loss: -0.0306
+2026-08-21 17:17:23 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0033
+2026-08-21 17:17:29 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1260/2445] LR: 0.000013, Loss: -0.0302
+2026-08-21 17:17:29 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0035
+2026-08-21 17:17:34 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1310/2445] LR: 0.000012, Loss: -0.0310
+2026-08-21 17:17:34 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0056
+  - Recon Loss All: 0.0030
+2026-08-21 17:17:40 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1360/2445] LR: 0.000011, Loss: -0.0309
+2026-08-21 17:17:40 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0057
+  - Recon Loss All: 0.0031
+2026-08-21 17:17:45 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1410/2445] LR: 0.000010, Loss: -0.0307
+2026-08-21 17:17:45 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0032
+2026-08-21 17:17:50 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1460/2445] LR: 0.000009, Loss: -0.0306
+2026-08-21 17:17:50 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0033
+2026-08-21 17:17:56 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1510/2445] LR: 0.000008, Loss: -0.0303
+2026-08-21 17:17:56 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0063
+  - Recon Loss All: 0.0036
+2026-08-21 17:18:01 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1560/2445] LR: 0.000008, Loss: -0.0304
+2026-08-21 17:18:01 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0034
+2026-08-21 17:18:07 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1610/2445] LR: 0.000007, Loss: -0.0307
+2026-08-21 17:18:07 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0061
+  - Recon Loss All: 0.0031
+2026-08-21 17:18:12 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1660/2445] LR: 0.000006, Loss: -0.0302
+2026-08-21 17:18:12 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0036
+2026-08-21 17:18:18 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1710/2445] LR: 0.000005, Loss: -0.0300
+2026-08-21 17:18:18 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0068
+  - Recon Loss All: 0.0037
+2026-08-21 17:18:23 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1760/2445] LR: 0.000005, Loss: -0.0307
+2026-08-21 17:18:23 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0033
+2026-08-21 17:18:28 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1810/2445] LR: 0.000004, Loss: -0.0307
+2026-08-21 17:18:28 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0060
+  - Recon Loss All: 0.0032
+2026-08-21 17:18:34 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1860/2445] LR: 0.000003, Loss: -0.0305
+2026-08-21 17:18:34 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:18:39 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1910/2445] LR: 0.000003, Loss: -0.0305
+2026-08-21 17:18:39 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:18:44 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 1960/2445] LR: 0.000002, Loss: -0.0302
+2026-08-21 17:18:44 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0066
+  - Recon Loss All: 0.0035
+2026-08-21 17:18:50 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2010/2445] LR: 0.000002, Loss: -0.0303
+2026-08-21 17:18:50 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0035
+2026-08-21 17:18:55 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2060/2445] LR: 0.000001, Loss: -0.0311
+2026-08-21 17:18:55 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0707
+  - Recon Loss Pre: 0.0055
+  - Recon Loss All: 0.0030
+2026-08-21 17:19:01 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2110/2445] LR: 0.000001, Loss: -0.0308
+2026-08-21 17:19:01 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0032
+2026-08-21 17:19:06 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2160/2445] LR: 0.000001, Loss: -0.0303
+2026-08-21 17:19:06 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0064
+  - Recon Loss All: 0.0035
+2026-08-21 17:19:11 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2210/2445] LR: 0.000001, Loss: -0.0307
+2026-08-21 17:19:11 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0059
+  - Recon Loss All: 0.0033
+2026-08-21 17:19:17 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2260/2445] LR: 0.000000, Loss: -0.0301
+2026-08-21 17:19:17 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0067
+  - Recon Loss All: 0.0036
+2026-08-21 17:19:22 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2310/2445] LR: 0.000000, Loss: -0.0305
+2026-08-21 17:19:23 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0062
+  - Recon Loss All: 0.0034
+2026-08-21 17:19:28 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2360/2445] LR: 0.000000, Loss: -0.0303
+2026-08-21 17:19:28 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0705
+  - Recon Loss Pre: 0.0065
+  - Recon Loss All: 0.0035
+2026-08-21 17:19:34 - tokenizer_training_rank_0 - INFO - [Epoch 3/3, Step 2410/2445] LR: 0.000000, Loss: -0.0309
+2026-08-21 17:19:34 - tokenizer_training_rank_0 - INFO -   - VQ Loss: -0.0706
+  - Recon Loss Pre: 0.0058
+  - Recon Loss All: 0.0031
+2026-08-21 17:19:49 - tokenizer_training_rank_0 - INFO - 
+--- Epoch 3/3 Summary ---
+Validation Loss: 0.0034
+Epoch Time: 0:04:38
+Total Training Time: 0:04:38
+
+2026-08-21 17:19:49 - tokenizer_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\s146_5m\tokenizer\best_model (validation loss: 0.0034)

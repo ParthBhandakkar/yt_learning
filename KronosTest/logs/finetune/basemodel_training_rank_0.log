@@ -1,0 +1,185 @@
+2026-08-21 17:05:13 - basemodel_training_rank_0 - INFO - === Basemodel Training Started ===
+2026-08-21 17:05:13 - basemodel_training_rank_0 - INFO - Experiment Name: smoke
+2026-08-21 17:05:13 - basemodel_training_rank_0 - INFO - Log Directory: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\logs\finetune
+2026-08-21 17:05:13 - basemodel_training_rank_0 - INFO - Rank: 0
+2026-08-21 17:05:13 - basemodel_training_rank_0 - INFO - Timestamp: 2026-08-21 17:05:13
+2026-08-21 17:05:13 - basemodel_training_rank_0 - INFO - Starting training...
+2026-08-21 17:05:24 - basemodel_training_rank_0 - INFO - 
+--- Epoch 1/1 Summary ---
+Training Loss: 2.3402
+Validation Loss: 2.2462
+Epoch Time: 2.95 seconds
+
+2026-08-21 17:05:24 - basemodel_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\smoke\basemodel\best_model (validation loss: 2.2462)
+2026-08-21 17:19:50 - basemodel_training_rank_0 - INFO - === Basemodel Training Started ===
+2026-08-21 17:19:50 - basemodel_training_rank_0 - INFO - Experiment Name: s146_5m
+2026-08-21 17:19:50 - basemodel_training_rank_0 - INFO - Log Directory: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\logs\finetune
+2026-08-21 17:19:50 - basemodel_training_rank_0 - INFO - Rank: 0
+2026-08-21 17:19:50 - basemodel_training_rank_0 - INFO - Timestamp: 2026-08-21 17:19:50
+2026-08-21 17:19:50 - basemodel_training_rank_0 - INFO - Starting training...
+2026-08-21 17:20:12 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 50/2445] LR: 0.000008, Loss: 3.1508
+2026-08-21 17:20:26 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 100/2445] LR: 0.000020, Loss: 2.9712
+2026-08-21 17:20:41 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 150/2445] LR: 0.000032, Loss: 2.7508
+2026-08-21 17:20:56 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 200/2445] LR: 0.000039, Loss: 2.8153
+2026-08-21 17:21:10 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 250/2445] LR: 0.000040, Loss: 2.7252
+2026-08-21 17:21:24 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 300/2445] LR: 0.000040, Loss: 2.7564
+2026-08-21 17:21:39 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 350/2445] LR: 0.000040, Loss: 2.7010
+2026-08-21 17:21:53 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 400/2445] LR: 0.000040, Loss: 2.6186
+2026-08-21 17:22:08 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 450/2445] LR: 0.000040, Loss: 2.6796
+2026-08-21 17:22:22 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 500/2445] LR: 0.000040, Loss: 2.7039
+2026-08-21 17:22:35 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 550/2445] LR: 0.000040, Loss: 2.6909
+2026-08-21 17:22:48 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 600/2445] LR: 0.000040, Loss: 2.5909
+2026-08-21 17:23:00 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 650/2445] LR: 0.000040, Loss: 2.5734
+2026-08-21 17:23:14 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 700/2445] LR: 0.000040, Loss: 2.4663
+2026-08-21 17:23:28 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 750/2445] LR: 0.000039, Loss: 2.6571
+2026-08-21 17:23:42 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 800/2445] LR: 0.000039, Loss: 2.6094
+2026-08-21 17:23:56 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 850/2445] LR: 0.000039, Loss: 2.6361
+2026-08-21 17:24:10 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 900/2445] LR: 0.000039, Loss: 2.6161
+2026-08-21 17:24:23 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 950/2445] LR: 0.000039, Loss: 2.6512
+2026-08-21 17:24:36 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1000/2445] LR: 0.000039, Loss: 2.5924
+2026-08-21 17:24:50 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1050/2445] LR: 0.000039, Loss: 2.6089
+2026-08-21 17:25:03 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1100/2445] LR: 0.000039, Loss: 2.4107
+2026-08-21 17:25:16 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1150/2445] LR: 0.000038, Loss: 2.5748
+2026-08-21 17:25:30 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1200/2445] LR: 0.000038, Loss: 2.6165
+2026-08-21 17:25:43 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1250/2445] LR: 0.000038, Loss: 2.5515
+2026-08-21 17:25:56 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1300/2445] LR: 0.000038, Loss: 2.5869
+2026-08-21 17:26:09 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1350/2445] LR: 0.000038, Loss: 2.7030
+2026-08-21 17:26:23 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1400/2445] LR: 0.000037, Loss: 2.6163
+2026-08-21 17:26:36 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1450/2445] LR: 0.000037, Loss: 2.5372
+2026-08-21 17:26:50 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1500/2445] LR: 0.000037, Loss: 2.6472
+2026-08-21 17:27:03 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1550/2445] LR: 0.000037, Loss: 2.5714
+2026-08-21 17:27:16 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1600/2445] LR: 0.000036, Loss: 2.6308
+2026-08-21 17:27:30 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1650/2445] LR: 0.000036, Loss: 2.5106
+2026-08-21 17:27:43 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1700/2445] LR: 0.000036, Loss: 2.5714
+2026-08-21 17:27:56 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1750/2445] LR: 0.000036, Loss: 2.5344
+2026-08-21 17:28:10 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1800/2445] LR: 0.000035, Loss: 2.6254
+2026-08-21 17:28:23 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1850/2445] LR: 0.000035, Loss: 2.5007
+2026-08-21 17:28:36 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1900/2445] LR: 0.000035, Loss: 2.5190
+2026-08-21 17:28:49 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 1950/2445] LR: 0.000034, Loss: 2.6447
+2026-08-21 17:29:03 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2000/2445] LR: 0.000034, Loss: 2.4567
+2026-08-21 17:29:16 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2050/2445] LR: 0.000034, Loss: 2.5072
+2026-08-21 17:29:29 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2100/2445] LR: 0.000033, Loss: 2.6049
+2026-08-21 17:29:43 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2150/2445] LR: 0.000033, Loss: 2.6427
+2026-08-21 17:29:56 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2200/2445] LR: 0.000033, Loss: 2.5672
+2026-08-21 17:30:09 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2250/2445] LR: 0.000032, Loss: 2.5410
+2026-08-21 17:30:23 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2300/2445] LR: 0.000032, Loss: 2.5199
+2026-08-21 17:30:36 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2350/2445] LR: 0.000032, Loss: 2.6009
+2026-08-21 17:30:49 - basemodel_training_rank_0 - INFO - [Epoch 1/3, Step 2400/2445] LR: 0.000031, Loss: 2.4241
+2026-08-21 17:31:25 - basemodel_training_rank_0 - INFO - 
+--- Epoch 1/3 Summary ---
+Training Loss: 2.6226
+Validation Loss: 2.4999
+Epoch Time: 686.40 seconds
+
+2026-08-21 17:31:25 - basemodel_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\s146_5m\basemodel\best_model (validation loss: 2.4999)
+2026-08-21 17:31:26 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 5/2445] LR: 0.000031, Loss: 2.5608
+2026-08-21 17:31:39 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 55/2445] LR: 0.000031, Loss: 2.4880
+2026-08-21 17:31:53 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 105/2445] LR: 0.000030, Loss: 2.5448
+2026-08-21 17:32:06 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 155/2445] LR: 0.000030, Loss: 2.5890
+2026-08-21 17:32:19 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 205/2445] LR: 0.000030, Loss: 2.4762
+2026-08-21 17:32:33 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 255/2445] LR: 0.000029, Loss: 2.3921
+2026-08-21 17:32:46 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 305/2445] LR: 0.000029, Loss: 2.6018
+2026-08-21 17:32:59 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 355/2445] LR: 0.000028, Loss: 2.5837
+2026-08-21 17:33:13 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 405/2445] LR: 0.000028, Loss: 2.5258
+2026-08-21 17:33:26 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 455/2445] LR: 0.000028, Loss: 2.5971
+2026-08-21 17:33:39 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 505/2445] LR: 0.000027, Loss: 2.5752
+2026-08-21 17:33:52 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 555/2445] LR: 0.000027, Loss: 2.6073
+2026-08-21 17:34:06 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 605/2445] LR: 0.000026, Loss: 2.3796
+2026-08-21 17:34:19 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 655/2445] LR: 0.000026, Loss: 2.4662
+2026-08-21 17:34:31 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 705/2445] LR: 0.000025, Loss: 2.5016
+2026-08-21 17:34:44 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 755/2445] LR: 0.000025, Loss: 2.5636
+2026-08-21 17:34:56 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 805/2445] LR: 0.000025, Loss: 2.4927
+2026-08-21 17:35:09 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 855/2445] LR: 0.000024, Loss: 2.5312
+2026-08-21 17:35:21 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 905/2445] LR: 0.000024, Loss: 2.4546
+2026-08-21 17:35:34 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 955/2445] LR: 0.000023, Loss: 2.4020
+2026-08-21 17:35:46 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1005/2445] LR: 0.000023, Loss: 2.4371
+2026-08-21 17:35:58 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1055/2445] LR: 0.000022, Loss: 2.4418
+2026-08-21 17:36:11 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1105/2445] LR: 0.000022, Loss: 2.6154
+2026-08-21 17:36:23 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1155/2445] LR: 0.000022, Loss: 2.5356
+2026-08-21 17:36:36 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1205/2445] LR: 0.000021, Loss: 2.5177
+2026-08-21 17:36:48 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1255/2445] LR: 0.000021, Loss: 2.4199
+2026-08-21 17:37:01 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1305/2445] LR: 0.000020, Loss: 2.4961
+2026-08-21 17:37:13 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1355/2445] LR: 0.000020, Loss: 2.4618
+2026-08-21 17:37:25 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1405/2445] LR: 0.000019, Loss: 2.5137
+2026-08-21 17:37:38 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1455/2445] LR: 0.000019, Loss: 2.4697
+2026-08-21 17:37:50 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1505/2445] LR: 0.000018, Loss: 2.5664
+2026-08-21 17:38:03 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1555/2445] LR: 0.000018, Loss: 2.5122
+2026-08-21 17:38:15 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1605/2445] LR: 0.000018, Loss: 2.5520
+2026-08-21 17:38:28 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1655/2445] LR: 0.000017, Loss: 2.4776
+2026-08-21 17:38:40 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1705/2445] LR: 0.000017, Loss: 2.4572
+2026-08-21 17:38:52 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1755/2445] LR: 0.000016, Loss: 2.6612
+2026-08-21 17:39:05 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1805/2445] LR: 0.000016, Loss: 2.4327
+2026-08-21 17:39:17 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1855/2445] LR: 0.000015, Loss: 2.4588
+2026-08-21 17:39:30 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1905/2445] LR: 0.000015, Loss: 2.5402
+2026-08-21 17:39:42 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 1955/2445] LR: 0.000015, Loss: 2.4719
+2026-08-21 17:39:54 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2005/2445] LR: 0.000014, Loss: 2.6184
+2026-08-21 17:40:07 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2055/2445] LR: 0.000014, Loss: 2.4581
+2026-08-21 17:40:19 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2105/2445] LR: 0.000013, Loss: 2.5912
+2026-08-21 17:40:32 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2155/2445] LR: 0.000013, Loss: 2.5540
+2026-08-21 17:40:44 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2205/2445] LR: 0.000012, Loss: 2.4945
+2026-08-21 17:40:57 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2255/2445] LR: 0.000012, Loss: 2.4955
+2026-08-21 17:41:09 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2305/2445] LR: 0.000012, Loss: 2.5391
+2026-08-21 17:41:21 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2355/2445] LR: 0.000011, Loss: 2.4717
+2026-08-21 17:41:34 - basemodel_training_rank_0 - INFO - [Epoch 2/3, Step 2405/2445] LR: 0.000011, Loss: 2.5733
+2026-08-21 17:42:05 - basemodel_training_rank_0 - INFO - 
+--- Epoch 2/3 Summary ---
+Training Loss: 2.5311
+Validation Loss: 2.4963
+Epoch Time: 640.65 seconds
+
+2026-08-21 17:42:05 - basemodel_training_rank_0 - INFO - Best model saved to: D:\WorkZera\Projects\strategies\yt_learning\KronosTest\data\models\s146_5m\basemodel\best_model (validation loss: 2.4963)
+2026-08-21 17:42:08 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 10/2445] LR: 0.000010, Loss: 2.5448
+2026-08-21 17:42:20 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 60/2445] LR: 0.000010, Loss: 2.5366
+2026-08-21 17:42:33 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 110/2445] LR: 0.000010, Loss: 2.5559
+2026-08-21 17:42:45 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 160/2445] LR: 0.000009, Loss: 2.4734
+2026-08-21 17:42:57 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 210/2445] LR: 0.000009, Loss: 2.5190
+2026-08-21 17:43:10 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 260/2445] LR: 0.000009, Loss: 2.4713
+2026-08-21 17:43:22 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 310/2445] LR: 0.000008, Loss: 2.4476
+2026-08-21 17:43:35 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 360/2445] LR: 0.000008, Loss: 2.4793
+2026-08-21 17:43:47 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 410/2445] LR: 0.000008, Loss: 2.5360
+2026-08-21 17:44:00 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 460/2445] LR: 0.000007, Loss: 2.4858
+2026-08-21 17:44:12 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 510/2445] LR: 0.000007, Loss: 2.5652
+2026-08-21 17:44:24 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 560/2445] LR: 0.000007, Loss: 2.5265
+2026-08-21 17:44:37 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 610/2445] LR: 0.000006, Loss: 2.4891
+2026-08-21 17:44:49 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 660/2445] LR: 0.000006, Loss: 2.5020
+2026-08-21 17:45:02 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 710/2445] LR: 0.000006, Loss: 2.5486
+2026-08-21 17:45:14 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 760/2445] LR: 0.000005, Loss: 2.6690
+2026-08-21 17:45:26 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 810/2445] LR: 0.000005, Loss: 2.5025
+2026-08-21 17:45:39 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 860/2445] LR: 0.000005, Loss: 2.5756
+2026-08-21 17:45:51 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 910/2445] LR: 0.000004, Loss: 2.5202
+2026-08-21 17:46:04 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 960/2445] LR: 0.000004, Loss: 2.5341
+2026-08-21 17:46:16 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1010/2445] LR: 0.000004, Loss: 2.5647
+2026-08-21 17:46:28 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1060/2445] LR: 0.000004, Loss: 2.4313
+2026-08-21 17:46:41 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1110/2445] LR: 0.000003, Loss: 2.5738
+2026-08-21 17:46:53 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1160/2445] LR: 0.000003, Loss: 2.5416
+2026-08-21 17:47:06 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1210/2445] LR: 0.000003, Loss: 2.4590
+2026-08-21 17:47:18 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1260/2445] LR: 0.000003, Loss: 2.4496
+2026-08-21 17:47:31 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1310/2445] LR: 0.000002, Loss: 2.5266
+2026-08-21 17:47:43 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1360/2445] LR: 0.000002, Loss: 2.4398
+2026-08-21 17:47:55 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1410/2445] LR: 0.000002, Loss: 2.4560
+2026-08-21 17:48:08 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1460/2445] LR: 0.000002, Loss: 2.5549
+2026-08-21 17:48:20 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1510/2445] LR: 0.000002, Loss: 2.5688
+2026-08-21 17:48:33 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1560/2445] LR: 0.000002, Loss: 2.5053
+2026-08-21 17:48:45 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1610/2445] LR: 0.000001, Loss: 2.6540
+2026-08-21 17:48:57 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1660/2445] LR: 0.000001, Loss: 2.5109
+2026-08-21 17:49:10 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1710/2445] LR: 0.000001, Loss: 2.5023
+2026-08-21 17:49:22 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1760/2445] LR: 0.000001, Loss: 2.5884
+2026-08-21 17:49:35 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1810/2445] LR: 0.000001, Loss: 2.5447
+2026-08-21 17:49:47 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1860/2445] LR: 0.000001, Loss: 2.4929
+2026-08-21 17:50:00 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1910/2445] LR: 0.000001, Loss: 2.5897
+2026-08-21 17:50:12 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 1960/2445] LR: 0.000000, Loss: 2.5628
+2026-08-21 17:50:25 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2010/2445] LR: 0.000000, Loss: 2.4357
+2026-08-21 17:50:37 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2060/2445] LR: 0.000000, Loss: 2.5014
+2026-08-21 17:50:49 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2110/2445] LR: 0.000000, Loss: 2.5016
+2026-08-21 17:51:02 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2160/2445] LR: 0.000000, Loss: 2.5498
+2026-08-21 17:51:14 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2210/2445] LR: 0.000000, Loss: 2.5116
+2026-08-21 17:51:27 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2260/2445] LR: 0.000000, Loss: 2.5307
+2026-08-21 17:51:39 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2310/2445] LR: 0.000000, Loss: 2.6152
+2026-08-21 17:51:51 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2360/2445] LR: 0.000000, Loss: 2.4795
+2026-08-21 17:52:04 - basemodel_training_rank_0 - INFO - [Epoch 3/3, Step 2410/2445] LR: 0.000000, Loss: 2.5494
+2026-08-21 17:52:34 - basemodel_training_rank_0 - INFO - 
+--- Epoch 3/3 Summary ---
+Training Loss: 2.5210
+Validation Loss: 2.4964
+Epoch Time: 628.64 seconds
+

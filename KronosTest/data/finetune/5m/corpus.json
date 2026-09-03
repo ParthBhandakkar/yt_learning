@@ -1,0 +1,250 @@
+{
+  "created_utc": "2026-08-21T10:39:53.791414Z",
+  "phase": "phase5a_corpus",
+  "timeframe": "5m",
+  "cutoff_epoch": 1774940100,
+  "cutoff_utc": "2026-03-31T06:55:00Z",
+  "cutoff_source": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\KronosTest\\data\\dataset\\s146_signals_audit.json",
+  "symbols_written": 29,
+  "symbols_failed": 0,
+  "total_bars": 1519758,
+  "files": {
+    "EURUSD": {
+      "symbol": "EURUSD",
+      "path": "EURUSD.csv",
+      "rows": 52544,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29671
+    },
+    "GBPUSD": {
+      "symbol": "GBPUSD",
+      "path": "GBPUSD.csv",
+      "rows": 52516,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29641
+    },
+    "USDJPY": {
+      "symbol": "USDJPY",
+      "path": "USDJPY.csv",
+      "rows": 52516,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29651
+    },
+    "USDCHF": {
+      "symbol": "USDCHF",
+      "path": "USDCHF.csv",
+      "rows": 52532,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29662
+    },
+    "AUDUSD": {
+      "symbol": "AUDUSD",
+      "path": "AUDUSD.csv",
+      "rows": 52542,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29662
+    },
+    "NZDUSD": {
+      "symbol": "NZDUSD",
+      "path": "NZDUSD.csv",
+      "rows": 52545,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29672
+    },
+    "USDCAD": {
+      "symbol": "USDCAD",
+      "path": "USDCAD.csv",
+      "rows": 52543,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29679
+    },
+    "EURGBP": {
+      "symbol": "EURGBP",
+      "path": "EURGBP.csv",
+      "rows": 52541,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29676
+    },
+    "EURJPY": {
+      "symbol": "EURJPY",
+      "path": "EURJPY.csv",
+      "rows": 52542,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29678
+    },
+    "EURCHF": {
+      "symbol": "EURCHF",
+      "path": "EURCHF.csv",
+      "rows": 52547,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29676
+    },
+    "EURAUD": {
+      "symbol": "EURAUD",
+      "path": "EURAUD.csv",
+      "rows": 52476,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29625
+    },
+    "EURCAD": {
+      "symbol": "EURCAD",
+      "path": "EURCAD.csv",
+      "rows": 52462,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29605
+    },
+    "EURNZD": {
+      "symbol": "EURNZD",
+      "path": "EURNZD.csv",
+      "rows": 52470,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29620
+    },
+    "GBPJPY": {
+      "symbol": "GBPJPY",
+      "path": "GBPJPY.csv",
+      "rows": 52449,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29601
+    },
+    "GBPCHF": {
+      "symbol": "GBPCHF",
+      "path": "GBPCHF.csv",
+      "rows": 52458,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29610
+    },
+    "GBPAUD": {
+      "symbol": "GBPAUD",
+      "path": "GBPAUD.csv",
+      "rows": 52456,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29567
+    },
+    "GBPCAD": {
+      "symbol": "GBPCAD",
+      "path": "GBPCAD.csv",
+      "rows": 52435,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29558
+    },
+    "GBPNZD": {
+      "symbol": "GBPNZD",
+      "path": "GBPNZD.csv",
+      "rows": 52399,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29525
+    },
+    "AUDJPY": {
+      "symbol": "AUDJPY",
+      "path": "AUDJPY.csv",
+      "rows": 52468,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29618
+    },
+    "AUDNZD": {
+      "symbol": "AUDNZD",
+      "path": "AUDNZD.csv",
+      "rows": 52471,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29601
+    },
+    "AUDCAD": {
+      "symbol": "AUDCAD",
+      "path": "AUDCAD.csv",
+      "rows": 52446,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29539
+    },
+    "AUDCHF": {
+      "symbol": "AUDCHF",
+      "path": "AUDCHF.csv",
+      "rows": 52469,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29606
+    },
+    "NZDJPY": {
+      "symbol": "NZDJPY",
+      "path": "NZDJPY.csv",
+      "rows": 52465,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29602
+    },
+    "NZDCAD": {
+      "symbol": "NZDCAD",
+      "path": "NZDCAD.csv",
+      "rows": 52461,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29553
+    },
+    "NZDCHF": {
+      "symbol": "NZDCHF",
+      "path": "NZDCHF.csv",
+      "rows": 52473,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29621
+    },
+    "CADJPY": {
+      "symbol": "CADJPY",
+      "path": "CADJPY.csv",
+      "rows": 52452,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29597
+    },
+    "CADCHF": {
+      "symbol": "CADCHF",
+      "path": "CADCHF.csv",
+      "rows": 52454,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29556
+    },
+    "CHFJPY": {
+      "symbol": "CHFJPY",
+      "path": "CHFJPY.csv",
+      "rows": 52454,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 29572
+    },
+    "XAUUSD": {
+      "symbol": "XAUUSD",
+      "path": "XAUUSD.csv",
+      "rows": 50172,
+      "first_bar_utc": "2025-07-15 15:35:00",
+      "last_bar_utc": "2026-03-31 06:50:00",
+      "dropped_after_cutoff": 28060
+    }
+  },
+  "leakage_guarantee": "Every bar in this corpus closes strictly before the Phase 2 train/test cutoff, so a model fine-tuned on it has not seen the evaluation period.",
+  "format_notes": [
+    "One CSV per symbol. Concatenating them would interleave instruments at shared timestamps, so the multi-symbol dataset indexes windows per file.",
+    "amount = tick_volume * typical price, because MT5 forex feeds carry no true turnover."
+  ]
+}

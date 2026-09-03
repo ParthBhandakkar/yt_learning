@@ -1,0 +1,21 @@
+{
+  "created_utc": "2026-08-21T13:36:12.556417Z",
+  "phase": "phase4_kronos_zero_shot",
+  "tokenizer": "data\\models\\s146_5m\\tokenizer\\best_model",
+  "model": "data\\models\\s146_5m\\basemodel\\best_model",
+  "sample_paths": 30,
+  "horizon_bars_5m": 96,
+  "lookback_bars_5m": 512,
+  "temperature": 1.0,
+  "top_p": 0.9,
+  "seed": 42,
+  "processed": 1167,
+  "failed": 0,
+  "elapsed_seconds": 3465.4,
+  "output": "data\\forecasts\\kronos_finetuned.csv",
+  "barrier_model": "entry = signal trigger, stop = effective stop, target = 4h destination proximal; all three are signal-time values. Stop-first when a forecast bar spans both, matching the replay's pessimism.",
+  "simplifications": [
+    "The live ladder (partial at 1.25R, breakeven, 0.5R rungs with giveback) is not replayed inside forecast paths; a plain stop/target barrier is used, so k_expected_r is not directly comparable to label_r.",
+    "Future bar timestamps come from the real calendar so weekend and holiday gaps are respected; only timestamps are used, never prices."
+  ]
+}

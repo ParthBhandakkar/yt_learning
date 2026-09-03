@@ -1,0 +1,17 @@
+trade_number,symbol,direction,model,stop_basis,execution_class,execution_failure,actual_result,actual_pnl,slippage_r,signal_available_hours,signal_fixed_1_25r,signal_mfe_r,signal_mae_r,signal_stop_hit,signal_eventual_1_25r,signal_post_stop_recovered_1_25r,signal_required_stop_mult_to_1_25r,actual_available_hours,actual_fixed_1_25r,actual_mfe_r,actual_mae_r
+1,USDCAD,long,conservative_mss,liquidity_pool_plus_buffer,actual_mt5_fill,,Loss,-876.19,0.071,22.92,stop_first,3.0871,-2.8406,True,True,True,2.8406,22.83,stop_first,2.8163,-2.7186
+2,GBPUSD,short,aggressive_liquidation,swept_wick_plus_buffer,rejected_counterfactual,no_money,,,,22.0,stop_first,7.441,-2.3493,True,True,True,2.3493,,,,
+3,EURUSD,short,aggressive_liquidation,liquidity_pool_plus_buffer,actual_mt5_fill,,Profit,1494.09,-0.0828,20.92,target_first,3.3277,-0.6553,False,True,False,0.6553,20.83,target_first,3.7184,-0.6242
+4,NZDJPY,short,aggressive_liquidation,liquidity_pool_plus_buffer,actual_mt5_fill,,Profit,7545.91,0.0029,20.42,target_first,3.8284,-0.9437,False,True,False,0.9437,20.33,target_first,3.8146,-0.9438
+5,AUDUSD,short,aggressive_liquidation,liquidity_pool_plus_buffer,rejected_counterfactual,no_money,,,,19.75,target_first,3.6239,-0.4737,False,True,False,0.4737,,,,
+6,GBPAUD,long,aggressive_liquidation,liquidity_pool_plus_buffer,actual_mt5_fill,,Profit,30.72,-0.0116,19.17,stop_first,0.7532,-1.3063,True,False,False,,19.08,stop_first,0.7738,-1.3099
+7,AUDJPY,short,aggressive_liquidation,liquidity_pool_plus_buffer,actual_mt5_fill,,Loss,-249.62,-0.1419,17.25,stop_first,0.8064,-1.5935,True,False,False,,17.17,stop_first,1.1052,-1.6916
+8,CADJPY,short,aggressive_liquidation,liquidity_pool_plus_buffer,actual_mt5_fill,,Loss,-1032.93,-0.1796,16.5,stop_first,1.243,-3.6303,True,False,False,,16.42,stop_first,1.7339,-4.2059
+9,NZDCHF,short,aggressive_liquidation,liquidity_pool_plus_buffer,actual_mt5_fill,,Loss,-1369.69,-0.0688,16.25,stop_first,5.8817,-1.4486,True,True,True,1.4486,16.17,stop_first,6.39,-1.4817
+10,AUDNZD,short,aggressive_liquidation,15m_zone_distal_plus_buffer,actual_mt5_fill,,Loss,-453.03,-0.1252,15.83,stop_first,0.6868,-8.573,True,False,False,,15.75,stop_first,0.9282,-9.657
+11,GBPCAD,long,aggressive_liquidation,liquidity_pool_plus_buffer,rejected_counterfactual,no_money,,,,15.58,target_first,1.6446,-3.7541,True,True,False,0.4437,,,,
+12,EURAUD,long,aggressive_liquidation,15m_zone_distal_plus_buffer,rejected_counterfactual,no_money,,,,15.25,stop_first,1.3981,-1.5405,True,True,True,1.5405,,,,
+13,USDCAD,long,aggressive_liquidation,liquidity_pool_plus_buffer,rejected_counterfactual,no_money,,,,12.83,stop_first,0.7022,-1.7595,True,False,False,,,,,
+14,GBPJPY,short,aggressive_liquidation,15m_zone_distal_plus_buffer,rejected_counterfactual,invalid_stops,,,,11.83,stop_first,0.9152,-4.6826,True,False,False,,,,,
+15,CHFJPY,short,conservative_mss,liquidity_pool_plus_buffer,actual_mt5_fill,,Loss,-898.07,-0.2047,11.83,stop_first,0.3391,-4.3205,True,False,False,,11.75,stop_first,0.6837,-5.1749
+16,CADJPY,short,aggressive_liquidation,liquidity_pool_plus_buffer,rejected_counterfactual,invalid_stops,,,,11.75,stop_first,0.7966,-7.7484,True,False,False,,,,,

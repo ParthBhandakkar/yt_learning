@@ -1,0 +1,3205 @@
+{
+  "created_utc": "2026-08-21T20:18:16.536502Z",
+  "phase": "phase9_spread_session_gate",
+  "replay_dir": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\KronosTest\\data\\gate_runs\\s146-no-gates",
+  "raw_replay": {
+    "portfolio_gates": false,
+    "existing_spread_rejection_disabled": true,
+    "original_s146_max_spread_pct_of_risk": 0.3,
+    "study_is_read_only": true
+  },
+  "split": {
+    "cutoff_utc": "2026-03-31T06:55:00Z",
+    "train_before_cutoff": true,
+    "test_on_or_after_cutoff": true
+  },
+  "declared_candidates": {
+    "spread_pct_thresholds": [
+      0.1,
+      0.15,
+      0.2,
+      0.25,
+      0.3,
+      0.4,
+      0.5,
+      0.75
+    ],
+    "session_buckets_utc": {
+      "Asia": "00:00-07:59",
+      "London": "08:00-12:59",
+      "New_York": "13:00-20:59",
+      "Late_rollover": "21:00-23:59"
+    },
+    "session_policies": {
+      "all_sessions": [
+        "Asia",
+        "Late_rollover",
+        "London",
+        "New_York"
+      ],
+      "exclude_late_rollover": [
+        "Asia",
+        "London",
+        "New_York"
+      ],
+      "london_new_york": [
+        "London",
+        "New_York"
+      ],
+      "london_only": [
+        "London"
+      ],
+      "new_york_only": [
+        "New_York"
+      ],
+      "asia_only": [
+        "Asia"
+      ]
+    },
+    "absolute_spread_bins_points": [
+      [
+        0.0,
+        1.0
+      ],
+      [
+        1.0,
+        2.0
+      ],
+      [
+        2.0,
+        5.0
+      ],
+      [
+        5.0,
+        10.0
+      ],
+      [
+        10.0,
+        25.0
+      ],
+      [
+        25.0,
+        50.0
+      ],
+      [
+        50.0,
+        100.0
+      ],
+      [
+        100.0,
+        null
+      ]
+    ]
+  },
+  "overall": {
+    "all_detector_signals": 1618,
+    "all_simulated_fills": 1618,
+    "fills_without_trade": 0,
+    "train": {
+      "signals": 991,
+      "fills": 991,
+      "stats": {
+        "fills": 991,
+        "resolved": 991,
+        "open": 0,
+        "wins": 348,
+        "losses": 643,
+        "win_rate_pct": 35.116,
+        "net_r": -197.570487,
+        "average_r": -0.199365,
+        "profit_factor": 0.692736,
+        "max_drawdown_r": 199.320487,
+        "gross_win_r": 445.429513,
+        "gross_loss_r": 643.0
+      }
+    },
+    "test": {
+      "signals": 627,
+      "fills": 627,
+      "stats": {
+        "fills": 627,
+        "resolved": 627,
+        "open": 0,
+        "wins": 246,
+        "losses": 381,
+        "win_rate_pct": 39.2344,
+        "net_r": -53.797533,
+        "average_r": -0.085801,
+        "profit_factor": 0.858799,
+        "max_drawdown_r": 64.900775,
+        "gross_win_r": 327.202467,
+        "gross_loss_r": 381.0
+      }
+    }
+  },
+  "selected_gates": {
+    "spread": {
+      "name": "spread",
+      "selected_spec": {
+        "name": "spread_pct_le_0.1",
+        "spread_pct_max": 0.1,
+        "sessions": null
+      },
+      "selection": {
+        "chosen_on": "chronological_training_period_only",
+        "minimum_train_retention": 0.25,
+        "selected_train": {
+          "name": "spread_pct_le_0.1",
+          "train_net_r": -27.984816,
+          "train_fills": 326,
+          "train_kept_fraction": 0.328961,
+          "spread_pct_max": 0.1,
+          "sessions": null
+        },
+        "top_train_candidates": [
+          {
+            "name": "spread_pct_le_0.1",
+            "train_net_r": -27.984816,
+            "train_fills": 326,
+            "train_kept_fraction": 0.328961,
+            "spread_pct_max": 0.1,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.15",
+            "train_net_r": -57.879641,
+            "train_fills": 513,
+            "train_kept_fraction": 0.517659,
+            "spread_pct_max": 0.15,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.2",
+            "train_net_r": -86.070756,
+            "train_fills": 651,
+            "train_kept_fraction": 0.656912,
+            "spread_pct_max": 0.2,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.25",
+            "train_net_r": -118.973372,
+            "train_fills": 762,
+            "train_kept_fraction": 0.76892,
+            "spread_pct_max": 0.25,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.3",
+            "train_net_r": -152.848372,
+            "train_fills": 827,
+            "train_kept_fraction": 0.834511,
+            "spread_pct_max": 0.3,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.4",
+            "train_net_r": -163.373302,
+            "train_fills": 896,
+            "train_kept_fraction": 0.904137,
+            "spread_pct_max": 0.4,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.5",
+            "train_net_r": -168.873302,
+            "train_fills": 944,
+            "train_kept_fraction": 0.952573,
+            "spread_pct_max": 0.5,
+            "sessions": null
+          },
+          {
+            "name": "spread_pct_le_0.75",
+            "train_net_r": -186.320487,
+            "train_fills": 975,
+            "train_kept_fraction": 0.983855,
+            "spread_pct_max": 0.75,
+            "sessions": null
+          },
+          {
+            "name": "no_gate",
+            "train_net_r": -197.570487,
+            "train_fills": 991,
+            "train_kept_fraction": 1.0,
+            "spread_pct_max": null,
+            "sessions": null
+          }
+        ]
+      },
+      "test": {
+        "detector_signals": 158,
+        "detector_retention": 0.251994,
+        "before": {
+          "fills": 627,
+          "resolved": 627,
+          "open": 0,
+          "wins": 246,
+          "losses": 381,
+          "win_rate_pct": 39.2344,
+          "net_r": -53.797533,
+          "average_r": -0.085801,
+          "profit_factor": 0.858799,
+          "max_drawdown_r": 64.900775,
+          "gross_win_r": 327.202467,
+          "gross_loss_r": 381.0
+        },
+        "after": {
+          "fills": 158,
+          "resolved": 158,
+          "open": 0,
+          "wins": 67,
+          "losses": 91,
+          "win_rate_pct": 42.4051,
+          "net_r": -6.423454,
+          "average_r": -0.040655,
+          "profit_factor": 0.929413,
+          "max_drawdown_r": 24.201041,
+          "gross_win_r": 84.576546,
+          "gross_loss_r": 91.0
+        },
+        "fill_retention": 0.251994
+      },
+      "nulls": {
+        "kept_test_fills": 158,
+        "random_subset_null": {
+          "iterations": 300,
+          "null_mean_net_r": -14.71438,
+          "null_std_net_r": 11.776924,
+          "null_p05_net_r": -34.540652,
+          "null_p95_net_r": 3.526443,
+          "observed_net_r": -6.423454,
+          "p_value": 0.25
+        },
+        "permutation_null": {
+          "iterations": 300,
+          "null_mean_net_r": -6.326815,
+          "null_std_net_r": 1.671042,
+          "null_p05_net_r": -6.423454,
+          "null_p95_net_r": -6.423454,
+          "observed_net_r": -6.423454,
+          "p_value": 1.0
+        }
+      },
+      "by_symbol": {
+        "AUDUSD": {
+          "before": {
+            "fills": 85,
+            "resolved": 85,
+            "open": 0,
+            "wins": 43,
+            "losses": 42,
+            "win_rate_pct": 50.5882,
+            "net_r": 17.297419,
+            "average_r": 0.203499,
+            "profit_factor": 1.411843,
+            "max_drawdown_r": 11.25,
+            "gross_win_r": 59.297419,
+            "gross_loss_r": 42.0
+          },
+          "after": {
+            "fills": 21,
+            "resolved": 21,
+            "open": 0,
+            "wins": 16,
+            "losses": 5,
+            "win_rate_pct": 76.1905,
+            "net_r": 13.25,
+            "average_r": 0.630952,
+            "profit_factor": 3.65,
+            "max_drawdown_r": 4.0,
+            "gross_win_r": 18.25,
+            "gross_loss_r": 5.0
+          },
+          "signal_level_delta_net_r": -4.047419
+        },
+        "EURUSD": {
+          "before": {
+            "fills": 87,
+            "resolved": 87,
+            "open": 0,
+            "wins": 35,
+            "losses": 52,
+            "win_rate_pct": 40.2299,
+            "net_r": -5.057359,
+            "average_r": -0.058131,
+            "profit_factor": 0.902743,
+            "max_drawdown_r": 16.149777,
+            "gross_win_r": 46.942641,
+            "gross_loss_r": 52.0
+          },
+          "after": {
+            "fills": 33,
+            "resolved": 33,
+            "open": 0,
+            "wins": 11,
+            "losses": 22,
+            "win_rate_pct": 33.3333,
+            "net_r": -8.057359,
+            "average_r": -0.244162,
+            "profit_factor": 0.633756,
+            "max_drawdown_r": 12.774777,
+            "gross_win_r": 13.942641,
+            "gross_loss_r": 22.0
+          },
+          "signal_level_delta_net_r": -3.0
+        },
+        "GBPUSD": {
+          "before": {
+            "fills": 80,
+            "resolved": 80,
+            "open": 0,
+            "wins": 27,
+            "losses": 53,
+            "win_rate_pct": 33.75,
+            "net_r": -20.681611,
+            "average_r": -0.25852,
+            "profit_factor": 0.609781,
+            "max_drawdown_r": 25.181611,
+            "gross_win_r": 32.318389,
+            "gross_loss_r": 53.0
+          },
+          "after": {
+            "fills": 38,
+            "resolved": 38,
+            "open": 0,
+            "wins": 13,
+            "losses": 25,
+            "win_rate_pct": 34.2105,
+            "net_r": -9.431611,
+            "average_r": -0.2482,
+            "profit_factor": 0.622736,
+            "max_drawdown_r": 12.056611,
+            "gross_win_r": 15.568389,
+            "gross_loss_r": 25.0
+          },
+          "signal_level_delta_net_r": 11.25
+        },
+        "NZDUSD": {
+          "before": {
+            "fills": 93,
+            "resolved": 93,
+            "open": 0,
+            "wins": 36,
+            "losses": 57,
+            "win_rate_pct": 38.7097,
+            "net_r": -11.819179,
+            "average_r": -0.127088,
+            "profit_factor": 0.792646,
+            "max_drawdown_r": 18.444179,
+            "gross_win_r": 45.180821,
+            "gross_loss_r": 57.0
+          },
+          "after": {
+            "fills": 6,
+            "resolved": 6,
+            "open": 0,
+            "wins": 3,
+            "losses": 3,
+            "win_rate_pct": 50.0,
+            "net_r": 1.375,
+            "average_r": 0.229167,
+            "profit_factor": 1.458333,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 4.375,
+            "gross_loss_r": 3.0
+          },
+          "signal_level_delta_net_r": 13.194179
+        },
+        "USDCAD": {
+          "before": {
+            "fills": 97,
+            "resolved": 97,
+            "open": 0,
+            "wins": 34,
+            "losses": 63,
+            "win_rate_pct": 35.0515,
+            "net_r": -19.843545,
+            "average_r": -0.204573,
+            "profit_factor": 0.685023,
+            "max_drawdown_r": 19.892504,
+            "gross_win_r": 43.156455,
+            "gross_loss_r": 63.0
+          },
+          "after": {
+            "fills": 8,
+            "resolved": 8,
+            "open": 0,
+            "wins": 3,
+            "losses": 5,
+            "win_rate_pct": 37.5,
+            "net_r": -1.131784,
+            "average_r": -0.141473,
+            "profit_factor": 0.773643,
+            "max_drawdown_r": 3.0,
+            "gross_win_r": 3.868216,
+            "gross_loss_r": 5.0
+          },
+          "signal_level_delta_net_r": 18.711761
+        },
+        "USDCHF": {
+          "before": {
+            "fills": 92,
+            "resolved": 92,
+            "open": 0,
+            "wins": 31,
+            "losses": 61,
+            "win_rate_pct": 33.6957,
+            "net_r": -22.002927,
+            "average_r": -0.239162,
+            "profit_factor": 0.639296,
+            "max_drawdown_r": 24.458345,
+            "gross_win_r": 38.997073,
+            "gross_loss_r": 61.0
+          },
+          "after": {
+            "fills": 10,
+            "resolved": 10,
+            "open": 0,
+            "wins": 6,
+            "losses": 4,
+            "win_rate_pct": 60.0,
+            "net_r": 2.75,
+            "average_r": 0.275,
+            "profit_factor": 1.6875,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 6.75,
+            "gross_loss_r": 4.0
+          },
+          "signal_level_delta_net_r": 24.752927
+        },
+        "USDJPY": {
+          "before": {
+            "fills": 93,
+            "resolved": 93,
+            "open": 0,
+            "wins": 40,
+            "losses": 53,
+            "win_rate_pct": 43.0108,
+            "net_r": 8.309669,
+            "average_r": 0.089351,
+            "profit_factor": 1.156786,
+            "max_drawdown_r": 11.528675,
+            "gross_win_r": 61.309669,
+            "gross_loss_r": 53.0
+          },
+          "after": {
+            "fills": 42,
+            "resolved": 42,
+            "open": 0,
+            "wins": 15,
+            "losses": 27,
+            "win_rate_pct": 35.7143,
+            "net_r": -5.177701,
+            "average_r": -0.123279,
+            "profit_factor": 0.808233,
+            "max_drawdown_r": 17.302701,
+            "gross_win_r": 21.822299,
+            "gross_loss_r": 27.0
+          },
+          "signal_level_delta_net_r": -13.48737
+        }
+      },
+      "by_month": {
+        "2026-03": {
+          "before": {
+            "fills": 5,
+            "resolved": 5,
+            "open": 0,
+            "wins": 2,
+            "losses": 3,
+            "win_rate_pct": 40.0,
+            "net_r": -0.5,
+            "average_r": -0.1,
+            "profit_factor": 0.833333,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 2.5,
+            "gross_loss_r": 3.0
+          },
+          "after": {
+            "fills": 1,
+            "resolved": 1,
+            "open": 0,
+            "wins": 1,
+            "losses": 0,
+            "win_rate_pct": 100.0,
+            "net_r": 1.125,
+            "average_r": 1.125,
+            "profit_factor": null,
+            "max_drawdown_r": 0.0,
+            "gross_win_r": 1.125,
+            "gross_loss_r": -0.0
+          },
+          "signal_level_delta_net_r": 1.625
+        },
+        "2026-04": {
+          "before": {
+            "fills": 116,
+            "resolved": 116,
+            "open": 0,
+            "wins": 55,
+            "losses": 61,
+            "win_rate_pct": 47.4138,
+            "net_r": 9.315004,
+            "average_r": 0.080302,
+            "profit_factor": 1.152705,
+            "max_drawdown_r": 11.076041,
+            "gross_win_r": 70.315004,
+            "gross_loss_r": 61.0
+          },
+          "after": {
+            "fills": 41,
+            "resolved": 41,
+            "open": 0,
+            "wins": 19,
+            "losses": 22,
+            "win_rate_pct": 46.3415,
+            "net_r": 3.423959,
+            "average_r": 0.083511,
+            "profit_factor": 1.155635,
+            "max_drawdown_r": 8.076041,
+            "gross_win_r": 25.423959,
+            "gross_loss_r": 22.0
+          },
+          "signal_level_delta_net_r": -5.891045
+        },
+        "2026-05": {
+          "before": {
+            "fills": 140,
+            "resolved": 140,
+            "open": 0,
+            "wins": 46,
+            "losses": 94,
+            "win_rate_pct": 32.8571,
+            "net_r": -36.419582,
+            "average_r": -0.26014,
+            "profit_factor": 0.612558,
+            "max_drawdown_r": 40.544582,
+            "gross_win_r": 57.580418,
+            "gross_loss_r": 94.0
+          },
+          "after": {
+            "fills": 34,
+            "resolved": 34,
+            "open": 0,
+            "wins": 9,
+            "losses": 25,
+            "win_rate_pct": 26.4706,
+            "net_r": -14.875,
+            "average_r": -0.4375,
+            "profit_factor": 0.405,
+            "max_drawdown_r": 15.75,
+            "gross_win_r": 10.125,
+            "gross_loss_r": 25.0
+          },
+          "signal_level_delta_net_r": 21.544582
+        },
+        "2026-06": {
+          "before": {
+            "fills": 133,
+            "resolved": 133,
+            "open": 0,
+            "wins": 53,
+            "losses": 80,
+            "win_rate_pct": 39.8496,
+            "net_r": -1.828001,
+            "average_r": -0.013744,
+            "profit_factor": 0.97715,
+            "max_drawdown_r": 24.5,
+            "gross_win_r": 78.171999,
+            "gross_loss_r": 80.0
+          },
+          "after": {
+            "fills": 30,
+            "resolved": 30,
+            "open": 0,
+            "wins": 15,
+            "losses": 15,
+            "win_rate_pct": 50.0,
+            "net_r": 1.975223,
+            "average_r": 0.065841,
+            "profit_factor": 1.131682,
+            "max_drawdown_r": 7.0,
+            "gross_win_r": 16.975223,
+            "gross_loss_r": 15.0
+          },
+          "signal_level_delta_net_r": 3.803224
+        },
+        "2026-07": {
+          "before": {
+            "fills": 158,
+            "resolved": 158,
+            "open": 0,
+            "wins": 59,
+            "losses": 99,
+            "win_rate_pct": 37.3418,
+            "net_r": -22.653192,
+            "average_r": -0.143375,
+            "profit_factor": 0.77118,
+            "max_drawdown_r": 29.245007,
+            "gross_win_r": 76.346808,
+            "gross_loss_r": 99.0
+          },
+          "after": {
+            "fills": 42,
+            "resolved": 42,
+            "open": 0,
+            "wins": 20,
+            "losses": 22,
+            "win_rate_pct": 47.619,
+            "net_r": 5.302364,
+            "average_r": 0.126247,
+            "profit_factor": 1.241017,
+            "max_drawdown_r": 7.0,
+            "gross_win_r": 27.302364,
+            "gross_loss_r": 22.0
+          },
+          "signal_level_delta_net_r": 27.955556
+        },
+        "2026-08": {
+          "before": {
+            "fills": 75,
+            "resolved": 75,
+            "open": 0,
+            "wins": 31,
+            "losses": 44,
+            "win_rate_pct": 41.3333,
+            "net_r": -1.711761,
+            "average_r": -0.022823,
+            "profit_factor": 0.961096,
+            "max_drawdown_r": 10.875,
+            "gross_win_r": 42.288239,
+            "gross_loss_r": 44.0
+          },
+          "after": {
+            "fills": 10,
+            "resolved": 10,
+            "open": 0,
+            "wins": 3,
+            "losses": 7,
+            "win_rate_pct": 30.0,
+            "net_r": -3.375,
+            "average_r": -0.3375,
+            "profit_factor": 0.517857,
+            "max_drawdown_r": 4.5,
+            "gross_win_r": 3.625,
+            "gross_loss_r": 7.0
+          },
+          "signal_level_delta_net_r": -1.663239
+        }
+      }
+    },
+    "session": {
+      "name": "session",
+      "selected_spec": {
+        "name": "session_new_york_only",
+        "spread_pct_max": null,
+        "sessions": [
+          "New_York"
+        ]
+      },
+      "selection": {
+        "chosen_on": "chronological_training_period_only",
+        "minimum_train_retention": 0.25,
+        "selected_train": {
+          "name": "session_new_york_only",
+          "train_net_r": -40.578282,
+          "train_fills": 305,
+          "train_kept_fraction": 0.30777,
+          "spread_pct_max": null,
+          "sessions": [
+            "New_York"
+          ]
+        },
+        "top_train_candidates": [
+          {
+            "name": "session_new_york_only",
+            "train_net_r": -40.578282,
+            "train_fills": 305,
+            "train_kept_fraction": 0.30777,
+            "spread_pct_max": null,
+            "sessions": [
+              "New_York"
+            ]
+          },
+          {
+            "name": "session_london_new_york",
+            "train_net_r": -86.492943,
+            "train_fills": 524,
+            "train_kept_fraction": 0.528759,
+            "spread_pct_max": null,
+            "sessions": [
+              "London",
+              "New_York"
+            ]
+          },
+          {
+            "name": "session_asia_only",
+            "train_net_r": -87.440848,
+            "train_fills": 363,
+            "train_kept_fraction": 0.366297,
+            "spread_pct_max": null,
+            "sessions": [
+              "Asia"
+            ]
+          },
+          {
+            "name": "session_exclude_late_rollover",
+            "train_net_r": -173.933791,
+            "train_fills": 887,
+            "train_kept_fraction": 0.895055,
+            "spread_pct_max": null,
+            "sessions": [
+              "Asia",
+              "London",
+              "New_York"
+            ]
+          },
+          {
+            "name": "no_gate",
+            "train_net_r": -197.570487,
+            "train_fills": 991,
+            "train_kept_fraction": 1.0,
+            "spread_pct_max": null,
+            "sessions": null
+          }
+        ]
+      },
+      "test": {
+        "detector_signals": 162,
+        "detector_retention": 0.258373,
+        "before": {
+          "fills": 627,
+          "resolved": 627,
+          "open": 0,
+          "wins": 246,
+          "losses": 381,
+          "win_rate_pct": 39.2344,
+          "net_r": -53.797533,
+          "average_r": -0.085801,
+          "profit_factor": 0.858799,
+          "max_drawdown_r": 64.900775,
+          "gross_win_r": 327.202467,
+          "gross_loss_r": 381.0
+        },
+        "after": {
+          "fills": 162,
+          "resolved": 162,
+          "open": 0,
+          "wins": 71,
+          "losses": 91,
+          "win_rate_pct": 43.8272,
+          "net_r": 5.953391,
+          "average_r": 0.036749,
+          "profit_factor": 1.065422,
+          "max_drawdown_r": 15.383324,
+          "gross_win_r": 96.953391,
+          "gross_loss_r": 91.0
+        },
+        "fill_retention": 0.258373
+      },
+      "nulls": {
+        "kept_test_fills": 162,
+        "random_subset_null": {
+          "iterations": 300,
+          "null_mean_net_r": -13.965809,
+          "null_std_net_r": 13.268702,
+          "null_p05_net_r": -33.940665,
+          "null_p95_net_r": 8.091566,
+          "observed_net_r": 5.953391,
+          "p_value": 0.06
+        },
+        "permutation_null": {
+          "iterations": 300,
+          "null_mean_net_r": 1.459828,
+          "null_std_net_r": 6.40282,
+          "null_p05_net_r": -7.663466,
+          "null_p95_net_r": 5.953391,
+          "observed_net_r": 5.953391,
+          "p_value": 0.67
+        }
+      },
+      "by_symbol": {
+        "AUDUSD": {
+          "before": {
+            "fills": 85,
+            "resolved": 85,
+            "open": 0,
+            "wins": 43,
+            "losses": 42,
+            "win_rate_pct": 50.5882,
+            "net_r": 17.297419,
+            "average_r": 0.203499,
+            "profit_factor": 1.411843,
+            "max_drawdown_r": 11.25,
+            "gross_win_r": 59.297419,
+            "gross_loss_r": 42.0
+          },
+          "after": {
+            "fills": 22,
+            "resolved": 22,
+            "open": 0,
+            "wins": 13,
+            "losses": 9,
+            "win_rate_pct": 59.0909,
+            "net_r": 9.797419,
+            "average_r": 0.445337,
+            "profit_factor": 2.088602,
+            "max_drawdown_r": 3.0,
+            "gross_win_r": 18.797419,
+            "gross_loss_r": 9.0
+          },
+          "signal_level_delta_net_r": -7.5
+        },
+        "EURUSD": {
+          "before": {
+            "fills": 87,
+            "resolved": 87,
+            "open": 0,
+            "wins": 35,
+            "losses": 52,
+            "win_rate_pct": 40.2299,
+            "net_r": -5.057359,
+            "average_r": -0.058131,
+            "profit_factor": 0.902743,
+            "max_drawdown_r": 16.149777,
+            "gross_win_r": 46.942641,
+            "gross_loss_r": 52.0
+          },
+          "after": {
+            "fills": 29,
+            "resolved": 29,
+            "open": 0,
+            "wins": 13,
+            "losses": 16,
+            "win_rate_pct": 44.8276,
+            "net_r": 2.725223,
+            "average_r": 0.093973,
+            "profit_factor": 1.170326,
+            "max_drawdown_r": 8.25,
+            "gross_win_r": 18.725223,
+            "gross_loss_r": 16.0
+          },
+          "signal_level_delta_net_r": 7.782582
+        },
+        "GBPUSD": {
+          "before": {
+            "fills": 80,
+            "resolved": 80,
+            "open": 0,
+            "wins": 27,
+            "losses": 53,
+            "win_rate_pct": 33.75,
+            "net_r": -20.681611,
+            "average_r": -0.25852,
+            "profit_factor": 0.609781,
+            "max_drawdown_r": 25.181611,
+            "gross_win_r": 32.318389,
+            "gross_loss_r": 53.0
+          },
+          "after": {
+            "fills": 13,
+            "resolved": 13,
+            "open": 0,
+            "wins": 7,
+            "losses": 6,
+            "win_rate_pct": 53.8462,
+            "net_r": 1.625,
+            "average_r": 0.125,
+            "profit_factor": 1.270833,
+            "max_drawdown_r": 4.0,
+            "gross_win_r": 7.625,
+            "gross_loss_r": 6.0
+          },
+          "signal_level_delta_net_r": 22.306611
+        },
+        "NZDUSD": {
+          "before": {
+            "fills": 93,
+            "resolved": 93,
+            "open": 0,
+            "wins": 36,
+            "losses": 57,
+            "win_rate_pct": 38.7097,
+            "net_r": -11.819179,
+            "average_r": -0.127088,
+            "profit_factor": 0.792646,
+            "max_drawdown_r": 18.444179,
+            "gross_win_r": 45.180821,
+            "gross_loss_r": 57.0
+          },
+          "after": {
+            "fills": 20,
+            "resolved": 20,
+            "open": 0,
+            "wins": 9,
+            "losses": 11,
+            "win_rate_pct": 45.0,
+            "net_r": 0.783934,
+            "average_r": 0.039197,
+            "profit_factor": 1.071267,
+            "max_drawdown_r": 6.0,
+            "gross_win_r": 11.783934,
+            "gross_loss_r": 11.0
+          },
+          "signal_level_delta_net_r": 12.603113
+        },
+        "USDCAD": {
+          "before": {
+            "fills": 97,
+            "resolved": 97,
+            "open": 0,
+            "wins": 34,
+            "losses": 63,
+            "win_rate_pct": 35.0515,
+            "net_r": -19.843545,
+            "average_r": -0.204573,
+            "profit_factor": 0.685023,
+            "max_drawdown_r": 19.892504,
+            "gross_win_r": 43.156455,
+            "gross_loss_r": 63.0
+          },
+          "after": {
+            "fills": 27,
+            "resolved": 27,
+            "open": 0,
+            "wins": 10,
+            "losses": 17,
+            "win_rate_pct": 37.037,
+            "net_r": -3.805743,
+            "average_r": -0.140953,
+            "profit_factor": 0.776133,
+            "max_drawdown_r": 6.875,
+            "gross_win_r": 13.194257,
+            "gross_loss_r": 17.0
+          },
+          "signal_level_delta_net_r": 16.037802
+        },
+        "USDCHF": {
+          "before": {
+            "fills": 92,
+            "resolved": 92,
+            "open": 0,
+            "wins": 31,
+            "losses": 61,
+            "win_rate_pct": 33.6957,
+            "net_r": -22.002927,
+            "average_r": -0.239162,
+            "profit_factor": 0.639296,
+            "max_drawdown_r": 24.458345,
+            "gross_win_r": 38.997073,
+            "gross_loss_r": 61.0
+          },
+          "after": {
+            "fills": 28,
+            "resolved": 28,
+            "open": 0,
+            "wins": 12,
+            "losses": 16,
+            "win_rate_pct": 42.8571,
+            "net_r": -2.169582,
+            "average_r": -0.077485,
+            "profit_factor": 0.864401,
+            "max_drawdown_r": 11.875,
+            "gross_win_r": 13.830418,
+            "gross_loss_r": 16.0
+          },
+          "signal_level_delta_net_r": 19.833345
+        },
+        "USDJPY": {
+          "before": {
+            "fills": 93,
+            "resolved": 93,
+            "open": 0,
+            "wins": 40,
+            "losses": 53,
+            "win_rate_pct": 43.0108,
+            "net_r": 8.309669,
+            "average_r": 0.089351,
+            "profit_factor": 1.156786,
+            "max_drawdown_r": 11.528675,
+            "gross_win_r": 61.309669,
+            "gross_loss_r": 53.0
+          },
+          "after": {
+            "fills": 23,
+            "resolved": 23,
+            "open": 0,
+            "wins": 7,
+            "losses": 16,
+            "win_rate_pct": 30.4348,
+            "net_r": -3.00286,
+            "average_r": -0.130559,
+            "profit_factor": 0.812321,
+            "max_drawdown_r": 9.875,
+            "gross_win_r": 12.99714,
+            "gross_loss_r": 16.0
+          },
+          "signal_level_delta_net_r": -11.312529
+        }
+      },
+      "by_month": {
+        "2026-03": {
+          "before": {
+            "fills": 5,
+            "resolved": 5,
+            "open": 0,
+            "wins": 2,
+            "losses": 3,
+            "win_rate_pct": 40.0,
+            "net_r": -0.5,
+            "average_r": -0.1,
+            "profit_factor": 0.833333,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 2.5,
+            "gross_loss_r": 3.0
+          },
+          "after": {
+            "fills": 2,
+            "resolved": 2,
+            "open": 0,
+            "wins": 1,
+            "losses": 1,
+            "win_rate_pct": 50.0,
+            "net_r": 0.375,
+            "average_r": 0.1875,
+            "profit_factor": 1.375,
+            "max_drawdown_r": 1.0,
+            "gross_win_r": 1.375,
+            "gross_loss_r": 1.0
+          },
+          "signal_level_delta_net_r": 0.875
+        },
+        "2026-04": {
+          "before": {
+            "fills": 116,
+            "resolved": 116,
+            "open": 0,
+            "wins": 55,
+            "losses": 61,
+            "win_rate_pct": 47.4138,
+            "net_r": 9.315004,
+            "average_r": 0.080302,
+            "profit_factor": 1.152705,
+            "max_drawdown_r": 11.076041,
+            "gross_win_r": 70.315004,
+            "gross_loss_r": 61.0
+          },
+          "after": {
+            "fills": 29,
+            "resolved": 29,
+            "open": 0,
+            "wins": 17,
+            "losses": 12,
+            "win_rate_pct": 58.6207,
+            "net_r": 8.875,
+            "average_r": 0.306034,
+            "profit_factor": 1.739583,
+            "max_drawdown_r": 6.0,
+            "gross_win_r": 20.875,
+            "gross_loss_r": 12.0
+          },
+          "signal_level_delta_net_r": -0.440004
+        },
+        "2026-05": {
+          "before": {
+            "fills": 140,
+            "resolved": 140,
+            "open": 0,
+            "wins": 46,
+            "losses": 94,
+            "win_rate_pct": 32.8571,
+            "net_r": -36.419582,
+            "average_r": -0.26014,
+            "profit_factor": 0.612558,
+            "max_drawdown_r": 40.544582,
+            "gross_win_r": 57.580418,
+            "gross_loss_r": 94.0
+          },
+          "after": {
+            "fills": 43,
+            "resolved": 43,
+            "open": 0,
+            "wins": 16,
+            "losses": 27,
+            "win_rate_pct": 37.2093,
+            "net_r": -8.419582,
+            "average_r": -0.195804,
+            "profit_factor": 0.688164,
+            "max_drawdown_r": 11.044582,
+            "gross_win_r": 18.580418,
+            "gross_loss_r": 27.0
+          },
+          "signal_level_delta_net_r": 28.0
+        },
+        "2026-06": {
+          "before": {
+            "fills": 133,
+            "resolved": 133,
+            "open": 0,
+            "wins": 53,
+            "losses": 80,
+            "win_rate_pct": 39.8496,
+            "net_r": -1.828001,
+            "average_r": -0.013744,
+            "profit_factor": 0.97715,
+            "max_drawdown_r": 24.5,
+            "gross_win_r": 78.171999,
+            "gross_loss_r": 80.0
+          },
+          "after": {
+            "fills": 36,
+            "resolved": 36,
+            "open": 0,
+            "wins": 15,
+            "losses": 21,
+            "win_rate_pct": 41.6667,
+            "net_r": 8.928716,
+            "average_r": 0.24802,
+            "profit_factor": 1.425177,
+            "max_drawdown_r": 7.125,
+            "gross_win_r": 29.928716,
+            "gross_loss_r": 21.0
+          },
+          "signal_level_delta_net_r": 10.756717
+        },
+        "2026-07": {
+          "before": {
+            "fills": 158,
+            "resolved": 158,
+            "open": 0,
+            "wins": 59,
+            "losses": 99,
+            "win_rate_pct": 37.3418,
+            "net_r": -22.653192,
+            "average_r": -0.143375,
+            "profit_factor": 0.77118,
+            "max_drawdown_r": 29.245007,
+            "gross_win_r": 76.346808,
+            "gross_loss_r": 99.0
+          },
+          "after": {
+            "fills": 35,
+            "resolved": 35,
+            "open": 0,
+            "wins": 12,
+            "losses": 23,
+            "win_rate_pct": 34.2857,
+            "net_r": -7.805743,
+            "average_r": -0.223021,
+            "profit_factor": 0.66062,
+            "max_drawdown_r": 11.25,
+            "gross_win_r": 15.194257,
+            "gross_loss_r": 23.0
+          },
+          "signal_level_delta_net_r": 14.847449
+        },
+        "2026-08": {
+          "before": {
+            "fills": 75,
+            "resolved": 75,
+            "open": 0,
+            "wins": 31,
+            "losses": 44,
+            "win_rate_pct": 41.3333,
+            "net_r": -1.711761,
+            "average_r": -0.022823,
+            "profit_factor": 0.961096,
+            "max_drawdown_r": 10.875,
+            "gross_win_r": 42.288239,
+            "gross_loss_r": 44.0
+          },
+          "after": {
+            "fills": 17,
+            "resolved": 17,
+            "open": 0,
+            "wins": 10,
+            "losses": 7,
+            "win_rate_pct": 58.8235,
+            "net_r": 4.0,
+            "average_r": 0.235294,
+            "profit_factor": 1.571429,
+            "max_drawdown_r": 2.5,
+            "gross_win_r": 11.0,
+            "gross_loss_r": 7.0
+          },
+          "signal_level_delta_net_r": 5.711761
+        }
+      }
+    },
+    "combined": {
+      "name": "combined",
+      "selected_spec": {
+        "name": "spread_pct_le_0.25__session_new_york_only",
+        "spread_pct_max": 0.25,
+        "sessions": [
+          "New_York"
+        ]
+      },
+      "selection": {
+        "chosen_on": "chronological_training_period_only",
+        "minimum_train_retention": 0.25,
+        "selected_train": {
+          "name": "spread_pct_le_0.25__session_new_york_only",
+          "train_net_r": -16.703282,
+          "train_fills": 254,
+          "train_kept_fraction": 0.256307,
+          "spread_pct_max": 0.25,
+          "sessions": [
+            "New_York"
+          ]
+        },
+        "top_train_candidates": [
+          {
+            "name": "spread_pct_le_0.25__session_new_york_only",
+            "train_net_r": -16.703282,
+            "train_fills": 254,
+            "train_kept_fraction": 0.256307,
+            "spread_pct_max": 0.25,
+            "sessions": [
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.15__session_london_new_york",
+            "train_net_r": -19.399212,
+            "train_fills": 300,
+            "train_kept_fraction": 0.302725,
+            "spread_pct_max": 0.15,
+            "sessions": [
+              "London",
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.1__session_exclude_late_rollover",
+            "train_net_r": -26.03562,
+            "train_fills": 311,
+            "train_kept_fraction": 0.313824,
+            "spread_pct_max": 0.1,
+            "sessions": [
+              "Asia",
+              "London",
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.3__session_new_york_only",
+            "train_net_r": -27.328282,
+            "train_fills": 271,
+            "train_kept_fraction": 0.273461,
+            "spread_pct_max": 0.3,
+            "sessions": [
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.4__session_new_york_only",
+            "train_net_r": -29.328282,
+            "train_fills": 288,
+            "train_kept_fraction": 0.290616,
+            "spread_pct_max": 0.4,
+            "sessions": [
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.2__session_london_new_york",
+            "train_net_r": -30.340327,
+            "train_fills": 385,
+            "train_kept_fraction": 0.388496,
+            "spread_pct_max": 0.2,
+            "sessions": [
+              "London",
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.5__session_new_york_only",
+            "train_net_r": -33.578282,
+            "train_fills": 298,
+            "train_kept_fraction": 0.300706,
+            "spread_pct_max": 0.5,
+            "sessions": [
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.75__session_new_york_only",
+            "train_net_r": -40.578282,
+            "train_fills": 305,
+            "train_kept_fraction": 0.30777,
+            "spread_pct_max": 0.75,
+            "sessions": [
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.25__session_london_new_york",
+            "train_net_r": -49.117943,
+            "train_fills": 438,
+            "train_kept_fraction": 0.441978,
+            "spread_pct_max": 0.25,
+            "sessions": [
+              "London",
+              "New_York"
+            ]
+          },
+          {
+            "name": "spread_pct_le_0.15__session_exclude_late_rollover",
+            "train_net_r": -51.430445,
+            "train_fills": 483,
+            "train_kept_fraction": 0.487386,
+            "spread_pct_max": 0.15,
+            "sessions": [
+              "Asia",
+              "London",
+              "New_York"
+            ]
+          }
+        ]
+      },
+      "test": {
+        "detector_signals": 147,
+        "detector_retention": 0.23445,
+        "before": {
+          "fills": 627,
+          "resolved": 627,
+          "open": 0,
+          "wins": 246,
+          "losses": 381,
+          "win_rate_pct": 39.2344,
+          "net_r": -53.797533,
+          "average_r": -0.085801,
+          "profit_factor": 0.858799,
+          "max_drawdown_r": 64.900775,
+          "gross_win_r": 327.202467,
+          "gross_loss_r": 381.0
+        },
+        "after": {
+          "fills": 147,
+          "resolved": 147,
+          "open": 0,
+          "wins": 68,
+          "losses": 79,
+          "win_rate_pct": 46.2585,
+          "net_r": 14.328391,
+          "average_r": 0.097472,
+          "profit_factor": 1.181372,
+          "max_drawdown_r": 12.294582,
+          "gross_win_r": 93.328391,
+          "gross_loss_r": 79.0
+        },
+        "fill_retention": 0.23445
+      },
+      "nulls": {
+        "kept_test_fills": 147,
+        "random_subset_null": {
+          "iterations": 300,
+          "null_mean_net_r": -13.519628,
+          "null_std_net_r": 12.568573,
+          "null_p05_net_r": -34.002179,
+          "null_p95_net_r": 6.975659,
+          "observed_net_r": 14.328391,
+          "p_value": 0.01
+        },
+        "permutation_null": {
+          "iterations": 300,
+          "null_mean_net_r": 8.29833,
+          "null_std_net_r": 7.336064,
+          "null_p05_net_r": -6.673454,
+          "null_p95_net_r": 14.328391,
+          "observed_net_r": 14.328391,
+          "p_value": 0.31
+        }
+      },
+      "by_symbol": {
+        "AUDUSD": {
+          "before": {
+            "fills": 85,
+            "resolved": 85,
+            "open": 0,
+            "wins": 43,
+            "losses": 42,
+            "win_rate_pct": 50.5882,
+            "net_r": 17.297419,
+            "average_r": 0.203499,
+            "profit_factor": 1.411843,
+            "max_drawdown_r": 11.25,
+            "gross_win_r": 59.297419,
+            "gross_loss_r": 42.0
+          },
+          "after": {
+            "fills": 20,
+            "resolved": 20,
+            "open": 0,
+            "wins": 13,
+            "losses": 7,
+            "win_rate_pct": 65.0,
+            "net_r": 11.797419,
+            "average_r": 0.589871,
+            "profit_factor": 2.685346,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 18.797419,
+            "gross_loss_r": 7.0
+          },
+          "signal_level_delta_net_r": -5.5
+        },
+        "EURUSD": {
+          "before": {
+            "fills": 87,
+            "resolved": 87,
+            "open": 0,
+            "wins": 35,
+            "losses": 52,
+            "win_rate_pct": 40.2299,
+            "net_r": -5.057359,
+            "average_r": -0.058131,
+            "profit_factor": 0.902743,
+            "max_drawdown_r": 16.149777,
+            "gross_win_r": 46.942641,
+            "gross_loss_r": 52.0
+          },
+          "after": {
+            "fills": 29,
+            "resolved": 29,
+            "open": 0,
+            "wins": 13,
+            "losses": 16,
+            "win_rate_pct": 44.8276,
+            "net_r": 2.725223,
+            "average_r": 0.093973,
+            "profit_factor": 1.170326,
+            "max_drawdown_r": 8.25,
+            "gross_win_r": 18.725223,
+            "gross_loss_r": 16.0
+          },
+          "signal_level_delta_net_r": 7.782582
+        },
+        "GBPUSD": {
+          "before": {
+            "fills": 80,
+            "resolved": 80,
+            "open": 0,
+            "wins": 27,
+            "losses": 53,
+            "win_rate_pct": 33.75,
+            "net_r": -20.681611,
+            "average_r": -0.25852,
+            "profit_factor": 0.609781,
+            "max_drawdown_r": 25.181611,
+            "gross_win_r": 32.318389,
+            "gross_loss_r": 53.0
+          },
+          "after": {
+            "fills": 12,
+            "resolved": 12,
+            "open": 0,
+            "wins": 7,
+            "losses": 5,
+            "win_rate_pct": 58.3333,
+            "net_r": 2.625,
+            "average_r": 0.21875,
+            "profit_factor": 1.525,
+            "max_drawdown_r": 3.0,
+            "gross_win_r": 7.625,
+            "gross_loss_r": 5.0
+          },
+          "signal_level_delta_net_r": 23.306611
+        },
+        "NZDUSD": {
+          "before": {
+            "fills": 93,
+            "resolved": 93,
+            "open": 0,
+            "wins": 36,
+            "losses": 57,
+            "win_rate_pct": 38.7097,
+            "net_r": -11.819179,
+            "average_r": -0.127088,
+            "profit_factor": 0.792646,
+            "max_drawdown_r": 18.444179,
+            "gross_win_r": 45.180821,
+            "gross_loss_r": 57.0
+          },
+          "after": {
+            "fills": 16,
+            "resolved": 16,
+            "open": 0,
+            "wins": 8,
+            "losses": 8,
+            "win_rate_pct": 50.0,
+            "net_r": 2.658934,
+            "average_r": 0.166183,
+            "profit_factor": 1.332367,
+            "max_drawdown_r": 4.0,
+            "gross_win_r": 10.658934,
+            "gross_loss_r": 8.0
+          },
+          "signal_level_delta_net_r": 14.478113
+        },
+        "USDCAD": {
+          "before": {
+            "fills": 97,
+            "resolved": 97,
+            "open": 0,
+            "wins": 34,
+            "losses": 63,
+            "win_rate_pct": 35.0515,
+            "net_r": -19.843545,
+            "average_r": -0.204573,
+            "profit_factor": 0.685023,
+            "max_drawdown_r": 19.892504,
+            "gross_win_r": 43.156455,
+            "gross_loss_r": 63.0
+          },
+          "after": {
+            "fills": 24,
+            "resolved": 24,
+            "open": 0,
+            "wins": 10,
+            "losses": 14,
+            "win_rate_pct": 41.6667,
+            "net_r": -0.805743,
+            "average_r": -0.033573,
+            "profit_factor": 0.942447,
+            "max_drawdown_r": 4.875,
+            "gross_win_r": 13.194257,
+            "gross_loss_r": 14.0
+          },
+          "signal_level_delta_net_r": 19.037802
+        },
+        "USDCHF": {
+          "before": {
+            "fills": 92,
+            "resolved": 92,
+            "open": 0,
+            "wins": 31,
+            "losses": 61,
+            "win_rate_pct": 33.6957,
+            "net_r": -22.002927,
+            "average_r": -0.239162,
+            "profit_factor": 0.639296,
+            "max_drawdown_r": 24.458345,
+            "gross_win_r": 38.997073,
+            "gross_loss_r": 61.0
+          },
+          "after": {
+            "fills": 23,
+            "resolved": 23,
+            "open": 0,
+            "wins": 10,
+            "losses": 13,
+            "win_rate_pct": 43.4783,
+            "net_r": -1.669582,
+            "average_r": -0.072591,
+            "profit_factor": 0.871571,
+            "max_drawdown_r": 8.875,
+            "gross_win_r": 11.330418,
+            "gross_loss_r": 13.0
+          },
+          "signal_level_delta_net_r": 20.333345
+        },
+        "USDJPY": {
+          "before": {
+            "fills": 93,
+            "resolved": 93,
+            "open": 0,
+            "wins": 40,
+            "losses": 53,
+            "win_rate_pct": 43.0108,
+            "net_r": 8.309669,
+            "average_r": 0.089351,
+            "profit_factor": 1.156786,
+            "max_drawdown_r": 11.528675,
+            "gross_win_r": 61.309669,
+            "gross_loss_r": 53.0
+          },
+          "after": {
+            "fills": 23,
+            "resolved": 23,
+            "open": 0,
+            "wins": 7,
+            "losses": 16,
+            "win_rate_pct": 30.4348,
+            "net_r": -3.00286,
+            "average_r": -0.130559,
+            "profit_factor": 0.812321,
+            "max_drawdown_r": 9.875,
+            "gross_win_r": 12.99714,
+            "gross_loss_r": 16.0
+          },
+          "signal_level_delta_net_r": -11.312529
+        }
+      },
+      "by_month": {
+        "2026-03": {
+          "before": {
+            "fills": 5,
+            "resolved": 5,
+            "open": 0,
+            "wins": 2,
+            "losses": 3,
+            "win_rate_pct": 40.0,
+            "net_r": -0.5,
+            "average_r": -0.1,
+            "profit_factor": 0.833333,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 2.5,
+            "gross_loss_r": 3.0
+          },
+          "after": {
+            "fills": 2,
+            "resolved": 2,
+            "open": 0,
+            "wins": 1,
+            "losses": 1,
+            "win_rate_pct": 50.0,
+            "net_r": 0.375,
+            "average_r": 0.1875,
+            "profit_factor": 1.375,
+            "max_drawdown_r": 1.0,
+            "gross_win_r": 1.375,
+            "gross_loss_r": 1.0
+          },
+          "signal_level_delta_net_r": 0.875
+        },
+        "2026-04": {
+          "before": {
+            "fills": 116,
+            "resolved": 116,
+            "open": 0,
+            "wins": 55,
+            "losses": 61,
+            "win_rate_pct": 47.4138,
+            "net_r": 9.315004,
+            "average_r": 0.080302,
+            "profit_factor": 1.152705,
+            "max_drawdown_r": 11.076041,
+            "gross_win_r": 70.315004,
+            "gross_loss_r": 61.0
+          },
+          "after": {
+            "fills": 28,
+            "resolved": 28,
+            "open": 0,
+            "wins": 16,
+            "losses": 12,
+            "win_rate_pct": 57.1429,
+            "net_r": 7.75,
+            "average_r": 0.276786,
+            "profit_factor": 1.645833,
+            "max_drawdown_r": 6.0,
+            "gross_win_r": 19.75,
+            "gross_loss_r": 12.0
+          },
+          "signal_level_delta_net_r": -1.565004
+        },
+        "2026-05": {
+          "before": {
+            "fills": 140,
+            "resolved": 140,
+            "open": 0,
+            "wins": 46,
+            "losses": 94,
+            "win_rate_pct": 32.8571,
+            "net_r": -36.419582,
+            "average_r": -0.26014,
+            "profit_factor": 0.612558,
+            "max_drawdown_r": 40.544582,
+            "gross_win_r": 57.580418,
+            "gross_loss_r": 94.0
+          },
+          "after": {
+            "fills": 41,
+            "resolved": 41,
+            "open": 0,
+            "wins": 16,
+            "losses": 25,
+            "win_rate_pct": 39.0244,
+            "net_r": -6.419582,
+            "average_r": -0.156575,
+            "profit_factor": 0.743217,
+            "max_drawdown_r": 9.125,
+            "gross_win_r": 18.580418,
+            "gross_loss_r": 25.0
+          },
+          "signal_level_delta_net_r": 30.0
+        },
+        "2026-06": {
+          "before": {
+            "fills": 133,
+            "resolved": 133,
+            "open": 0,
+            "wins": 53,
+            "losses": 80,
+            "win_rate_pct": 39.8496,
+            "net_r": -1.828001,
+            "average_r": -0.013744,
+            "profit_factor": 0.97715,
+            "max_drawdown_r": 24.5,
+            "gross_win_r": 78.171999,
+            "gross_loss_r": 80.0
+          },
+          "after": {
+            "fills": 34,
+            "resolved": 34,
+            "open": 0,
+            "wins": 14,
+            "losses": 20,
+            "win_rate_pct": 41.1765,
+            "net_r": 8.803716,
+            "average_r": 0.258933,
+            "profit_factor": 1.440186,
+            "max_drawdown_r": 7.125,
+            "gross_win_r": 28.803716,
+            "gross_loss_r": 20.0
+          },
+          "signal_level_delta_net_r": 10.631717
+        },
+        "2026-07": {
+          "before": {
+            "fills": 158,
+            "resolved": 158,
+            "open": 0,
+            "wins": 59,
+            "losses": 99,
+            "win_rate_pct": 37.3418,
+            "net_r": -22.653192,
+            "average_r": -0.143375,
+            "profit_factor": 0.77118,
+            "max_drawdown_r": 29.245007,
+            "gross_win_r": 76.346808,
+            "gross_loss_r": 99.0
+          },
+          "after": {
+            "fills": 28,
+            "resolved": 28,
+            "open": 0,
+            "wins": 12,
+            "losses": 16,
+            "win_rate_pct": 42.8571,
+            "net_r": -0.805743,
+            "average_r": -0.028777,
+            "profit_factor": 0.949641,
+            "max_drawdown_r": 7.25,
+            "gross_win_r": 15.194257,
+            "gross_loss_r": 16.0
+          },
+          "signal_level_delta_net_r": 21.847449
+        },
+        "2026-08": {
+          "before": {
+            "fills": 75,
+            "resolved": 75,
+            "open": 0,
+            "wins": 31,
+            "losses": 44,
+            "win_rate_pct": 41.3333,
+            "net_r": -1.711761,
+            "average_r": -0.022823,
+            "profit_factor": 0.961096,
+            "max_drawdown_r": 10.875,
+            "gross_win_r": 42.288239,
+            "gross_loss_r": 44.0
+          },
+          "after": {
+            "fills": 14,
+            "resolved": 14,
+            "open": 0,
+            "wins": 9,
+            "losses": 5,
+            "win_rate_pct": 64.2857,
+            "net_r": 4.625,
+            "average_r": 0.330357,
+            "profit_factor": 1.925,
+            "max_drawdown_r": 2.0,
+            "gross_win_r": 9.625,
+            "gross_loss_r": 5.0
+          },
+          "signal_level_delta_net_r": 6.336761
+        }
+      }
+    }
+  },
+  "descriptive_test_breakdowns": {
+    "by_hour_utc": {
+      "00": {
+        "before": {
+          "fills": 36,
+          "resolved": 36,
+          "open": 0,
+          "wins": 9,
+          "losses": 27,
+          "win_rate_pct": 25.0,
+          "net_r": -15.375,
+          "average_r": -0.427083,
+          "profit_factor": 0.430556,
+          "max_drawdown_r": 18.5,
+          "gross_win_r": 11.625,
+          "gross_loss_r": 27.0
+        },
+        "after": {
+          "fills": 36,
+          "resolved": 36,
+          "open": 0,
+          "wins": 9,
+          "losses": 27,
+          "win_rate_pct": 25.0,
+          "net_r": -15.375,
+          "average_r": -0.427083,
+          "profit_factor": 0.430556,
+          "max_drawdown_r": 18.5,
+          "gross_win_r": 11.625,
+          "gross_loss_r": 27.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "01": {
+        "before": {
+          "fills": 43,
+          "resolved": 43,
+          "open": 0,
+          "wins": 19,
+          "losses": 24,
+          "win_rate_pct": 44.186,
+          "net_r": -0.734312,
+          "average_r": -0.017077,
+          "profit_factor": 0.969404,
+          "max_drawdown_r": 10.875,
+          "gross_win_r": 23.265688,
+          "gross_loss_r": 24.0
+        },
+        "after": {
+          "fills": 43,
+          "resolved": 43,
+          "open": 0,
+          "wins": 19,
+          "losses": 24,
+          "win_rate_pct": 44.186,
+          "net_r": -0.734312,
+          "average_r": -0.017077,
+          "profit_factor": 0.969404,
+          "max_drawdown_r": 10.875,
+          "gross_win_r": 23.265688,
+          "gross_loss_r": 24.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "02": {
+        "before": {
+          "fills": 30,
+          "resolved": 30,
+          "open": 0,
+          "wins": 9,
+          "losses": 21,
+          "win_rate_pct": 30.0,
+          "net_r": -10.375,
+          "average_r": -0.345833,
+          "profit_factor": 0.505952,
+          "max_drawdown_r": 12.25,
+          "gross_win_r": 10.625,
+          "gross_loss_r": 21.0
+        },
+        "after": {
+          "fills": 30,
+          "resolved": 30,
+          "open": 0,
+          "wins": 9,
+          "losses": 21,
+          "win_rate_pct": 30.0,
+          "net_r": -10.375,
+          "average_r": -0.345833,
+          "profit_factor": 0.505952,
+          "max_drawdown_r": 12.25,
+          "gross_win_r": 10.625,
+          "gross_loss_r": 21.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "03": {
+        "before": {
+          "fills": 23,
+          "resolved": 23,
+          "open": 0,
+          "wins": 10,
+          "losses": 13,
+          "win_rate_pct": 43.4783,
+          "net_r": 1.5,
+          "average_r": 0.065217,
+          "profit_factor": 1.115385,
+          "max_drawdown_r": 4.875,
+          "gross_win_r": 14.5,
+          "gross_loss_r": 13.0
+        },
+        "after": {
+          "fills": 23,
+          "resolved": 23,
+          "open": 0,
+          "wins": 10,
+          "losses": 13,
+          "win_rate_pct": 43.4783,
+          "net_r": 1.5,
+          "average_r": 0.065217,
+          "profit_factor": 1.115385,
+          "max_drawdown_r": 4.875,
+          "gross_win_r": 14.5,
+          "gross_loss_r": 13.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "04": {
+        "before": {
+          "fills": 18,
+          "resolved": 18,
+          "open": 0,
+          "wins": 7,
+          "losses": 11,
+          "win_rate_pct": 38.8889,
+          "net_r": -3.375,
+          "average_r": -0.1875,
+          "profit_factor": 0.693182,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 7.625,
+          "gross_loss_r": 11.0
+        },
+        "after": {
+          "fills": 18,
+          "resolved": 18,
+          "open": 0,
+          "wins": 7,
+          "losses": 11,
+          "win_rate_pct": 38.8889,
+          "net_r": -3.375,
+          "average_r": -0.1875,
+          "profit_factor": 0.693182,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 7.625,
+          "gross_loss_r": 11.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "05": {
+        "before": {
+          "fills": 33,
+          "resolved": 33,
+          "open": 0,
+          "wins": 17,
+          "losses": 16,
+          "win_rate_pct": 51.5152,
+          "net_r": 8.625,
+          "average_r": 0.261364,
+          "profit_factor": 1.539062,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 24.625,
+          "gross_loss_r": 16.0
+        },
+        "after": {
+          "fills": 33,
+          "resolved": 33,
+          "open": 0,
+          "wins": 17,
+          "losses": 16,
+          "win_rate_pct": 51.5152,
+          "net_r": 8.625,
+          "average_r": 0.261364,
+          "profit_factor": 1.539062,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 24.625,
+          "gross_loss_r": 16.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "06": {
+        "before": {
+          "fills": 39,
+          "resolved": 39,
+          "open": 0,
+          "wins": 22,
+          "losses": 17,
+          "win_rate_pct": 56.4103,
+          "net_r": 11.048959,
+          "average_r": 0.283307,
+          "profit_factor": 1.649939,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 28.048959,
+          "gross_loss_r": 17.0
+        },
+        "after": {
+          "fills": 39,
+          "resolved": 39,
+          "open": 0,
+          "wins": 22,
+          "losses": 17,
+          "win_rate_pct": 56.4103,
+          "net_r": 11.048959,
+          "average_r": 0.283307,
+          "profit_factor": 1.649939,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 28.048959,
+          "gross_loss_r": 17.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "07": {
+        "before": {
+          "fills": 36,
+          "resolved": 36,
+          "open": 0,
+          "wins": 16,
+          "losses": 20,
+          "win_rate_pct": 44.4444,
+          "net_r": 1.021887,
+          "average_r": 0.028386,
+          "profit_factor": 1.051094,
+          "max_drawdown_r": 6.875,
+          "gross_win_r": 21.021887,
+          "gross_loss_r": 20.0
+        },
+        "after": {
+          "fills": 36,
+          "resolved": 36,
+          "open": 0,
+          "wins": 16,
+          "losses": 20,
+          "win_rate_pct": 44.4444,
+          "net_r": 1.021887,
+          "average_r": 0.028386,
+          "profit_factor": 1.051094,
+          "max_drawdown_r": 6.875,
+          "gross_win_r": 21.021887,
+          "gross_loss_r": 20.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "08": {
+        "before": {
+          "fills": 38,
+          "resolved": 38,
+          "open": 0,
+          "wins": 13,
+          "losses": 25,
+          "win_rate_pct": 34.2105,
+          "net_r": -6.615927,
+          "average_r": -0.174103,
+          "profit_factor": 0.735363,
+          "max_drawdown_r": 8.115927,
+          "gross_win_r": 18.384073,
+          "gross_loss_r": 25.0
+        },
+        "after": {
+          "fills": 38,
+          "resolved": 38,
+          "open": 0,
+          "wins": 13,
+          "losses": 25,
+          "win_rate_pct": 34.2105,
+          "net_r": -6.615927,
+          "average_r": -0.174103,
+          "profit_factor": 0.735363,
+          "max_drawdown_r": 8.115927,
+          "gross_win_r": 18.384073,
+          "gross_loss_r": 25.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "09": {
+        "before": {
+          "fills": 24,
+          "resolved": 24,
+          "open": 0,
+          "wins": 9,
+          "losses": 15,
+          "win_rate_pct": 37.5,
+          "net_r": -3.375,
+          "average_r": -0.140625,
+          "profit_factor": 0.775,
+          "max_drawdown_r": 9.0,
+          "gross_win_r": 11.625,
+          "gross_loss_r": 15.0
+        },
+        "after": {
+          "fills": 24,
+          "resolved": 24,
+          "open": 0,
+          "wins": 9,
+          "losses": 15,
+          "win_rate_pct": 37.5,
+          "net_r": -3.375,
+          "average_r": -0.140625,
+          "profit_factor": 0.775,
+          "max_drawdown_r": 9.0,
+          "gross_win_r": 11.625,
+          "gross_loss_r": 15.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "10": {
+        "before": {
+          "fills": 17,
+          "resolved": 17,
+          "open": 0,
+          "wins": 6,
+          "losses": 11,
+          "win_rate_pct": 35.2941,
+          "net_r": -3.086761,
+          "average_r": -0.181574,
+          "profit_factor": 0.719385,
+          "max_drawdown_r": 8.0,
+          "gross_win_r": 7.913239,
+          "gross_loss_r": 11.0
+        },
+        "after": {
+          "fills": 17,
+          "resolved": 17,
+          "open": 0,
+          "wins": 6,
+          "losses": 11,
+          "win_rate_pct": 35.2941,
+          "net_r": -3.086761,
+          "average_r": -0.181574,
+          "profit_factor": 0.719385,
+          "max_drawdown_r": 8.0,
+          "gross_win_r": 7.913239,
+          "gross_loss_r": 11.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "11": {
+        "before": {
+          "fills": 19,
+          "resolved": 19,
+          "open": 0,
+          "wins": 5,
+          "losses": 14,
+          "win_rate_pct": 26.3158,
+          "net_r": -6.375,
+          "average_r": -0.335526,
+          "profit_factor": 0.544643,
+          "max_drawdown_r": 10.75,
+          "gross_win_r": 7.625,
+          "gross_loss_r": 14.0
+        },
+        "after": {
+          "fills": 19,
+          "resolved": 19,
+          "open": 0,
+          "wins": 5,
+          "losses": 14,
+          "win_rate_pct": 26.3158,
+          "net_r": -6.375,
+          "average_r": -0.335526,
+          "profit_factor": 0.544643,
+          "max_drawdown_r": 10.75,
+          "gross_win_r": 7.625,
+          "gross_loss_r": 14.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "12": {
+        "before": {
+          "fills": 33,
+          "resolved": 33,
+          "open": 0,
+          "wins": 4,
+          "losses": 29,
+          "win_rate_pct": 12.1212,
+          "net_r": -26.0,
+          "average_r": -0.787879,
+          "profit_factor": 0.103448,
+          "max_drawdown_r": 26.0,
+          "gross_win_r": 3.0,
+          "gross_loss_r": 29.0
+        },
+        "after": {
+          "fills": 33,
+          "resolved": 33,
+          "open": 0,
+          "wins": 4,
+          "losses": 29,
+          "win_rate_pct": 12.1212,
+          "net_r": -26.0,
+          "average_r": -0.787879,
+          "profit_factor": 0.103448,
+          "max_drawdown_r": 26.0,
+          "gross_win_r": 3.0,
+          "gross_loss_r": 29.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "13": {
+        "before": {
+          "fills": 31,
+          "resolved": 31,
+          "open": 0,
+          "wins": 15,
+          "losses": 16,
+          "win_rate_pct": 48.3871,
+          "net_r": 3.375,
+          "average_r": 0.108871,
+          "profit_factor": 1.210938,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 19.375,
+          "gross_loss_r": 16.0
+        },
+        "after": {
+          "fills": 31,
+          "resolved": 31,
+          "open": 0,
+          "wins": 15,
+          "losses": 16,
+          "win_rate_pct": 48.3871,
+          "net_r": 3.375,
+          "average_r": 0.108871,
+          "profit_factor": 1.210938,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 19.375,
+          "gross_loss_r": 16.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "14": {
+        "before": {
+          "fills": 33,
+          "resolved": 33,
+          "open": 0,
+          "wins": 13,
+          "losses": 20,
+          "win_rate_pct": 39.3939,
+          "net_r": -1.70838,
+          "average_r": -0.051769,
+          "profit_factor": 0.914581,
+          "max_drawdown_r": 6.75,
+          "gross_win_r": 18.29162,
+          "gross_loss_r": 20.0
+        },
+        "after": {
+          "fills": 33,
+          "resolved": 33,
+          "open": 0,
+          "wins": 13,
+          "losses": 20,
+          "win_rate_pct": 39.3939,
+          "net_r": -1.70838,
+          "average_r": -0.051769,
+          "profit_factor": 0.914581,
+          "max_drawdown_r": 6.75,
+          "gross_win_r": 18.29162,
+          "gross_loss_r": 20.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "15": {
+        "before": {
+          "fills": 23,
+          "resolved": 23,
+          "open": 0,
+          "wins": 11,
+          "losses": 12,
+          "win_rate_pct": 47.8261,
+          "net_r": 2.283934,
+          "average_r": 0.099301,
+          "profit_factor": 1.190328,
+          "max_drawdown_r": 4.0,
+          "gross_win_r": 14.283934,
+          "gross_loss_r": 12.0
+        },
+        "after": {
+          "fills": 23,
+          "resolved": 23,
+          "open": 0,
+          "wins": 11,
+          "losses": 12,
+          "win_rate_pct": 47.8261,
+          "net_r": 2.283934,
+          "average_r": 0.099301,
+          "profit_factor": 1.190328,
+          "max_drawdown_r": 4.0,
+          "gross_win_r": 14.283934,
+          "gross_loss_r": 12.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "16": {
+        "before": {
+          "fills": 15,
+          "resolved": 15,
+          "open": 0,
+          "wins": 7,
+          "losses": 8,
+          "win_rate_pct": 46.6667,
+          "net_r": -0.375,
+          "average_r": -0.025,
+          "profit_factor": 0.953125,
+          "max_drawdown_r": 6.375,
+          "gross_win_r": 7.625,
+          "gross_loss_r": 8.0
+        },
+        "after": {
+          "fills": 15,
+          "resolved": 15,
+          "open": 0,
+          "wins": 7,
+          "losses": 8,
+          "win_rate_pct": 46.6667,
+          "net_r": -0.375,
+          "average_r": -0.025,
+          "profit_factor": 0.953125,
+          "max_drawdown_r": 6.375,
+          "gross_win_r": 7.625,
+          "gross_loss_r": 8.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "17": {
+        "before": {
+          "fills": 15,
+          "resolved": 15,
+          "open": 0,
+          "wins": 8,
+          "losses": 7,
+          "win_rate_pct": 53.3333,
+          "net_r": 5.830418,
+          "average_r": 0.388695,
+          "profit_factor": 1.832917,
+          "max_drawdown_r": 4.0,
+          "gross_win_r": 12.830418,
+          "gross_loss_r": 7.0
+        },
+        "after": {
+          "fills": 15,
+          "resolved": 15,
+          "open": 0,
+          "wins": 8,
+          "losses": 7,
+          "win_rate_pct": 53.3333,
+          "net_r": 5.830418,
+          "average_r": 0.388695,
+          "profit_factor": 1.832917,
+          "max_drawdown_r": 4.0,
+          "gross_win_r": 12.830418,
+          "gross_loss_r": 7.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "18": {
+        "before": {
+          "fills": 12,
+          "resolved": 12,
+          "open": 0,
+          "wins": 4,
+          "losses": 8,
+          "win_rate_pct": 33.3333,
+          "net_r": -3.25,
+          "average_r": -0.270833,
+          "profit_factor": 0.59375,
+          "max_drawdown_r": 4.375,
+          "gross_win_r": 4.75,
+          "gross_loss_r": 8.0
+        },
+        "after": {
+          "fills": 12,
+          "resolved": 12,
+          "open": 0,
+          "wins": 4,
+          "losses": 8,
+          "win_rate_pct": 33.3333,
+          "net_r": -3.25,
+          "average_r": -0.270833,
+          "profit_factor": 0.59375,
+          "max_drawdown_r": 4.375,
+          "gross_win_r": 4.75,
+          "gross_loss_r": 8.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "19": {
+        "before": {
+          "fills": 15,
+          "resolved": 15,
+          "open": 0,
+          "wins": 3,
+          "losses": 12,
+          "win_rate_pct": 20.0,
+          "net_r": -9.375,
+          "average_r": -0.625,
+          "profit_factor": 0.21875,
+          "max_drawdown_r": 10.0,
+          "gross_win_r": 2.625,
+          "gross_loss_r": 12.0
+        },
+        "after": {
+          "fills": 15,
+          "resolved": 15,
+          "open": 0,
+          "wins": 3,
+          "losses": 12,
+          "win_rate_pct": 20.0,
+          "net_r": -9.375,
+          "average_r": -0.625,
+          "profit_factor": 0.21875,
+          "max_drawdown_r": 10.0,
+          "gross_win_r": 2.625,
+          "gross_loss_r": 12.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "20": {
+        "before": {
+          "fills": 18,
+          "resolved": 18,
+          "open": 0,
+          "wins": 10,
+          "losses": 8,
+          "win_rate_pct": 55.5556,
+          "net_r": 9.172419,
+          "average_r": 0.509579,
+          "profit_factor": 2.146552,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 17.172419,
+          "gross_loss_r": 8.0
+        },
+        "after": {
+          "fills": 18,
+          "resolved": 18,
+          "open": 0,
+          "wins": 10,
+          "losses": 8,
+          "win_rate_pct": 55.5556,
+          "net_r": 9.172419,
+          "average_r": 0.509579,
+          "profit_factor": 2.146552,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 17.172419,
+          "gross_loss_r": 8.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "21": {
+        "before": {
+          "fills": 19,
+          "resolved": 19,
+          "open": 0,
+          "wins": 5,
+          "losses": 14,
+          "win_rate_pct": 26.3158,
+          "net_r": -7.836398,
+          "average_r": -0.412442,
+          "profit_factor": 0.440257,
+          "max_drawdown_r": 9.852442,
+          "gross_win_r": 6.163602,
+          "gross_loss_r": 14.0
+        },
+        "after": {
+          "fills": 19,
+          "resolved": 19,
+          "open": 0,
+          "wins": 5,
+          "losses": 14,
+          "win_rate_pct": 26.3158,
+          "net_r": -7.836398,
+          "average_r": -0.412442,
+          "profit_factor": 0.440257,
+          "max_drawdown_r": 9.852442,
+          "gross_win_r": 6.163602,
+          "gross_loss_r": 14.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "22": {
+        "before": {
+          "fills": 35,
+          "resolved": 35,
+          "open": 0,
+          "wins": 16,
+          "losses": 19,
+          "win_rate_pct": 45.7143,
+          "net_r": 6.201627,
+          "average_r": 0.177189,
+          "profit_factor": 1.326401,
+          "max_drawdown_r": 6.0,
+          "gross_win_r": 25.201627,
+          "gross_loss_r": 19.0
+        },
+        "after": {
+          "fills": 35,
+          "resolved": 35,
+          "open": 0,
+          "wins": 16,
+          "losses": 19,
+          "win_rate_pct": 45.7143,
+          "net_r": 6.201627,
+          "average_r": 0.177189,
+          "profit_factor": 1.326401,
+          "max_drawdown_r": 6.0,
+          "gross_win_r": 25.201627,
+          "gross_loss_r": 19.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "23": {
+        "before": {
+          "fills": 22,
+          "resolved": 22,
+          "open": 0,
+          "wins": 8,
+          "losses": 14,
+          "win_rate_pct": 36.3636,
+          "net_r": -5.0,
+          "average_r": -0.227273,
+          "profit_factor": 0.642857,
+          "max_drawdown_r": 6.0,
+          "gross_win_r": 9.0,
+          "gross_loss_r": 14.0
+        },
+        "after": {
+          "fills": 22,
+          "resolved": 22,
+          "open": 0,
+          "wins": 8,
+          "losses": 14,
+          "win_rate_pct": 36.3636,
+          "net_r": -5.0,
+          "average_r": -0.227273,
+          "profit_factor": 0.642857,
+          "max_drawdown_r": 6.0,
+          "gross_win_r": 9.0,
+          "gross_loss_r": 14.0
+        },
+        "signal_level_delta_net_r": 0.0
+      }
+    },
+    "by_session": {
+      "Asia": {
+        "before": {
+          "fills": 258,
+          "resolved": 258,
+          "open": 0,
+          "wins": 109,
+          "losses": 149,
+          "win_rate_pct": 42.2481,
+          "net_r": -7.663466,
+          "average_r": -0.029703,
+          "profit_factor": 0.948567,
+          "max_drawdown_r": 23.451041,
+          "gross_win_r": 141.336534,
+          "gross_loss_r": 149.0
+        },
+        "after": {
+          "fills": 258,
+          "resolved": 258,
+          "open": 0,
+          "wins": 109,
+          "losses": 149,
+          "win_rate_pct": 42.2481,
+          "net_r": -7.663466,
+          "average_r": -0.029703,
+          "profit_factor": 0.948567,
+          "max_drawdown_r": 23.451041,
+          "gross_win_r": 141.336534,
+          "gross_loss_r": 149.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "Late_rollover": {
+        "before": {
+          "fills": 76,
+          "resolved": 76,
+          "open": 0,
+          "wins": 29,
+          "losses": 47,
+          "win_rate_pct": 38.1579,
+          "net_r": -6.63477,
+          "average_r": -0.0873,
+          "profit_factor": 0.858835,
+          "max_drawdown_r": 12.048373,
+          "gross_win_r": 40.36523,
+          "gross_loss_r": 47.0
+        },
+        "after": {
+          "fills": 76,
+          "resolved": 76,
+          "open": 0,
+          "wins": 29,
+          "losses": 47,
+          "win_rate_pct": 38.1579,
+          "net_r": -6.63477,
+          "average_r": -0.0873,
+          "profit_factor": 0.858835,
+          "max_drawdown_r": 12.048373,
+          "gross_win_r": 40.36523,
+          "gross_loss_r": 47.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "London": {
+        "before": {
+          "fills": 131,
+          "resolved": 131,
+          "open": 0,
+          "wins": 37,
+          "losses": 94,
+          "win_rate_pct": 28.2443,
+          "net_r": -45.452688,
+          "average_r": -0.346967,
+          "profit_factor": 0.516461,
+          "max_drawdown_r": 46.702688,
+          "gross_win_r": 48.547312,
+          "gross_loss_r": 94.0
+        },
+        "after": {
+          "fills": 131,
+          "resolved": 131,
+          "open": 0,
+          "wins": 37,
+          "losses": 94,
+          "win_rate_pct": 28.2443,
+          "net_r": -45.452688,
+          "average_r": -0.346967,
+          "profit_factor": 0.516461,
+          "max_drawdown_r": 46.702688,
+          "gross_win_r": 48.547312,
+          "gross_loss_r": 94.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "New_York": {
+        "before": {
+          "fills": 162,
+          "resolved": 162,
+          "open": 0,
+          "wins": 71,
+          "losses": 91,
+          "win_rate_pct": 43.8272,
+          "net_r": 5.953391,
+          "average_r": 0.036749,
+          "profit_factor": 1.065422,
+          "max_drawdown_r": 15.383324,
+          "gross_win_r": 96.953391,
+          "gross_loss_r": 91.0
+        },
+        "after": {
+          "fills": 162,
+          "resolved": 162,
+          "open": 0,
+          "wins": 71,
+          "losses": 91,
+          "win_rate_pct": 43.8272,
+          "net_r": 5.953391,
+          "average_r": 0.036749,
+          "profit_factor": 1.065422,
+          "max_drawdown_r": 15.383324,
+          "gross_win_r": 96.953391,
+          "gross_loss_r": 91.0
+        },
+        "signal_level_delta_net_r": 0.0
+      }
+    },
+    "by_absolute_spread_points": {
+      "(10,25]": {
+        "before": {
+          "fills": 277,
+          "resolved": 277,
+          "open": 0,
+          "wins": 99,
+          "losses": 178,
+          "win_rate_pct": 35.7401,
+          "net_r": -52.665652,
+          "average_r": -0.190129,
+          "profit_factor": 0.704126,
+          "max_drawdown_r": 58.703891,
+          "gross_win_r": 125.334348,
+          "gross_loss_r": 178.0
+        },
+        "after": {
+          "fills": 277,
+          "resolved": 277,
+          "open": 0,
+          "wins": 99,
+          "losses": 178,
+          "win_rate_pct": 35.7401,
+          "net_r": -52.665652,
+          "average_r": -0.190129,
+          "profit_factor": 0.704126,
+          "max_drawdown_r": 58.703891,
+          "gross_win_r": 125.334348,
+          "gross_loss_r": 178.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "(25,50]": {
+        "before": {
+          "fills": 8,
+          "resolved": 8,
+          "open": 0,
+          "wins": 3,
+          "losses": 5,
+          "win_rate_pct": 37.5,
+          "net_r": -1.477442,
+          "average_r": -0.18468,
+          "profit_factor": 0.704512,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 3.522558,
+          "gross_loss_r": 5.0
+        },
+        "after": {
+          "fills": 8,
+          "resolved": 8,
+          "open": 0,
+          "wins": 3,
+          "losses": 5,
+          "win_rate_pct": 37.5,
+          "net_r": -1.477442,
+          "average_r": -0.18468,
+          "profit_factor": 0.704512,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 3.522558,
+          "gross_loss_r": 5.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "(5,10]": {
+        "before": {
+          "fills": 336,
+          "resolved": 336,
+          "open": 0,
+          "wins": 142,
+          "losses": 194,
+          "win_rate_pct": 42.2619,
+          "net_r": 1.704516,
+          "average_r": 0.005073,
+          "profit_factor": 1.008786,
+          "max_drawdown_r": 25.875,
+          "gross_win_r": 195.704516,
+          "gross_loss_r": 194.0
+        },
+        "after": {
+          "fills": 336,
+          "resolved": 336,
+          "open": 0,
+          "wins": 142,
+          "losses": 194,
+          "win_rate_pct": 42.2619,
+          "net_r": 1.704516,
+          "average_r": 0.005073,
+          "profit_factor": 1.008786,
+          "max_drawdown_r": 25.875,
+          "gross_win_r": 195.704516,
+          "gross_loss_r": 194.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "(50,100]": {
+        "before": {
+          "fills": 4,
+          "resolved": 4,
+          "open": 0,
+          "wins": 1,
+          "losses": 3,
+          "win_rate_pct": 25.0,
+          "net_r": -2.375,
+          "average_r": -0.59375,
+          "profit_factor": 0.208333,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 0.625,
+          "gross_loss_r": 3.0
+        },
+        "after": {
+          "fills": 4,
+          "resolved": 4,
+          "open": 0,
+          "wins": 1,
+          "losses": 3,
+          "win_rate_pct": 25.0,
+          "net_r": -2.375,
+          "average_r": -0.59375,
+          "profit_factor": 0.208333,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 0.625,
+          "gross_loss_r": 3.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      ">100": {
+        "before": {
+          "fills": 2,
+          "resolved": 2,
+          "open": 0,
+          "wins": 1,
+          "losses": 1,
+          "win_rate_pct": 50.0,
+          "net_r": 1.016045,
+          "average_r": 0.508022,
+          "profit_factor": 2.016045,
+          "max_drawdown_r": 1.0,
+          "gross_win_r": 2.016045,
+          "gross_loss_r": 1.0
+        },
+        "after": {
+          "fills": 2,
+          "resolved": 2,
+          "open": 0,
+          "wins": 1,
+          "losses": 1,
+          "win_rate_pct": 50.0,
+          "net_r": 1.016045,
+          "average_r": 0.508022,
+          "profit_factor": 2.016045,
+          "max_drawdown_r": 1.0,
+          "gross_win_r": 2.016045,
+          "gross_loss_r": 1.0
+        },
+        "signal_level_delta_net_r": 0.0
+      }
+    },
+    "by_spread_pct_of_structural_risk": {
+      "0.0-0.1": {
+        "before": {
+          "fills": 158,
+          "resolved": 158,
+          "open": 0,
+          "wins": 67,
+          "losses": 91,
+          "win_rate_pct": 42.4051,
+          "net_r": -6.423454,
+          "average_r": -0.040655,
+          "profit_factor": 0.929413,
+          "max_drawdown_r": 24.201041,
+          "gross_win_r": 84.576546,
+          "gross_loss_r": 91.0
+        },
+        "after": {
+          "fills": 158,
+          "resolved": 158,
+          "open": 0,
+          "wins": 67,
+          "losses": 91,
+          "win_rate_pct": 42.4051,
+          "net_r": -6.423454,
+          "average_r": -0.040655,
+          "profit_factor": 0.929413,
+          "max_drawdown_r": 24.201041,
+          "gross_win_r": 84.576546,
+          "gross_loss_r": 91.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.1-0.2": {
+        "before": {
+          "fills": 277,
+          "resolved": 277,
+          "open": 0,
+          "wins": 123,
+          "losses": 154,
+          "win_rate_pct": 44.4043,
+          "net_r": 9.337319,
+          "average_r": 0.033709,
+          "profit_factor": 1.060632,
+          "max_drawdown_r": 15.600644,
+          "gross_win_r": 163.337319,
+          "gross_loss_r": 154.0
+        },
+        "after": {
+          "fills": 277,
+          "resolved": 277,
+          "open": 0,
+          "wins": 123,
+          "losses": 154,
+          "win_rate_pct": 44.4043,
+          "net_r": 9.337319,
+          "average_r": 0.033709,
+          "profit_factor": 1.060632,
+          "max_drawdown_r": 15.600644,
+          "gross_win_r": 163.337319,
+          "gross_loss_r": 154.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.2-0.3": {
+        "before": {
+          "fills": 103,
+          "resolved": 103,
+          "open": 0,
+          "wins": 35,
+          "losses": 68,
+          "win_rate_pct": 33.9806,
+          "net_r": -16.977442,
+          "average_r": -0.16483,
+          "profit_factor": 0.750332,
+          "max_drawdown_r": 18.852442,
+          "gross_win_r": 51.022558,
+          "gross_loss_r": 68.0
+        },
+        "after": {
+          "fills": 103,
+          "resolved": 103,
+          "open": 0,
+          "wins": 35,
+          "losses": 68,
+          "win_rate_pct": 33.9806,
+          "net_r": -16.977442,
+          "average_r": -0.16483,
+          "profit_factor": 0.750332,
+          "max_drawdown_r": 18.852442,
+          "gross_win_r": 51.022558,
+          "gross_loss_r": 68.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.3-0.4": {
+        "before": {
+          "fills": 41,
+          "resolved": 41,
+          "open": 0,
+          "wins": 10,
+          "losses": 31,
+          "win_rate_pct": 24.3902,
+          "net_r": -18.5,
+          "average_r": -0.45122,
+          "profit_factor": 0.403226,
+          "max_drawdown_r": 21.625,
+          "gross_win_r": 12.5,
+          "gross_loss_r": 31.0
+        },
+        "after": {
+          "fills": 41,
+          "resolved": 41,
+          "open": 0,
+          "wins": 10,
+          "losses": 31,
+          "win_rate_pct": 24.3902,
+          "net_r": -18.5,
+          "average_r": -0.45122,
+          "profit_factor": 0.403226,
+          "max_drawdown_r": 21.625,
+          "gross_win_r": 12.5,
+          "gross_loss_r": 31.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.4-0.5": {
+        "before": {
+          "fills": 17,
+          "resolved": 17,
+          "open": 0,
+          "wins": 4,
+          "losses": 13,
+          "win_rate_pct": 23.5294,
+          "net_r": -7.0,
+          "average_r": -0.411765,
+          "profit_factor": 0.461538,
+          "max_drawdown_r": 10.5,
+          "gross_win_r": 6.0,
+          "gross_loss_r": 13.0
+        },
+        "after": {
+          "fills": 17,
+          "resolved": 17,
+          "open": 0,
+          "wins": 4,
+          "losses": 13,
+          "win_rate_pct": 23.5294,
+          "net_r": -7.0,
+          "average_r": -0.411765,
+          "profit_factor": 0.461538,
+          "max_drawdown_r": 10.5,
+          "gross_win_r": 6.0,
+          "gross_loss_r": 13.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.5-0.6": {
+        "before": {
+          "fills": 13,
+          "resolved": 13,
+          "open": 0,
+          "wins": 3,
+          "losses": 10,
+          "win_rate_pct": 23.0769,
+          "net_r": -4.875,
+          "average_r": -0.375,
+          "profit_factor": 0.5125,
+          "max_drawdown_r": 4.875,
+          "gross_win_r": 5.125,
+          "gross_loss_r": 10.0
+        },
+        "after": {
+          "fills": 13,
+          "resolved": 13,
+          "open": 0,
+          "wins": 3,
+          "losses": 10,
+          "win_rate_pct": 23.0769,
+          "net_r": -4.875,
+          "average_r": -0.375,
+          "profit_factor": 0.5125,
+          "max_drawdown_r": 4.875,
+          "gross_win_r": 5.125,
+          "gross_loss_r": 10.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.6-0.7": {
+        "before": {
+          "fills": 6,
+          "resolved": 6,
+          "open": 0,
+          "wins": 1,
+          "losses": 5,
+          "win_rate_pct": 16.6667,
+          "net_r": -4.375,
+          "average_r": -0.729167,
+          "profit_factor": 0.125,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 0.625,
+          "gross_loss_r": 5.0
+        },
+        "after": {
+          "fills": 6,
+          "resolved": 6,
+          "open": 0,
+          "wins": 1,
+          "losses": 5,
+          "win_rate_pct": 16.6667,
+          "net_r": -4.375,
+          "average_r": -0.729167,
+          "profit_factor": 0.125,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 0.625,
+          "gross_loss_r": 5.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.7-0.8": {
+        "before": {
+          "fills": 3,
+          "resolved": 3,
+          "open": 0,
+          "wins": 0,
+          "losses": 3,
+          "win_rate_pct": 0.0,
+          "net_r": -3.0,
+          "average_r": -1.0,
+          "profit_factor": 0.0,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 0.0,
+          "gross_loss_r": 3.0
+        },
+        "after": {
+          "fills": 3,
+          "resolved": 3,
+          "open": 0,
+          "wins": 0,
+          "losses": 3,
+          "win_rate_pct": 0.0,
+          "net_r": -3.0,
+          "average_r": -1.0,
+          "profit_factor": 0.0,
+          "max_drawdown_r": 3.0,
+          "gross_win_r": 0.0,
+          "gross_loss_r": 3.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.8-0.9": {
+        "before": {
+          "fills": 2,
+          "resolved": 2,
+          "open": 0,
+          "wins": 2,
+          "losses": 0,
+          "win_rate_pct": 100.0,
+          "net_r": 3.391045,
+          "average_r": 1.695522,
+          "profit_factor": null,
+          "max_drawdown_r": 0.0,
+          "gross_win_r": 3.391045,
+          "gross_loss_r": -0.0
+        },
+        "after": {
+          "fills": 2,
+          "resolved": 2,
+          "open": 0,
+          "wins": 2,
+          "losses": 0,
+          "win_rate_pct": 100.0,
+          "net_r": 3.391045,
+          "average_r": 1.695522,
+          "profit_factor": null,
+          "max_drawdown_r": 0.0,
+          "gross_win_r": 3.391045,
+          "gross_loss_r": -0.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "0.9-1.0": {
+        "before": {
+          "fills": 2,
+          "resolved": 2,
+          "open": 0,
+          "wins": 1,
+          "losses": 1,
+          "win_rate_pct": 50.0,
+          "net_r": -0.375,
+          "average_r": -0.1875,
+          "profit_factor": 0.625,
+          "max_drawdown_r": 1.0,
+          "gross_win_r": 0.625,
+          "gross_loss_r": 1.0
+        },
+        "after": {
+          "fills": 2,
+          "resolved": 2,
+          "open": 0,
+          "wins": 1,
+          "losses": 1,
+          "win_rate_pct": 50.0,
+          "net_r": -0.375,
+          "average_r": -0.1875,
+          "profit_factor": 0.625,
+          "max_drawdown_r": 1.0,
+          "gross_win_r": 0.625,
+          "gross_loss_r": 1.0
+        },
+        "signal_level_delta_net_r": 0.0
+      },
+      "1.0-1.0": {
+        "before": {
+          "fills": 5,
+          "resolved": 5,
+          "open": 0,
+          "wins": 0,
+          "losses": 5,
+          "win_rate_pct": 0.0,
+          "net_r": -5.0,
+          "average_r": -1.0,
+          "profit_factor": 0.0,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 0.0,
+          "gross_loss_r": 5.0
+        },
+        "after": {
+          "fills": 5,
+          "resolved": 5,
+          "open": 0,
+          "wins": 0,
+          "losses": 5,
+          "win_rate_pct": 0.0,
+          "net_r": -5.0,
+          "average_r": -1.0,
+          "profit_factor": 0.0,
+          "max_drawdown_r": 5.0,
+          "gross_win_r": 0.0,
+          "gross_loss_r": 5.0
+        },
+        "signal_level_delta_net_r": 0.0
+      }
+    }
+  },
+  "interpretation": [
+    "The candidate gate is chosen only on the earlier chronological training period; the later period is not used for threshold selection.",
+    "Net R is the sum of independent hypothetical replay outcomes. This is not a second portfolio replay: skipping a signal can free a pair/currency/concurrency slot and change later selection.",
+    "Session is a UTC calendar proxy, not a measured liquidity regime. Absolute spread points are descriptive because point scales differ across symbols; spread percentage of structural risk is the more comparable gate.",
+    "P-values compare the selected test result with equal-size random subsets and with the same candidate-selection process trained on permuted training labels. They do not correct for every possible strategy idea outside this declared candidate family.",
+    "The replay uses native H4/M15/M5 closed-prefix causality, next-M5 execution, spread-side pricing, live ladder management, and stop-first same-bar ambiguity."
+  ]
+}

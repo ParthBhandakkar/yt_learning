@@ -1,0 +1,19 @@
+# KronosTest study environment (isolated from the live project).
+# torch is installed separately from the CUDA index:
+#   pip install torch==2.7.0 --index-url https://download.pytorch.org/whl/cu126
+
+# Kronos model requirements (mirrors vendor/Kronos/requirements.txt)
+einops==0.8.1
+huggingface_hub==0.33.1
+safetensors==0.6.2
+tqdm==4.67.1
+
+# data + modelling
+numpy==2.2.6
+pandas==2.2.2
+scikit-learn==1.7.2
+matplotlib==3.9.3
+pyyaml==6.0.2
+
+# MT5 read-only history fetch (Phase 1)
+MetaTrader5==5.0.5735

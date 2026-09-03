@@ -84,7 +84,7 @@ JOBS_LOCK = threading.Lock()
 # ---------------------------------------------------------------------------
 
 PATTERN_FILE = re.compile(r"strategy_(\d+)_.*\.py$")
-PATTERN_CSV = re.compile(r'(?:parser|p)\.add_argument\("(--csv\w*)".*?help="(.*?)"')
+PATTERN_CSV = re.compile(r'(?:parser|p)\.add_argument\("(--csv\w*)".*?help="(.*?)"', re.DOTALL)
 PATTERN_NAME = re.compile(r'"""\s*\n\s*(.*?)\s*\n', re.DOTALL)
 PATTERN_VIDEO = re.compile(r"Video:\s*(https?://\S+)")
 
@@ -121,40 +121,72 @@ def infer_timeframe_hint(arg: str, help_text: str, docstring: str = "") -> str:
     return ""
 
 
+# Strategy scripts may sit at the repo root (legacy flat layout) or under
+# strategies/ (current layout). Search both; first match wins.
+STRATEGY_SEARCH_DIRS = [STRATEGIES_DIR, STRATEGIES_DIR / "strategies"]
+
+
+def strategy_script_path(strategy: dict) -> Path:
+    return STRATEGIES_DIR / strategy.get("path", strategy["file"])
+
+
+def _strategy_env(**overrides: str) -> dict:
+    """Child env for strategy subprocesses.
+
+    Strategy scripts live in strategies/ but import the repo-root `core`
+    package, so the repo root must be importable regardless of script location.
+    """
+    env = {**os.environ, **overrides}
+    root = str(STRATEGIES_DIR)
+    existing = env.get("PYTHONPATH", "")
+    parts = [p for p in existing.split(os.pathsep) if p]
+    if root not in parts:
+        parts.insert(0, root)
+    env["PYTHONPATH"] = os.pathsep.join(parts)
+    return env
+
+
 def discover_strategies() -> list[dict]:
     strategies = []
-    for f in sorted(os.listdir(STRATEGIES_DIR)):
-        m = PATTERN_FILE.match(f)
-        if not m:
+    seen: set[str] = set()
+    for base in STRATEGY_SEARCH_DIRS:
+        if not base.is_dir():
             continue
-        num = int(m.group(1))
-        filepath = STRATEGIES_DIR / f
-        content = filepath.read_text()
+        for f in sorted(os.listdir(base)):
+            m = PATTERN_FILE.match(f)
+            if not m or f in seen:
+                continue
+            seen.add(f)
+            num = int(m.group(1))
+            filepath = base / f
+            content = filepath.read_text(encoding="utf-8")
 
-        name = f"Strategy {num}"
-        doc_match = PATTERN_NAME.search(content)
-        if doc_match:
-            name = doc_match.group(1).strip()
-            name = re.sub(r"^Strategy \d+:\s*", "", name)
+            name = f"Strategy {num}"
+            doc_match = PATTERN_NAME.search(content)
+            if doc_match:
+                name = doc_match.group(1).strip()
+                name = re.sub(r"^Strategy \d+:\s*", "", name)
 
-        csv_args = []
-        for arg, help_text in PATTERN_CSV.findall(content):
-            tf_hint = infer_timeframe_hint(arg, help_text, content)
-            csv_args.append({"arg": arg, "help": help_text, "timeframe": tf_hint})
+            csv_args = []
+            for arg, help_text in PATTERN_CSV.findall(content):
+                tf_hint = infer_timeframe_hint(arg, help_text, content)
+                csv_args.append({"arg": arg, "help": help_text, "timeframe": tf_hint})
 
-        video = ""
-        v_match = PATTERN_VIDEO.search(content)
-        if v_match:
-            video = v_match.group(1)
+            video = ""
+            v_match = PATTERN_VIDEO.search(content)
+            if v_match:
+                video = v_match.group(1)
 
-        strategies.append({
-            "id": f"s{num:02d}",
-            "file": f,
-            "name": name,
-            "num": num,
-            "video": video,
-            "csv_args": csv_args,
-        })
+            strategies.append({
+                "id": f"s{num:02d}",
+                "file": f,
+                "path": str(filepath.relative_to(STRATEGIES_DIR)).replace("\\", "/"),
+                "name": name,
+                "num": num,
+                "video": video,
+                "csv_args": csv_args,
+            })
+    strategies.sort(key=lambda s: s["num"])
     return strategies
 
 
@@ -174,6 +206,64 @@ def get_strategy(sid: str):
     return JSONResponse({"error": "Strategy not found"}, status_code=404)
 
 
+NATIVE_MTF_STRATEGY_IDS = {"s145", "s146", "s147"}
+
+
+def _native_input_specs(strategy: dict) -> dict[str, tuple[str, int]]:
+    """Return native timeframe requirements for strategies that declare them."""
+    if strategy.get("id") not in NATIVE_MTF_STRATEGY_IDS:
+        return {}
+    return {
+        "--csv4h": ("4H", 4 * 60 * 60),
+        "--csv15m": ("15m", 15 * 60),
+        "--csv5m": ("5m", 5 * 60),
+    }
+
+
+def _validate_native_strategy_inputs(strategy: dict, file_map: dict[str, str]) -> None:
+    """Fail before subprocess launch when a native-MTF strategy gets a mislabeled timeframe."""
+    specs = _native_input_specs(strategy)
+    if not specs:
+        return
+    name = str(strategy.get("id", "strategy")).upper()
+    for arg, (label, expected_seconds) in specs.items():
+        path = file_map.get(arg)
+        if not path:
+            raise ValueError(f"{name} requires {arg} with native {label} data")
+        try:
+            candles = load_csv(path)
+        except Exception as exc:
+            raise ValueError(f"{name} could not read {arg} file {Path(path).name}: {exc}") from exc
+        if len(candles) < 2:
+            raise ValueError(f"{name} {arg} file {Path(path).name} has fewer than two candles")
+        differences = [current.timestamp - previous.timestamp
+                       for previous, current in zip(candles, candles[1:])]
+        ordinary = sorted(
+            difference for difference in differences if difference <= expected_seconds * 4
+        )
+        typical = ordinary[len(ordinary) // 2] if ordinary else min(differences)
+        if typical != expected_seconds:
+            hours, remainder = divmod(typical, 3600)
+            minutes = remainder // 60
+            expected_hours, expected_remainder = divmod(expected_seconds, 3600)
+            expected_minutes = expected_remainder // 60
+            raise ValueError(
+                f"{name} input validation failed: {arg} file {Path(path).name} is not native {label}; "
+                f"observed cadence is {typical} seconds ({hours}h{minutes:02d}m), "
+                f"expected {expected_seconds} seconds ({expected_hours}h{expected_minutes:02d}m). "
+                f"Provide actual native 4H/15m/5m CSVs; {name} never resamples."
+            )
+        shorter = next(
+            (difference for difference in differences if difference < expected_seconds),
+            None,
+        )
+        if shorter is not None:
+            raise ValueError(
+                f"{name} input validation failed: {arg} file {Path(path).name} contains a "
+                f"{shorter}-second interval, shorter than its native {label} candle."
+            )
+
+
 # ---------------------------------------------------------------------------
 # Backtest execution
 # ---------------------------------------------------------------------------
@@ -191,12 +281,16 @@ def match_files_to_args(csv_args: list[dict], uploaded: dict[str, str]) -> dict[
     tf_to_arg = {}
     for ca in csv_args:
         a = ca["arg"]
-        for tf in ["daily", "1h", "4h", "5m", "15m", "1m", "gold_5m", "silver_5m", "gold", "silver"]:
+        for tf in sorted(
+            ["daily", "1h", "4h", "5m", "15m", "1m", "gold_5m", "silver_5m", "gold", "silver"],
+            key=len,
+            reverse=True,
+        ):
             if tf in a:
                 tf_to_arg[tf] = a
                 break
 
-    for tf_pattern, arg_name in tf_to_arg.items():
+    for tf_pattern, arg_name in sorted(tf_to_arg.items(), key=lambda item: -len(item[0])):
         for fname, fpath in list(remaining.items()):
             if tf_pattern.replace("_", "") in fname.lower().replace("_", ""):
                 result[arg_name] = fpath
@@ -561,7 +655,7 @@ async def run_backtest_drive(req: DriveBacktestRequest):
             file_id = m.group(1)
 
         ext = ".csv"
-        out_path = job_dir / f"{arg_name.replace('--', '')}_{file_id[:8]}{ext}"
+        out_path = job_dir / f"{sym}_{arg_name.replace('--', '')}_{file_id[:8]}{ext}"
 
         try:
             gdown.download(id=file_id, output=str(out_path), quiet=True)
@@ -699,6 +793,7 @@ def _backtest_job_worker(
                 file_map, max_days, job_dir, prep_progress
             )
 
+        _validate_native_strategy_inputs(strategy, working_map)
         payload = _execute_backtest_job(
             job_id, strategy, working_map, str(job_dir),
             strict_mss_causal=bool(meta.get("strict_mss_causal")),
@@ -744,7 +839,7 @@ def _execute_backtest_job(
     tmpdir: str,
     strict_mss_causal: bool = False,
 ) -> dict:
-    script = STRATEGIES_DIR / strategy["file"]
+    script = strategy_script_path(strategy)
     output_path = os.path.join(tmpdir, "results.json")
     cmd = [sys.executable, str(script)]
 
@@ -760,7 +855,7 @@ def _execute_backtest_job(
         message=f"Running {strategy['name']}...",
     )
 
-    env = {**os.environ, "BT_PROGRESS": "1", "PYTHONUNBUFFERED": "1"}
+    env = _strategy_env(BT_PROGRESS="1", PYTHONUNBUFFERED="1")
     proc = subprocess.Popen(
         cmd,
         stdout=subprocess.PIPE,
@@ -830,7 +925,7 @@ def _execute_backtest_job(
 
 
 def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str, strict_mss_causal: bool = False) -> dict:
-    script = STRATEGIES_DIR / strategy["file"]
+    script = strategy_script_path(strategy)
     output_path = os.path.join(tmpdir, "results.json")
     cmd = [sys.executable, str(script)]
 
@@ -840,7 +935,8 @@ def _execute_backtest(strategy: dict, file_map: dict[str, str], tmpdir: str, str
     _append_strategy_cli_flags(cmd, strategy, strict_mss_causal)
 
     try:
-        result = subprocess.run(cmd, capture_output=True, text=True, timeout=BACKTEST_TIMEOUT_SEC)
+        result = subprocess.run(cmd, capture_output=True, text=True,
+                                timeout=BACKTEST_TIMEOUT_SEC, env=_strategy_env())
         if result.returncode != 0:
             return JSONResponse({
                 "error": f"Backtest failed (exit code {result.returncode})",

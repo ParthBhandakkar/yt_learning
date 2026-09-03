@@ -1,0 +1,235 @@
+{
+  "schema_version": 2,
+  "run_id": "s146-20260820T091500Z",
+  "label": "S146 running extreme s146-20260820T091500Z",
+  "created_utc": "2026-08-20T13:36:50.138113Z",
+  "strategy": "s146",
+  "score_start_utc": "2025-08-20T09:15:00Z",
+  "score_end_utc": "2026-08-20T09:15:00Z",
+  "symbols": [
+    "EURUSD",
+    "GBPUSD",
+    "USDJPY",
+    "USDCHF",
+    "AUDUSD",
+    "NZDUSD",
+    "USDCAD"
+  ],
+  "symbol_count": 7,
+  "include_portfolio_gates": true,
+  "code": {
+    "package": "backtests.s146_running_extreme",
+    "replay": "causal-native-v2"
+  },
+  "raw_root": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\data\\s146_running_extreme\\raw",
+  "raw_manifest": "D:\\WorkZera\\Projects\\strategies\\yt_learning\\data\\s146_running_extreme\\raw\\manifest.json",
+  "execution_model": "next_m5_market_spread_aware_destination_ladder",
+  "causality": "closed native H4/M15/M5; full structure built once and gated by activation/confirmation time",
+  "artifacts": [
+    "manifest.json",
+    "config.json",
+    "events.jsonl",
+    "detector_signals.jsonl",
+    "trades.json",
+    "trades.csv",
+    "summary.json",
+    "rejections.json"
+  ],
+  "assumptions": [
+    "M5 OHLC is bid; long fills use ask and long exits use bid; short fills use bid and short exits use ask",
+    "same-bar ambiguity is stop-first",
+    "newly ratcheted stops become testable on the next M5 bar",
+    "H4 mitigation is known only from closed H4 bars"
+  ],
+  "symbol_stats": {
+    "EURUSD": {
+      "symbol": "EURUSD",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26974,
+          "accepted": 26974
+        },
+        "5m": {
+          "read": 80841,
+          "accepted": 80841
+        }
+      },
+      "zones_h4": 205,
+      "zones_m15": 3289,
+      "precomputed_confirmations": 1789,
+      "detector_signals": 238,
+      "rejections": {
+        "no_destination": 1052,
+        "non_extreme": 420,
+        "reward_risk": 40,
+        "spread_cost": 5
+      }
+    },
+    "GBPUSD": {
+      "symbol": "GBPUSD",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26973,
+          "accepted": 26973
+        },
+        "5m": {
+          "read": 80783,
+          "accepted": 80783
+        }
+      },
+      "zones_h4": 216,
+      "zones_m15": 3308,
+      "precomputed_confirmations": 1773,
+      "detector_signals": 183,
+      "rejections": {
+        "non_extreme": 432,
+        "no_destination": 1081,
+        "reward_risk": 39,
+        "spread_cost": 10
+      }
+    },
+    "USDJPY": {
+      "symbol": "USDJPY",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26974,
+          "accepted": 26974
+        },
+        "5m": {
+          "read": 80793,
+          "accepted": 80793
+        }
+      },
+      "zones_h4": 211,
+      "zones_m15": 3120,
+      "precomputed_confirmations": 1704,
+      "detector_signals": 230,
+      "rejections": {
+        "no_destination": 1044,
+        "reward_risk": 43,
+        "non_extreme": 360,
+        "spread_cost": 4
+      }
+    },
+    "USDCHF": {
+      "symbol": "USDCHF",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26973,
+          "accepted": 26973
+        },
+        "5m": {
+          "read": 80821,
+          "accepted": 80821
+        }
+      },
+      "zones_h4": 224,
+      "zones_m15": 3394,
+      "precomputed_confirmations": 1770,
+      "detector_signals": 247,
+      "rejections": {
+        "no_destination": 1077,
+        "spread_cost": 66,
+        "non_extreme": 375,
+        "reward_risk": 29
+      }
+    },
+    "AUDUSD": {
+      "symbol": "AUDUSD",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26974,
+          "accepted": 26974
+        },
+        "5m": {
+          "read": 80830,
+          "accepted": 80830
+        }
+      },
+      "zones_h4": 211,
+      "zones_m15": 3307,
+      "precomputed_confirmations": 1738,
+      "detector_signals": 216,
+      "rejections": {
+        "no_destination": 1107,
+        "reward_risk": 34,
+        "non_extreme": 350,
+        "spread_cost": 20
+      }
+    },
+    "NZDUSD": {
+      "symbol": "NZDUSD",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26974,
+          "accepted": 26974
+        },
+        "5m": {
+          "read": 80844,
+          "accepted": 80844
+        }
+      },
+      "zones_h4": 211,
+      "zones_m15": 3429,
+      "precomputed_confirmations": 1765,
+      "detector_signals": 253,
+      "rejections": {
+        "no_destination": 1073,
+        "spread_cost": 109,
+        "reward_risk": 47,
+        "non_extreme": 362
+      }
+    },
+    "USDCAD": {
+      "symbol": "USDCAD",
+      "input": {
+        "4h": {
+          "read": 1743,
+          "accepted": 1743
+        },
+        "15m": {
+          "read": 26974,
+          "accepted": 26974
+        },
+        "5m": {
+          "read": 80848,
+          "accepted": 80848
+        }
+      },
+      "zones_h4": 215,
+      "zones_m15": 3424,
+      "precomputed_confirmations": 1765,
+      "detector_signals": 251,
+      "rejections": {
+        "no_destination": 1052,
+        "spread_cost": 39,
+        "non_extreme": 380,
+        "reward_risk": 47
+      }
+    }
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "trades": 1167,
+  "net_r": -148.754599,
+  "win_rate": 0.38132,
+  "average_r": -0.127468,
+  "by_split": {
+    "train": {
+      "trades": 700,
+      "net_r": -134.74838,
+      "win_rate": 0.358571,
+      "average_r": -0.192498
+    },
+    "test": {
+      "trades": 467,
+      "net_r": -14.006219,
+      "win_rate": 0.415418,
+      "average_r": -0.029992
+    }
+  }
+}

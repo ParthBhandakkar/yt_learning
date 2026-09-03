@@ -1,0 +1,4140 @@
+{
+  "schema_version": 2,
+  "created_utc": "2026-08-29T17:02:54.944864Z",
+  "read_only": true,
+  "no_orders_placed": true,
+  "requested_score_range": {
+    "start_utc": "2026-08-18T18:30:00Z",
+    "end_utc": "2026-08-29T16:57:21Z"
+  },
+  "requested_fetch_range": {
+    "start_utc": "2026-08-18T18:30:00Z",
+    "end_utc": "2026-08-29T16:57:21Z"
+  },
+  "warmup_days": 0,
+  "chunk_max_days": 30,
+  "timeframes": [
+    "4h",
+    "15m",
+    "5m"
+  ],
+  "symbols": {
+    "EURUSD": {
+      "canonical_symbol": "EURUSD",
+      "broker_symbol": "EURUSDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "EURUSD/4h/EURUSD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURUSD/15m/EURUSD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURUSD/5m/EURUSD_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "GBPUSD": {
+      "canonical_symbol": "GBPUSD",
+      "broker_symbol": "GBPUSDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "GBPUSD/4h/GBPUSD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "GBPUSD/15m/GBPUSD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "GBPUSD/5m/GBPUSD_5m.csv",
+          "rows": 2326,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2326
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 7,
+            "missing_intervals": 584,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T20:55:00Z",
+                "before_utc": "2026-08-26T21:10:00Z",
+                "seconds": 900,
+                "missing_intervals": 2
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "USDJPY": {
+      "canonical_symbol": "USDJPY",
+      "broker_symbol": "USDJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "USDJPY/4h/USDJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "USDJPY/15m/USDJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "USDJPY/5m/USDJPY_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "USDCHF": {
+      "canonical_symbol": "USDCHF",
+      "broker_symbol": "USDCHFm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "USDCHF/4h/USDCHF_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "USDCHF/15m/USDCHF_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "USDCHF/5m/USDCHF_5m.csv",
+          "rows": 2332,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2332
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 2,
+            "missing_intervals": 578,
+            "details": [
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "AUDUSD": {
+      "canonical_symbol": "AUDUSD",
+      "broker_symbol": "AUDUSDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "AUDUSD/4h/AUDUSD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "AUDUSD/15m/AUDUSD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "AUDUSD/5m/AUDUSD_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "NZDUSD": {
+      "canonical_symbol": "NZDUSD",
+      "broker_symbol": "NZDUSDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "NZDUSD/4h/NZDUSD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "NZDUSD/15m/NZDUSD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "NZDUSD/5m/NZDUSD_5m.csv",
+          "rows": 2332,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2332
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 2,
+            "missing_intervals": 578,
+            "details": [
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "USDCAD": {
+      "canonical_symbol": "USDCAD",
+      "broker_symbol": "USDCADm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "USDCAD/4h/USDCAD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "USDCAD/15m/USDCAD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "USDCAD/5m/USDCAD_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "EURGBP": {
+      "canonical_symbol": "EURGBP",
+      "broker_symbol": "EURGBPm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "EURGBP/4h/EURGBP_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURGBP/15m/EURGBP_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURGBP/5m/EURGBP_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "EURJPY": {
+      "canonical_symbol": "EURJPY",
+      "broker_symbol": "EURJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "EURJPY/4h/EURJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURJPY/15m/EURJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURJPY/5m/EURJPY_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "EURCHF": {
+      "canonical_symbol": "EURCHF",
+      "broker_symbol": "EURCHFm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "EURCHF/4h/EURCHF_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURCHF/15m/EURCHF_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURCHF/5m/EURCHF_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "EURAUD": {
+      "canonical_symbol": "EURAUD",
+      "broker_symbol": "EURAUDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "EURAUD/4h/EURAUD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURAUD/15m/EURAUD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURAUD/5m/EURAUD_5m.csv",
+          "rows": 2330,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2330
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 4,
+            "missing_intervals": 580,
+            "details": [
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "EURCAD": {
+      "canonical_symbol": "EURCAD",
+      "broker_symbol": "EURCADm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "EURCAD/4h/EURCAD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURCAD/15m/EURCAD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURCAD/5m/EURCAD_5m.csv",
+          "rows": 2331,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2331
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 3,
+            "missing_intervals": 579,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "EURNZD": {
+      "canonical_symbol": "EURNZD",
+      "broker_symbol": "EURNZDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "EURNZD/4h/EURNZD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "EURNZD/15m/EURNZD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "EURNZD/5m/EURNZD_5m.csv",
+          "rows": 2331,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2331
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 3,
+            "missing_intervals": 579,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "GBPJPY": {
+      "canonical_symbol": "GBPJPY",
+      "broker_symbol": "GBPJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "GBPJPY/4h/GBPJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "GBPJPY/15m/GBPJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "GBPJPY/5m/GBPJPY_5m.csv",
+          "rows": 2329,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2329
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 4,
+            "missing_intervals": 581,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:10:00Z",
+                "seconds": 900,
+                "missing_intervals": 2
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "GBPCHF": {
+      "canonical_symbol": "GBPCHF",
+      "broker_symbol": "GBPCHFm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "GBPCHF/4h/GBPCHF_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "GBPCHF/15m/GBPCHF_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "GBPCHF/5m/GBPCHF_5m.csv",
+          "rows": 2328,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2328
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 5,
+            "missing_intervals": 582,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T20:55:00Z",
+                "before_utc": "2026-08-26T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:10:00Z",
+                "seconds": 900,
+                "missing_intervals": 2
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "GBPAUD": {
+      "canonical_symbol": "GBPAUD",
+      "broker_symbol": "GBPAUDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "GBPAUD/4h/GBPAUD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "GBPAUD/15m/GBPAUD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "GBPAUD/5m/GBPAUD_5m.csv",
+          "rows": 2327,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2327
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 6,
+            "missing_intervals": 583,
+            "details": [
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:10:00Z",
+                "seconds": 900,
+                "missing_intervals": 2
+              },
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T21:00:00Z",
+                "before_utc": "2026-08-26T21:10:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "GBPCAD": {
+      "canonical_symbol": "GBPCAD",
+      "broker_symbol": "GBPCADm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "GBPCAD/4h/GBPCAD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "GBPCAD/15m/GBPCAD_15m.csv",
+          "rows": 777,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 777
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 193,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:15:00Z",
+                "seconds": 174600,
+                "missing_intervals": 193
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "GBPCAD/5m/GBPCAD_5m.csv",
+          "rows": 2327,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2327
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 4,
+            "missing_intervals": 583,
+            "details": [
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:15:00Z",
+                "seconds": 174000,
+                "missing_intervals": 579
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:10:00Z",
+                "seconds": 900,
+                "missing_intervals": 2
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "GBPNZD": {
+      "canonical_symbol": "GBPNZD",
+      "broker_symbol": "GBPNZDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "GBPNZD/4h/GBPNZD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "GBPNZD/15m/GBPNZD_15m.csv",
+          "rows": 777,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 777
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 193,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:15:00Z",
+                "seconds": 174600,
+                "missing_intervals": 193
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "GBPNZD/5m/GBPNZD_5m.csv",
+          "rows": 2319,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2319
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 10,
+            "missing_intervals": 591,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:20:00Z",
+                "seconds": 174300,
+                "missing_intervals": 580
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T21:05:00Z",
+                "before_utc": "2026-08-25T21:15:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T20:55:00Z",
+                "before_utc": "2026-08-26T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T21:05:00Z",
+                "before_utc": "2026-08-26T21:25:00Z",
+                "seconds": 1200,
+                "missing_intervals": 3
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "AUDJPY": {
+      "canonical_symbol": "AUDJPY",
+      "broker_symbol": "AUDJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "AUDJPY/4h/AUDJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "AUDJPY/15m/AUDJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "AUDJPY/5m/AUDJPY_5m.csv",
+          "rows": 2332,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2332
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 2,
+            "missing_intervals": 578,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "AUDNZD": {
+      "canonical_symbol": "AUDNZD",
+      "broker_symbol": "AUDNZDm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "AUDNZD/4h/AUDNZD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "AUDNZD/15m/AUDNZD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "AUDNZD/5m/AUDNZD_5m.csv",
+          "rows": 2329,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2329
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 4,
+            "missing_intervals": 581,
+            "details": [
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:10:00Z",
+                "seconds": 173700,
+                "missing_intervals": 578
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "AUDCAD": {
+      "canonical_symbol": "AUDCAD",
+      "broker_symbol": "AUDCADm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "AUDCAD/4h/AUDCAD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "AUDCAD/15m/AUDCAD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "AUDCAD/5m/AUDCAD_5m.csv",
+          "rows": 2331,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2331
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 3,
+            "missing_intervals": 579,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "AUDCHF": {
+      "canonical_symbol": "AUDCHF",
+      "broker_symbol": "AUDCHFm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "AUDCHF/4h/AUDCHF_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "AUDCHF/15m/AUDCHF_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "AUDCHF/5m/AUDCHF_5m.csv",
+          "rows": 2329,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2329
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 5,
+            "missing_intervals": 581,
+            "details": [
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "NZDJPY": {
+      "canonical_symbol": "NZDJPY",
+      "broker_symbol": "NZDJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "NZDJPY/4h/NZDJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "NZDJPY/15m/NZDJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "NZDJPY/5m/NZDJPY_5m.csv",
+          "rows": 2331,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2331
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 3,
+            "missing_intervals": 579,
+            "details": [
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "NZDCAD": {
+      "canonical_symbol": "NZDCAD",
+      "broker_symbol": "NZDCADm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "NZDCAD/4h/NZDCAD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "NZDCAD/15m/NZDCAD_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "NZDCAD/5m/NZDCAD_5m.csv",
+          "rows": 2326,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2326
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 8,
+            "missing_intervals": 584,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T20:55:00Z",
+                "before_utc": "2026-08-26T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "NZDCHF": {
+      "canonical_symbol": "NZDCHF",
+      "broker_symbol": "NZDCHFm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "NZDCHF/4h/NZDCHF_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "NZDCHF/15m/NZDCHF_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "NZDCHF/5m/NZDCHF_5m.csv",
+          "rows": 2333,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2333
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 577,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "CADJPY": {
+      "canonical_symbol": "CADJPY",
+      "broker_symbol": "CADJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "CADJPY/4h/CADJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "CADJPY/15m/CADJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "CADJPY/5m/CADJPY_5m.csv",
+          "rows": 2330,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2330
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 3,
+            "missing_intervals": 580,
+            "details": [
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:10:00Z",
+                "seconds": 900,
+                "missing_intervals": 2
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "CADCHF": {
+      "canonical_symbol": "CADCHF",
+      "broker_symbol": "CADCHFm",
+      "point": 1e-05,
+      "digits": 5,
+      "timeframes": {
+        "4h": {
+          "path": "CADCHF/4h/CADCHF_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "CADCHF/15m/CADCHF_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "CADCHF/5m/CADCHF_5m.csv",
+          "rows": 2325,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2325
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 8,
+            "missing_intervals": 585,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:10:00Z",
+                "seconds": 173700,
+                "missing_intervals": 578
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-26T20:55:00Z",
+                "before_utc": "2026-08-26T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "CHFJPY": {
+      "canonical_symbol": "CHFJPY",
+      "broker_symbol": "CHFJPYm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "CHFJPY/4h/CHFJPY_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "CHFJPY/15m/CHFJPY_15m.csv",
+          "rows": 778,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 778
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 192,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T21:00:00Z",
+                "seconds": 173700,
+                "missing_intervals": 192
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "CHFJPY/5m/CHFJPY_5m.csv",
+          "rows": 2332,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2332
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 2,
+            "missing_intervals": 578,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T21:05:00Z",
+                "seconds": 173400,
+                "missing_intervals": 577
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T21:05:00Z",
+                "seconds": 600,
+                "missing_intervals": 1
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    },
+    "XAUUSD": {
+      "canonical_symbol": "XAUUSD",
+      "broker_symbol": "XAUUSDm",
+      "point": 0.001,
+      "digits": 3,
+      "timeframes": {
+        "4h": {
+          "path": "XAUUSD/4h/XAUUSD_4h.csv",
+          "rows": 50,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 50
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T20:00:00Z",
+            "last_bar_open_utc": "2026-08-28T20:00:00Z",
+            "last_bar_close_utc": "2026-08-29T00:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.929680231912036,
+            "score_start_covered": false,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 1,
+            "missing_intervals": 11,
+            "details": [
+              {
+                "after_utc": "2026-08-21T20:00:00Z",
+                "before_utc": "2026-08-23T20:00:00Z",
+                "seconds": 172800,
+                "missing_intervals": 11
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "15m": {
+          "path": "XAUUSD/15m/XAUUSD_15m.csv",
+          "rows": 746,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 746
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:45:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 8,
+            "missing_intervals": 224,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:45:00Z",
+                "before_utc": "2026-08-18T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              },
+              {
+                "after_utc": "2026-08-19T20:45:00Z",
+                "before_utc": "2026-08-19T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              },
+              {
+                "after_utc": "2026-08-20T20:45:00Z",
+                "before_utc": "2026-08-20T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              },
+              {
+                "after_utc": "2026-08-21T20:45:00Z",
+                "before_utc": "2026-08-23T22:00:00Z",
+                "seconds": 177300,
+                "missing_intervals": 196
+              },
+              {
+                "after_utc": "2026-08-24T20:45:00Z",
+                "before_utc": "2026-08-24T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              },
+              {
+                "after_utc": "2026-08-25T20:45:00Z",
+                "before_utc": "2026-08-25T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              },
+              {
+                "after_utc": "2026-08-26T20:45:00Z",
+                "before_utc": "2026-08-26T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              },
+              {
+                "after_utc": "2026-08-27T20:45:00Z",
+                "before_utc": "2026-08-27T22:00:00Z",
+                "seconds": 4500,
+                "missing_intervals": 4
+              }
+            ],
+            "details_truncated": true
+          }
+        },
+        "5m": {
+          "path": "XAUUSD/5m/XAUUSD_5m.csv",
+          "rows": 2238,
+          "chunk_count": 1,
+          "chunk_requests": [
+            {
+              "start_utc": "2026-08-18T18:30:00Z",
+              "end_utc": "2026-08-29T16:57:21Z",
+              "rows_received": 2238
+            }
+          ],
+          "requested_range": {
+            "start_utc": "2026-08-18T18:30:00Z",
+            "end_utc": "2026-08-29T16:57:21Z"
+          },
+          "actual_range": {
+            "first_bar_open_utc": "2026-08-18T18:30:00Z",
+            "last_bar_open_utc": "2026-08-28T20:55:00Z",
+            "last_bar_close_utc": "2026-08-28T21:00:00Z"
+          },
+          "coverage": {
+            "calendar_fraction": 0.9239649845847079,
+            "score_start_covered": true,
+            "score_end_covered": false
+          },
+          "gaps": {
+            "count": 8,
+            "missing_intervals": 672,
+            "details": [
+              {
+                "after_utc": "2026-08-18T20:55:00Z",
+                "before_utc": "2026-08-18T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              },
+              {
+                "after_utc": "2026-08-19T20:55:00Z",
+                "before_utc": "2026-08-19T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              },
+              {
+                "after_utc": "2026-08-20T20:55:00Z",
+                "before_utc": "2026-08-20T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              },
+              {
+                "after_utc": "2026-08-21T20:55:00Z",
+                "before_utc": "2026-08-23T22:00:00Z",
+                "seconds": 176700,
+                "missing_intervals": 588
+              },
+              {
+                "after_utc": "2026-08-24T20:55:00Z",
+                "before_utc": "2026-08-24T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              },
+              {
+                "after_utc": "2026-08-25T20:55:00Z",
+                "before_utc": "2026-08-25T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              },
+              {
+                "after_utc": "2026-08-26T20:55:00Z",
+                "before_utc": "2026-08-26T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              },
+              {
+                "after_utc": "2026-08-27T20:55:00Z",
+                "before_utc": "2026-08-27T22:00:00Z",
+                "seconds": 3900,
+                "missing_intervals": 12
+              }
+            ],
+            "details_truncated": true
+          }
+        }
+      }
+    }
+  }
+}

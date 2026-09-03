@@ -1,0 +1,4903 @@
+{
+  "generated_utc": "2026-08-18T10:33:21.981643+00:00",
+  "methodology": {
+    "actual_start": "next complete 5m bar after MT5 fill",
+    "counterfactual_start": "signal_bar_close using logged trigger",
+    "short_exit_price": "bid OHLC plus bar spread times inferred FX point",
+    "intrabar_policy": "stop first / conservative",
+    "money_risk_policy": "expanded stop simulations divide lots by stop multiplier"
+  },
+  "summary": {
+    "actual_mt5": {
+      "count": 9,
+      "profits": 3,
+      "losses": 6,
+      "net_pnl": 4191.19,
+      "mean_pnl": 465.69,
+      "largest_winner_pnl": 7545.91,
+      "net_pnl_excluding_largest_winner": -3354.72,
+      "unexplained_stop_modifications": 3,
+      "mean_slippage_r_vs_trigger": -0.0823
+    },
+    "execution_failures": {
+      "no_money": 5,
+      "invalid_stops": 2
+    },
+    "signal_paths": {
+      "count": 16,
+      "available_under_24h": 16,
+      "fixed_1_25r_statuses": {
+        "stop_first": 12,
+        "target_first": 4
+      },
+      "fixed_resolved": 16,
+      "fixed_mean_r_resolved_only": -0.4375,
+      "fixed_sum_r_resolved_only": -7.0,
+      "eventual_favourable_passage_counts": {
+        "0.5": 15,
+        "1.0": 9,
+        "1.25": 8,
+        "2.0": 6
+      },
+      "stopped_count": 12,
+      "post_stop_recovery_counts": {
+        "0.0": 9,
+        "0.5": 9,
+        "1.0": 5,
+        "1.25": 4
+      },
+      "expanded_stops": {
+        "1.25": {
+          "statuses": {
+            "stop_first": 12,
+            "target_first": 4
+          },
+          "resolved": 16,
+          "mean_constant_money_r": -0.4375,
+          "sum_constant_money_r": -7.0,
+          "same_original_target": {
+            "statuses": {
+              "stop_first": 12,
+              "target_first": 4
+            },
+            "resolved": 16,
+            "mean_constant_money_r": -0.5,
+            "sum_constant_money_r": -8.0
+          }
+        },
+        "1.5": {
+          "statuses": {
+            "stop_first": 11,
+            "target_first": 4,
+            "censored": 1
+          },
+          "resolved": 15,
+          "mean_constant_money_r": -0.4,
+          "sum_constant_money_r": -6.0,
+          "same_original_target": {
+            "statuses": {
+              "stop_first": 10,
+              "target_first": 5,
+              "censored": 1
+            },
+            "resolved": 15,
+            "mean_constant_money_r": -0.3889,
+            "sum_constant_money_r": -5.8335
+          }
+        }
+      },
+      "ladders": {
+        "current_ladder": {
+          "statuses": {
+            "stop": 16
+          },
+          "resolved": 16,
+          "mean_r": -0.4219,
+          "sum_r": -6.75
+        },
+        "ladder_partial_at_1r": {
+          "statuses": {
+            "stop": 16
+          },
+          "resolved": 16,
+          "mean_r": -0.3594,
+          "sum_r": -5.75
+        }
+      },
+      "delayed_reclaim": {
+        "entries_found": 15,
+        "resolved": 15,
+        "mean_r_resolved_only": -0.55,
+        "statuses": {
+          "entry_found": 15,
+          "no_reclaim_entry": 1
+        }
+      }
+    },
+    "actual_fill_paths": {
+      "count": 9,
+      "available_under_24h": 9,
+      "fixed_1_25r_statuses": {
+        "stop_first": 7,
+        "target_first": 2
+      },
+      "fixed_resolved": 9,
+      "fixed_mean_r_resolved_only": -0.5,
+      "fixed_sum_r_resolved_only": -4.5,
+      "eventual_favourable_passage_counts": {
+        "0.5": 9,
+        "1.0": 6,
+        "1.25": 5,
+        "2.0": 4
+      },
+      "stopped_count": 7,
+      "post_stop_recovery_counts": {
+        "0.0": 5,
+        "0.5": 4,
+        "1.0": 3,
+        "1.25": 3
+      },
+      "expanded_stops": {
+        "1.25": {
+          "statuses": {
+            "stop_first": 7,
+            "target_first": 2
+          },
+          "resolved": 9,
+          "mean_constant_money_r": -0.5,
+          "sum_constant_money_r": -4.5,
+          "same_original_target": {
+            "statuses": {
+              "stop_first": 7,
+              "target_first": 2
+            },
+            "resolved": 9,
+            "mean_constant_money_r": -0.5556,
+            "sum_constant_money_r": -5.0
+          }
+        },
+        "1.5": {
+          "statuses": {
+            "stop_first": 5,
+            "target_first": 3,
+            "censored": 1
+          },
+          "resolved": 8,
+          "mean_constant_money_r": -0.1562,
+          "sum_constant_money_r": -1.25,
+          "same_original_target": {
+            "statuses": {
+              "stop_first": 4,
+              "target_first": 4,
+              "censored": 1
+            },
+            "resolved": 8,
+            "mean_constant_money_r": -0.0833,
+            "sum_constant_money_r": -0.6668
+          }
+        }
+      },
+      "ladders": {
+        "current_ladder": {
+          "statuses": {
+            "stop": 9
+          },
+          "resolved": 9,
+          "mean_r": -0.4444,
+          "sum_r": -4.0
+        },
+        "ladder_partial_at_1r": {
+          "statuses": {
+            "stop": 9
+          },
+          "resolved": 9,
+          "mean_r": -0.3056,
+          "sum_r": -2.75
+        }
+      },
+      "delayed_reclaim": {
+        "entries_found": 8,
+        "resolved": 8,
+        "mean_r_resolved_only": 0.125,
+        "statuses": {
+          "entry_found": 8,
+          "no_reclaim_entry": 1
+        }
+      }
+    },
+    "by_model": {
+      "conservative_mss": {
+        "count": 2,
+        "statuses": {
+          "stop_first": 2
+        },
+        "eventual_1_25r": 1
+      },
+      "aggressive_liquidation": {
+        "count": 14,
+        "statuses": {
+          "stop_first": 10,
+          "target_first": 4
+        },
+        "eventual_1_25r": 7
+      }
+    },
+    "by_stop_basis": {
+      "liquidity_pool_plus_buffer": {
+        "count": 12,
+        "statuses": {
+          "stop_first": 8,
+          "target_first": 4
+        },
+        "eventual_1_25r": 6
+      },
+      "swept_wick_plus_buffer": {
+        "count": 1,
+        "statuses": {
+          "stop_first": 1
+        },
+        "eventual_1_25r": 1
+      },
+      "15m_zone_distal_plus_buffer": {
+        "count": 3,
+        "statuses": {
+          "stop_first": 3
+        },
+        "eventual_1_25r": 1
+      }
+    }
+  },
+  "trades": [
+    {
+      "trade_number": 1,
+      "symbol": "USDCAD",
+      "direction": "long",
+      "model": "conservative_mss",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T11:10:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T11:15:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T11:10:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2171270207,
+        "symbol": "USDCAD",
+        "broker_symbol": "USDCADm",
+        "direction": "long",
+        "entry_time_utc": "2026-08-17T11:15:18+00:00",
+        "entry_price": 1.38609,
+        "entry_lots": 0.19,
+        "entry_deal": 2007167535,
+        "status": "closed",
+        "exit_time_utc": "2026-08-17T12:20:27+00:00",
+        "exit_price": 1.38548,
+        "realized_pnl": -876.19,
+        "exit_reason": "[sl 1.38548]",
+        "initial_order_sl": 1.38548,
+        "initial_order_tp": 1.39479,
+        "deal_count": 2
+      },
+      "actual_result": "Loss",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": 0.071,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T11:15:00+00:00",
+        "entry_price": 1.3860492975,
+        "stop_price": 1.38547572275,
+        "risk_price": 0.0005735747499999722,
+        "destination_price": 1.39479,
+        "destination_r": 15.239,
+        "available_hours": 22.92,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 1.0473,
+            "mae_r": -0.6787,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 1.0473,
+            "mae_r": -2.614,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 2.32,
+            "mae_r": -2.8406,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 2.8954,
+            "mae_r": -2.8406,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 3.0871,
+            "mae_r": -2.8406,
+            "bars": 275
+          },
+          "full": {
+            "mfe_r": 3.0871,
+            "mae_r": -2.8406,
+            "bars": 275
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 4,
+            "bar_open_utc": "2026-08-17T11:35:00+00:00",
+            "minutes": 20,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 6,
+            "bar_open_utc": "2026-08-17T11:45:00+00:00",
+            "minutes": 30,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 45,
+            "bar_open_utc": "2026-08-17T15:00:00+00:00",
+            "minutes": 225,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 48,
+            "bar_open_utc": "2026-08-17T15:15:00+00:00",
+            "minutes": 240,
+            "r_level": 2.0
+          },
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 13,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 65,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 13,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 65
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 3.0871,
+          "recovery": {
+            "0.0": {
+              "bar_index": 29,
+              "bar_open_utc": "2026-08-17T14:50:00+00:00",
+              "minutes": 145,
+              "r_level": 0.0,
+              "minutes_after_stop": 150
+            },
+            "0.5": {
+              "bar_index": 29,
+              "bar_open_utc": "2026-08-17T14:50:00+00:00",
+              "minutes": 145,
+              "r_level": 0.5,
+              "minutes_after_stop": 150
+            },
+            "1.0": {
+              "bar_index": 30,
+              "bar_open_utc": "2026-08-17T14:55:00+00:00",
+              "minutes": 150,
+              "r_level": 1.0,
+              "minutes_after_stop": 155
+            },
+            "1.25": {
+              "bar_index": 31,
+              "bar_open_utc": "2026-08-17T15:00:00+00:00",
+              "minutes": 155,
+              "r_level": 1.25,
+              "minutes_after_stop": 160
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 2.8406,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T15:00:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 14,
+            "bar_open_utc": "2026-08-17T12:25:00+00:00",
+            "minutes": 70,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 14,
+              "bar_open_utc": "2026-08-17T12:25:00+00:00",
+              "minutes": 70,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 15,
+            "bar_open_utc": "2026-08-17T12:30:00+00:00",
+            "minutes": 75,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 15,
+              "bar_open_utc": "2026-08-17T12:30:00+00:00",
+              "minutes": 75,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 1.0473,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 65,
+          "destination_r": 15.239
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 0.5,
+          "partial_done": true,
+          "peak_r": 1.0473,
+          "final_sl_r": 0.0,
+          "bar_open_utc": "2026-08-17T12:00:00+00:00",
+          "minutes": 45,
+          "destination_r": 15.239
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T14:55:00+00:00",
+          "entry_price": 1.38623,
+          "risk_price": 0.0007542772499999906,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 4,
+            "bar_open_utc": "2026-08-17T15:15:00+00:00",
+            "minutes": 20
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T11:20:00+00:00",
+        "entry_price": 1.38609,
+        "stop_price": 1.38547572275,
+        "risk_price": 0.0006142772499999616,
+        "destination_price": 1.39479,
+        "destination_r": 14.163,
+        "available_hours": 22.83,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.9116,
+            "mae_r": -0.7488,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.9116,
+            "mae_r": -2.7186,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 2.1,
+            "mae_r": -2.7186,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 2.6372,
+            "mae_r": -2.7186,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 2.8163,
+            "mae_r": -2.7186,
+            "bars": 274
+          },
+          "full": {
+            "mfe_r": 2.8163,
+            "mae_r": -2.7186,
+            "bars": 274
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 3,
+            "bar_open_utc": "2026-08-17T11:35:00+00:00",
+            "minutes": 15,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 43,
+            "bar_open_utc": "2026-08-17T14:55:00+00:00",
+            "minutes": 215,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 45,
+            "bar_open_utc": "2026-08-17T15:05:00+00:00",
+            "minutes": 225,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 49,
+            "bar_open_utc": "2026-08-17T15:25:00+00:00",
+            "minutes": 245,
+            "r_level": 2.0
+          },
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 12,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 60,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 12,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 60
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 2.8163,
+          "recovery": {
+            "0.0": {
+              "bar_index": 29,
+              "bar_open_utc": "2026-08-17T14:50:00+00:00",
+              "minutes": 145,
+              "r_level": 0.0,
+              "minutes_after_stop": 150
+            },
+            "0.5": {
+              "bar_index": 30,
+              "bar_open_utc": "2026-08-17T14:55:00+00:00",
+              "minutes": 150,
+              "r_level": 0.5,
+              "minutes_after_stop": 155
+            },
+            "1.0": {
+              "bar_index": 30,
+              "bar_open_utc": "2026-08-17T14:55:00+00:00",
+              "minutes": 150,
+              "r_level": 1.0,
+              "minutes_after_stop": 155
+            },
+            "1.25": {
+              "bar_index": 32,
+              "bar_open_utc": "2026-08-17T15:05:00+00:00",
+              "minutes": 160,
+              "r_level": 1.25,
+              "minutes_after_stop": 165
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 2.7186,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T15:05:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 13,
+            "bar_open_utc": "2026-08-17T12:25:00+00:00",
+            "minutes": 65,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 13,
+              "bar_open_utc": "2026-08-17T12:25:00+00:00",
+              "minutes": 65,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 14,
+            "bar_open_utc": "2026-08-17T12:30:00+00:00",
+            "minutes": 70,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 14,
+              "bar_open_utc": "2026-08-17T12:30:00+00:00",
+              "minutes": 70,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.9116,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 60,
+          "destination_r": 14.163
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.9116,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 60,
+          "destination_r": 14.163
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T14:55:00+00:00",
+          "entry_price": 1.38623,
+          "risk_price": 0.0007542772499999906,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 4,
+            "bar_open_utc": "2026-08-17T15:15:00+00:00",
+            "minutes": 20
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 2,
+      "symbol": "GBPUSD",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "swept_wick_plus_buffer",
+      "liquidity_stop": false,
+      "signal_bar_open_utc": "2026-08-17T12:05:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T12:10:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T11:55:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "no_money",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T12:10:00+00:00",
+        "entry_price": 1.3557622075,
+        "stop_price": 1.35626781,
+        "risk_price": 0.0005056025000000908,
+        "destination_price": 1.34952,
+        "destination_r": 12.3461,
+        "available_hours": 22.0,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.7955,
+            "mae_r": -1.479,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 1.3889,
+            "mae_r": -2.3493,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 2.8129,
+            "mae_r": -2.3493,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 4.1974,
+            "mae_r": -2.3493,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 7.441,
+            "mae_r": -2.3493,
+            "bars": 263
+          },
+          "full": {
+            "mfe_r": 7.441,
+            "mae_r": -2.3493,
+            "bars": 263
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 3,
+            "bar_open_utc": "2026-08-17T12:25:00+00:00",
+            "minutes": 15,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 19,
+            "bar_open_utc": "2026-08-17T13:45:00+00:00",
+            "minutes": 95,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 32,
+            "bar_open_utc": "2026-08-17T14:50:00+00:00",
+            "minutes": 160,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 65,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 325,
+            "r_level": 2.0
+          },
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 2,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 10,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 2,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 10
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 7.441,
+          "recovery": {
+            "0.0": {
+              "bar_index": 0,
+              "bar_open_utc": "2026-08-17T12:25:00+00:00",
+              "minutes": 0,
+              "r_level": 0.0,
+              "minutes_after_stop": 5
+            },
+            "0.5": {
+              "bar_index": 0,
+              "bar_open_utc": "2026-08-17T12:25:00+00:00",
+              "minutes": 0,
+              "r_level": 0.5,
+              "minutes_after_stop": 5
+            },
+            "1.0": {
+              "bar_index": 16,
+              "bar_open_utc": "2026-08-17T13:45:00+00:00",
+              "minutes": 80,
+              "r_level": 1.0,
+              "minutes_after_stop": 85
+            },
+            "1.25": {
+              "bar_index": 29,
+              "bar_open_utc": "2026-08-17T14:50:00+00:00",
+              "minutes": 145,
+              "r_level": 1.25,
+              "minutes_after_stop": 150
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 2.3493,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T14:50:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 11,
+            "bar_open_utc": "2026-08-17T13:05:00+00:00",
+            "minutes": 55,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 11,
+              "bar_open_utc": "2026-08-17T13:05:00+00:00",
+              "minutes": 55,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 12,
+            "bar_open_utc": "2026-08-17T13:10:00+00:00",
+            "minutes": 60,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 12,
+              "bar_open_utc": "2026-08-17T13:10:00+00:00",
+              "minutes": 60,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0241,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 10,
+          "destination_r": 12.3461
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0241,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T12:20:00+00:00",
+          "minutes": 10,
+          "destination_r": 12.3461
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T12:30:00+00:00",
+          "entry_price": 1.35563,
+          "risk_price": 0.000637810000000183,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 6,
+            "bar_open_utc": "2026-08-17T13:00:00+00:00",
+            "minutes": 30
+          }
+        }
+      },
+      "actual_fill_path": null
+    },
+    {
+      "trade_number": 3,
+      "symbol": "EURUSD",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T13:10:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T13:15:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T13:15:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2172137197,
+        "symbol": "EURUSD",
+        "broker_symbol": "EURUSDm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T13:15:17+00:00",
+        "entry_price": 1.15951,
+        "entry_lots": 0.17,
+        "entry_deal": 2007998513,
+        "status": "closed",
+        "exit_time_utc": "2026-08-17T15:50:40+00:00",
+        "exit_price": 1.15876,
+        "realized_pnl": 1494.09,
+        "exit_reason": "[sl 1.15876]",
+        "initial_order_sl": 1.16026,
+        "initial_order_tp": 1.15305,
+        "deal_count": 3
+      },
+      "actual_result": "Profit",
+      "management_event_types": [
+        "ladder_stop_moved",
+        "partial_banked"
+      ],
+      "broker_stop_modified_from_initial": true,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": -0.0828,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T13:15:00+00:00",
+        "entry_price": 1.159442024,
+        "stop_price": 1.16026301025,
+        "risk_price": 0.0008209862499999332,
+        "destination_price": 1.15305,
+        "destination_r": 7.7858,
+        "available_hours": 20.92,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.7577,
+            "mae_r": -0.6431,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 1.5007,
+            "mae_r": -0.6553,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 2.8162,
+            "mae_r": -0.6553,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 2.8162,
+            "mae_r": -0.6553,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 3.3277,
+            "mae_r": -0.6553,
+            "bars": 250
+          },
+          "full": {
+            "mfe_r": 3.3277,
+            "mae_r": -0.6553,
+            "bars": 250
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 6,
+            "bar_open_utc": "2026-08-17T13:45:00+00:00",
+            "minutes": 30,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 21,
+            "bar_open_utc": "2026-08-17T15:00:00+00:00",
+            "minutes": 105,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 22,
+            "bar_open_utc": "2026-08-17T15:05:00+00:00",
+            "minutes": 110,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 52,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 260,
+            "r_level": 2.0
+          },
+          "destination": null
+        },
+        "stop_passage": null,
+        "fixed_1_25r": {
+          "status": "target_first",
+          "result_original_r": 1.25,
+          "bar_index": 22,
+          "bar_open_utc": "2026-08-17T15:05:00+00:00",
+          "minutes": 110
+        },
+        "post_stop": null,
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 0.6553,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T15:05:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "target_first",
+            "result_original_r": 1.5625,
+            "bar_index": 52,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 260,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 22,
+              "bar_open_utc": "2026-08-17T15:05:00+00:00",
+              "minutes": 110,
+              "constant_money_result_r": 1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 52,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 260,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 22,
+              "bar_open_utc": "2026-08-17T15:05:00+00:00",
+              "minutes": 110,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": 1.125,
+          "partial_done": true,
+          "peak_r": 1.5007,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-17T15:50:00+00:00",
+          "minutes": 155,
+          "destination_r": 7.7858
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 1.0,
+          "partial_done": true,
+          "peak_r": 1.5007,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-17T15:50:00+00:00",
+          "minutes": 155,
+          "destination_r": 7.7858
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T13:45:00+00:00",
+          "entry_price": 1.15907,
+          "risk_price": 0.0011930102499999595,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 55,
+            "bar_open_utc": "2026-08-17T18:20:00+00:00",
+            "minutes": 275
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T13:20:00+00:00",
+        "entry_price": 1.15951,
+        "stop_price": 1.16026301025,
+        "risk_price": 0.0007530102499999636,
+        "destination_price": 1.15305,
+        "destination_r": 8.5789,
+        "available_hours": 20.83,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.9163,
+            "mae_r": -0.6242,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 1.7264,
+            "mae_r": -0.6242,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 3.1606,
+            "mae_r": -0.6242,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 3.1606,
+            "mae_r": -0.6242,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 3.7184,
+            "mae_r": -0.6242,
+            "bars": 249
+          },
+          "full": {
+            "mfe_r": 3.7184,
+            "mae_r": -0.6242,
+            "bars": 249
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 4,
+            "bar_open_utc": "2026-08-17T13:40:00+00:00",
+            "minutes": 20,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 15,
+            "bar_open_utc": "2026-08-17T14:35:00+00:00",
+            "minutes": 75,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 20,
+            "bar_open_utc": "2026-08-17T15:00:00+00:00",
+            "minutes": 100,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 51,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 255,
+            "r_level": 2.0
+          },
+          "destination": null
+        },
+        "stop_passage": null,
+        "fixed_1_25r": {
+          "status": "target_first",
+          "result_original_r": 1.25,
+          "bar_index": 20,
+          "bar_open_utc": "2026-08-17T15:00:00+00:00",
+          "minutes": 100
+        },
+        "post_stop": null,
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 0.6242,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T15:00:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "target_first",
+            "result_original_r": 1.5625,
+            "bar_index": 23,
+            "bar_open_utc": "2026-08-17T15:15:00+00:00",
+            "minutes": 115,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 20,
+              "bar_open_utc": "2026-08-17T15:00:00+00:00",
+              "minutes": 100,
+              "constant_money_result_r": 1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 51,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 255,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 20,
+              "bar_open_utc": "2026-08-17T15:00:00+00:00",
+              "minutes": 100,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": 1.125,
+          "partial_done": true,
+          "peak_r": 1.7264,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-17T15:50:00+00:00",
+          "minutes": 150,
+          "destination_r": 8.5789
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 1.0,
+          "partial_done": true,
+          "peak_r": 1.7264,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-17T15:50:00+00:00",
+          "minutes": 150,
+          "destination_r": 8.5789
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T13:40:00+00:00",
+          "entry_price": 1.15945,
+          "risk_price": 0.0008130102499999126,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 17,
+            "bar_open_utc": "2026-08-17T15:05:00+00:00",
+            "minutes": 85
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 4,
+      "symbol": "NZDJPY",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T13:40:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T13:45:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T13:10:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2172397555,
+        "symbol": "NZDJPY",
+        "broker_symbol": "NZDJPYm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T13:45:17+00:00",
+        "entry_price": 94.19200000000001,
+        "entry_lots": 0.33,
+        "entry_deal": 2008248484,
+        "status": "closed",
+        "exit_time_utc": "2026-08-18T06:03:19+00:00",
+        "exit_price": 93.837,
+        "realized_pnl": 7545.91,
+        "exit_reason": "[tp 93.83700]",
+        "initial_order_sl": 94.294,
+        "initial_order_tp": 93.837,
+        "deal_count": 2
+      },
+      "actual_result": "Profit",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": 0.0029,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T13:45:00+00:00",
+        "entry_price": 94.19229015,
+        "stop_price": 94.29371445,
+        "risk_price": 0.10142429999999081,
+        "destination_price": 93.837,
+        "destination_r": 3.503,
+        "available_hours": 20.42,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.131,
+            "mae_r": -0.9437,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.6339,
+            "mae_r": -0.9437,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 1.048,
+            "mae_r": -0.9437,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.6395,
+            "mae_r": -0.9437,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 3.8284,
+            "mae_r": -0.9437,
+            "bars": 244
+          },
+          "full": {
+            "mfe_r": 3.8284,
+            "mae_r": -0.9437,
+            "bars": 244
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 13,
+            "bar_open_utc": "2026-08-17T14:50:00+00:00",
+            "minutes": 65,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 46,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 230,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 142,
+            "bar_open_utc": "2026-08-18T01:40:00+00:00",
+            "minutes": 710,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 161,
+            "bar_open_utc": "2026-08-18T03:15:00+00:00",
+            "minutes": 805,
+            "r_level": 2.0
+          },
+          "destination": {
+            "bar_index": 194,
+            "bar_open_utc": "2026-08-18T06:00:00+00:00",
+            "minutes": 970,
+            "r_level": 3.5030081548508005
+          }
+        },
+        "stop_passage": null,
+        "fixed_1_25r": {
+          "status": "target_first",
+          "result_original_r": 1.25,
+          "bar_index": 142,
+          "bar_open_utc": "2026-08-18T01:40:00+00:00",
+          "minutes": 710
+        },
+        "post_stop": null,
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 0.9437,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-18T01:40:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "target_first",
+            "result_original_r": 1.5625,
+            "bar_index": 143,
+            "bar_open_utc": "2026-08-18T01:45:00+00:00",
+            "minutes": 715,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 142,
+              "bar_open_utc": "2026-08-18T01:40:00+00:00",
+              "minutes": 710,
+              "constant_money_result_r": 1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 161,
+            "bar_open_utc": "2026-08-18T03:15:00+00:00",
+            "minutes": 805,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 142,
+              "bar_open_utc": "2026-08-18T01:40:00+00:00",
+              "minutes": 710,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": 1.875,
+          "partial_done": true,
+          "peak_r": 3.2861,
+          "final_sl_r": 2.5,
+          "bar_open_utc": "2026-08-18T04:25:00+00:00",
+          "minutes": 875,
+          "destination_r": 3.503
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 1.75,
+          "partial_done": true,
+          "peak_r": 3.2861,
+          "final_sl_r": 2.5,
+          "bar_open_utc": "2026-08-18T04:25:00+00:00",
+          "minutes": 875,
+          "destination_r": 3.503
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T14:45:00+00:00",
+          "entry_price": 94.182,
+          "risk_price": 0.1117144499999938,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 130,
+            "bar_open_utc": "2026-08-18T01:40:00+00:00",
+            "minutes": 650
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T13:50:00+00:00",
+        "entry_price": 94.19200000000001,
+        "stop_price": 94.29371445,
+        "risk_price": 0.10171444999998869,
+        "destination_price": 93.837,
+        "destination_r": 3.4902,
+        "available_hours": 20.33,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.2949,
+            "mae_r": -0.9438,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.6292,
+            "mae_r": -0.9438,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 1.0421,
+            "mae_r": -0.9438,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.632,
+            "mae_r": -0.9438,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 3.8146,
+            "mae_r": -0.9438,
+            "bars": 243
+          },
+          "full": {
+            "mfe_r": 3.8146,
+            "mae_r": -0.9438,
+            "bars": 243
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 12,
+            "bar_open_utc": "2026-08-17T14:50:00+00:00",
+            "minutes": 60,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 45,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 225,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 141,
+            "bar_open_utc": "2026-08-18T01:40:00+00:00",
+            "minutes": 705,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 160,
+            "bar_open_utc": "2026-08-18T03:15:00+00:00",
+            "minutes": 800,
+            "r_level": 2.0
+          },
+          "destination": {
+            "bar_index": 193,
+            "bar_open_utc": "2026-08-18T06:00:00+00:00",
+            "minutes": 965,
+            "r_level": 3.490162902124953
+          }
+        },
+        "stop_passage": null,
+        "fixed_1_25r": {
+          "status": "target_first",
+          "result_original_r": 1.25,
+          "bar_index": 141,
+          "bar_open_utc": "2026-08-18T01:40:00+00:00",
+          "minutes": 705
+        },
+        "post_stop": null,
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 0.9438,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-18T01:40:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "target_first",
+            "result_original_r": 1.5625,
+            "bar_index": 142,
+            "bar_open_utc": "2026-08-18T01:45:00+00:00",
+            "minutes": 710,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 141,
+              "bar_open_utc": "2026-08-18T01:40:00+00:00",
+              "minutes": 705,
+              "constant_money_result_r": 1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 160,
+            "bar_open_utc": "2026-08-18T03:15:00+00:00",
+            "minutes": 800,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 141,
+              "bar_open_utc": "2026-08-18T01:40:00+00:00",
+              "minutes": 705,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": 1.875,
+          "partial_done": true,
+          "peak_r": 3.2739,
+          "final_sl_r": 2.5,
+          "bar_open_utc": "2026-08-18T04:25:00+00:00",
+          "minutes": 870,
+          "destination_r": 3.4902
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 1.75,
+          "partial_done": true,
+          "peak_r": 3.2739,
+          "final_sl_r": 2.5,
+          "bar_open_utc": "2026-08-18T04:25:00+00:00",
+          "minutes": 870,
+          "destination_r": 3.4902
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T14:45:00+00:00",
+          "entry_price": 94.182,
+          "risk_price": 0.1117144499999938,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 130,
+            "bar_open_utc": "2026-08-18T01:40:00+00:00",
+            "minutes": 650
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 5,
+      "symbol": "AUDUSD",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T14:20:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T14:25:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T14:20:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "no_money",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T14:25:00+00:00",
+        "entry_price": 0.711994396,
+        "stop_price": 0.71266063125,
+        "risk_price": 0.0006662352499999802,
+        "destination_price": 0.70631,
+        "destination_r": 8.5321,
+        "available_hours": 19.75,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 1.4175,
+            "mae_r": -0.4737,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 1.8228,
+            "mae_r": -0.4737,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 2.7684,
+            "mae_r": -0.4737,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 2.7684,
+            "mae_r": -0.4737,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 3.6239,
+            "mae_r": -0.4737,
+            "bars": 237
+          },
+          "full": {
+            "mfe_r": 3.6239,
+            "mae_r": -0.4737,
+            "bars": 237
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 5,
+            "bar_open_utc": "2026-08-17T14:50:00+00:00",
+            "minutes": 25,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 5,
+            "bar_open_utc": "2026-08-17T14:50:00+00:00",
+            "minutes": 25,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 6,
+            "bar_open_utc": "2026-08-17T14:55:00+00:00",
+            "minutes": 30,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 38,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 190,
+            "r_level": 2.0
+          },
+          "destination": null
+        },
+        "stop_passage": null,
+        "fixed_1_25r": {
+          "status": "target_first",
+          "result_original_r": 1.25,
+          "bar_index": 6,
+          "bar_open_utc": "2026-08-17T14:55:00+00:00",
+          "minutes": 30
+        },
+        "post_stop": null,
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 0.4737,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T14:55:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "target_first",
+            "result_original_r": 1.5625,
+            "bar_index": 15,
+            "bar_open_utc": "2026-08-17T15:40:00+00:00",
+            "minutes": 75,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 6,
+              "bar_open_utc": "2026-08-17T14:55:00+00:00",
+              "minutes": 30,
+              "constant_money_result_r": 1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 38,
+            "bar_open_utc": "2026-08-17T17:35:00+00:00",
+            "minutes": 190,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 6,
+              "bar_open_utc": "2026-08-17T14:55:00+00:00",
+              "minutes": 30,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": 1.125,
+          "partial_done": true,
+          "peak_r": 1.8078,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-17T16:15:00+00:00",
+          "minutes": 110,
+          "destination_r": 8.5321
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 1.0,
+          "partial_done": true,
+          "peak_r": 1.8078,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-17T16:15:00+00:00",
+          "minutes": 110,
+          "destination_r": 8.5321
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "no_reclaim_entry"
+        }
+      },
+      "actual_fill_path": null
+    },
+    {
+      "trade_number": 6,
+      "symbol": "GBPAUD",
+      "direction": "long",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T14:55:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T15:00:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T14:35:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2173239070,
+        "symbol": "GBPAUD",
+        "broker_symbol": "GBPAUDm",
+        "direction": "long",
+        "entry_time_utc": "2026-08-17T15:00:19+00:00",
+        "entry_price": 1.9058200000000003,
+        "entry_lots": 0.14,
+        "entry_deal": 2009074451,
+        "status": "closed",
+        "exit_time_utc": "2026-08-17T21:30:27+00:00",
+        "exit_price": 1.90585,
+        "realized_pnl": 30.72,
+        "exit_reason": "[sl 1.90585]",
+        "initial_order_sl": 1.90367,
+        "initial_order_tp": 1.91037,
+        "deal_count": 2
+      },
+      "actual_result": "Profit",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": true,
+      "unexplained_stop_modification": true,
+      "actual_slippage_r_vs_signal_trigger": -0.0116,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T15:00:00+00:00",
+        "entry_price": 1.9058452795,
+        "stop_price": 1.9036748115,
+        "risk_price": 0.002170468000000092,
+        "destination_price": 1.91037,
+        "destination_r": 2.0847,
+        "available_hours": 19.17,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.4629,
+            "mae_r": -0.3296,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.4629,
+            "mae_r": -0.3296,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.4629,
+            "mae_r": -0.3296,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.4629,
+            "mae_r": -0.5922,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 0.7532,
+            "mae_r": -1.3063,
+            "bars": 229
+          },
+          "full": {
+            "mfe_r": 0.7532,
+            "mae_r": -1.3063,
+            "bars": 229
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 169,
+            "bar_open_utc": "2026-08-18T05:10:00+00:00",
+            "minutes": 845,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 222,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1110,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 222,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1110
+        },
+        "post_stop": {
+          "mfe_r_after_stop": -0.735,
+          "recovery": {
+            "0.0": null,
+            "0.5": null,
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 227,
+            "bar_open_utc": "2026-08-18T10:00:00+00:00",
+            "minutes": 1135,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 227,
+              "bar_open_utc": "2026-08-18T10:00:00+00:00",
+              "minutes": 1135,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "censored",
+            "result_original_r": null,
+            "bar_index": null,
+            "bar_open_utc": null,
+            "minutes": null,
+            "constant_money_result_r": null,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "censored",
+              "result_original_r": null,
+              "bar_index": null,
+              "bar_open_utc": null,
+              "minutes": null,
+              "constant_money_result_r": null
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.7532,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1110,
+          "destination_r": 2.0847
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.7532,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1110,
+          "destination_r": 2.0847
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-18T04:25:00+00:00",
+          "entry_price": 1.90612,
+          "risk_price": 0.002445188500000084,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 62,
+            "bar_open_utc": "2026-08-18T09:35:00+00:00",
+            "minutes": 310
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T15:05:00+00:00",
+        "entry_price": 1.9058200000000003,
+        "stop_price": 1.9036748115,
+        "risk_price": 0.002145188500000339,
+        "destination_price": 1.91037,
+        "destination_r": 2.121,
+        "available_hours": 19.08,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.4801,
+            "mae_r": -0.2284,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.4801,
+            "mae_r": -0.2284,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.4801,
+            "mae_r": -0.2284,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.4801,
+            "mae_r": -0.5874,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 0.7738,
+            "mae_r": -1.3099,
+            "bars": 228
+          },
+          "full": {
+            "mfe_r": 0.7738,
+            "mae_r": -1.3099,
+            "bars": 228
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 168,
+            "bar_open_utc": "2026-08-18T05:10:00+00:00",
+            "minutes": 840,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 221,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1105,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 221,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1105
+        },
+        "post_stop": {
+          "mfe_r_after_stop": -0.7319,
+          "recovery": {
+            "0.0": null,
+            "0.5": null,
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 226,
+            "bar_open_utc": "2026-08-18T10:00:00+00:00",
+            "minutes": 1130,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 226,
+              "bar_open_utc": "2026-08-18T10:00:00+00:00",
+              "minutes": 1130,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "censored",
+            "result_original_r": null,
+            "bar_index": null,
+            "bar_open_utc": null,
+            "minutes": null,
+            "constant_money_result_r": null,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "censored",
+              "result_original_r": null,
+              "bar_index": null,
+              "bar_open_utc": null,
+              "minutes": null,
+              "constant_money_result_r": null
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.7738,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1105,
+          "destination_r": 2.121
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.7738,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T09:35:00+00:00",
+          "minutes": 1105,
+          "destination_r": 2.121
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-18T04:25:00+00:00",
+          "entry_price": 1.90612,
+          "risk_price": 0.002445188500000084,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 62,
+            "bar_open_utc": "2026-08-18T09:35:00+00:00",
+            "minutes": 310
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 7,
+      "symbol": "AUDJPY",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T16:50:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T16:55:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T15:30:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2173933675,
+        "symbol": "AUDJPY",
+        "broker_symbol": "AUDJPYm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T16:55:27+00:00",
+        "entry_price": 113.337,
+        "entry_lots": 0.27,
+        "entry_deal": 2009737767,
+        "status": "closed",
+        "exit_time_utc": "2026-08-18T00:30:28+00:00",
+        "exit_price": 113.351,
+        "realized_pnl": -249.62,
+        "exit_reason": "[sl 113.35100]",
+        "initial_order_sl": 113.426,
+        "initial_order_tp": 112.61,
+        "deal_count": 2
+      },
+      "actual_result": "Loss",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": true,
+      "unexplained_stop_modification": true,
+      "actual_slippage_r_vs_signal_trigger": -0.1419,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T16:55:00+00:00",
+        "entry_price": 113.32233335000001,
+        "stop_price": 113.42567100000001,
+        "risk_price": 0.10333765000000028,
+        "destination_price": 112.61,
+        "destination_r": 6.8933,
+        "available_hours": 17.25,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.2645,
+            "mae_r": -0.3645,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.4677,
+            "mae_r": -0.3742,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.5064,
+            "mae_r": -0.3742,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.8064,
+            "mae_r": -1.2064,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 0.8064,
+            "mae_r": -1.5935,
+            "bars": 206
+          },
+          "full": {
+            "mfe_r": 0.8064,
+            "mae_r": -1.5935,
+            "bars": 206
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 59,
+            "bar_open_utc": "2026-08-17T21:55:00+00:00",
+            "minutes": 295,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 138,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 690,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 138,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 690
+        },
+        "post_stop": {
+          "mfe_r_after_stop": -0.0645,
+          "recovery": {
+            "0.0": null,
+            "0.5": null,
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 173,
+            "bar_open_utc": "2026-08-18T07:25:00+00:00",
+            "minutes": 865,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 173,
+              "bar_open_utc": "2026-08-18T07:25:00+00:00",
+              "minutes": 865,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 203,
+            "bar_open_utc": "2026-08-18T09:55:00+00:00",
+            "minutes": 1015,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 203,
+              "bar_open_utc": "2026-08-18T09:55:00+00:00",
+              "minutes": 1015,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.8064,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 690,
+          "destination_r": 6.8933
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.8064,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 690,
+          "destination_r": 6.8933
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-18T03:55:00+00:00",
+          "entry_price": 113.317,
+          "risk_price": 0.10867100000001528,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 7,
+            "bar_open_utc": "2026-08-18T04:30:00+00:00",
+            "minutes": 35
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T17:00:00+00:00",
+        "entry_price": 113.337,
+        "stop_price": 113.42567100000001,
+        "risk_price": 0.08867100000000505,
+        "destination_price": 112.61,
+        "destination_r": 8.1988,
+        "available_hours": 17.17,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.4737,
+            "mae_r": -0.2256,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.7105,
+            "mae_r": -0.2707,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.8684,
+            "mae_r": -0.2707,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.1052,
+            "mae_r": -1.2405,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 1.1052,
+            "mae_r": -1.6916,
+            "bars": 205
+          },
+          "full": {
+            "mfe_r": 1.1052,
+            "mae_r": -1.6916,
+            "bars": 205
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 28,
+            "bar_open_utc": "2026-08-17T19:20:00+00:00",
+            "minutes": 140,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 79,
+            "bar_open_utc": "2026-08-17T23:40:00+00:00",
+            "minutes": 395,
+            "r_level": 1.0
+          },
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 137,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 685,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 137,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 685
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 0.0902,
+          "recovery": {
+            "0.0": {
+              "bar_index": 10,
+              "bar_open_utc": "2026-08-18T05:25:00+00:00",
+              "minutes": 50,
+              "r_level": 0.0,
+              "minutes_after_stop": 55
+            },
+            "0.5": null,
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 170,
+            "bar_open_utc": "2026-08-18T07:15:00+00:00",
+            "minutes": 850,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 170,
+              "bar_open_utc": "2026-08-18T07:15:00+00:00",
+              "minutes": 850,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 202,
+            "bar_open_utc": "2026-08-18T09:55:00+00:00",
+            "minutes": 1010,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 202,
+              "bar_open_utc": "2026-08-18T09:55:00+00:00",
+              "minutes": 1010,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 1.1052,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T04:30:00+00:00",
+          "minutes": 685,
+          "destination_r": 8.1988
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 0.5,
+          "partial_done": true,
+          "peak_r": 1.1052,
+          "final_sl_r": 0.0,
+          "bar_open_utc": "2026-08-18T00:20:00+00:00",
+          "minutes": 435,
+          "destination_r": 8.1988
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-18T03:40:00+00:00",
+          "entry_price": 113.33399999999999,
+          "risk_price": 0.09167100000001938,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 10,
+            "bar_open_utc": "2026-08-18T04:30:00+00:00",
+            "minutes": 50
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 8,
+      "symbol": "CADJPY",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T17:35:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T17:40:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T17:30:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2174206676,
+        "symbol": "CADJPY",
+        "broker_symbol": "CADJPYm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T17:40:16+00:00",
+        "entry_price": 114.965,
+        "entry_lots": 0.27,
+        "entry_deal": 2010002678,
+        "status": "closed",
+        "exit_time_utc": "2026-08-17T18:20:15+00:00",
+        "exit_price": 115.023,
+        "realized_pnl": -1032.93,
+        "exit_reason": "[sl 115.023]",
+        "initial_order_sl": 115.023,
+        "initial_order_tp": 114.622,
+        "deal_count": 2
+      },
+      "actual_result": "Loss",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": -0.1796,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T17:40:00+00:00",
+        "entry_price": 114.95225175,
+        "stop_price": 115.023250875,
+        "risk_price": 0.07099912500000016,
+        "destination_price": 114.622,
+        "destination_r": 4.6515,
+        "available_hours": 16.5,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": -0.1514,
+            "mae_r": -1.3345,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.412,
+            "mae_r": -1.3345,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 1.2007,
+            "mae_r": -1.3345,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.243,
+            "mae_r": -2.5599,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 1.243,
+            "mae_r": -3.6303,
+            "bars": 197
+          },
+          "full": {
+            "mfe_r": 1.243,
+            "mae_r": -3.6303,
+            "bars": 197
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 50,
+            "bar_open_utc": "2026-08-17T21:55:00+00:00",
+            "minutes": 250,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 71,
+            "bar_open_utc": "2026-08-17T23:40:00+00:00",
+            "minutes": 355,
+            "r_level": 1.0
+          },
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 8,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 40,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 8,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 40
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 1.243,
+          "recovery": {
+            "0.0": {
+              "bar_index": 11,
+              "bar_open_utc": "2026-08-17T19:20:00+00:00",
+              "minutes": 55,
+              "r_level": 0.0,
+              "minutes_after_stop": 60
+            },
+            "0.5": {
+              "bar_index": 41,
+              "bar_open_utc": "2026-08-17T21:55:00+00:00",
+              "minutes": 205,
+              "r_level": 0.5,
+              "minutes_after_stop": 210
+            },
+            "1.0": {
+              "bar_index": 62,
+              "bar_open_utc": "2026-08-17T23:40:00+00:00",
+              "minutes": 310,
+              "r_level": 1.0,
+              "minutes_after_stop": 315
+            },
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 9,
+            "bar_open_utc": "2026-08-17T18:25:00+00:00",
+            "minutes": 45,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 9,
+              "bar_open_utc": "2026-08-17T18:25:00+00:00",
+              "minutes": 45,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 124,
+            "bar_open_utc": "2026-08-18T04:05:00+00:00",
+            "minutes": 620,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 124,
+              "bar_open_utc": "2026-08-18T04:05:00+00:00",
+              "minutes": 620,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 40,
+          "destination_r": 4.6515
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 40,
+          "destination_r": 4.6515
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T19:25:00+00:00",
+          "entry_price": 114.945,
+          "risk_price": 0.07825087500000905,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 86,
+            "bar_open_utc": "2026-08-18T02:40:00+00:00",
+            "minutes": 430
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T17:45:00+00:00",
+        "entry_price": 114.965,
+        "stop_price": 115.023250875,
+        "risk_price": 0.058250874999998814,
+        "destination_price": 114.622,
+        "destination_r": 5.8883,
+        "available_hours": 16.42,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.0343,
+            "mae_r": -1.4077,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.721,
+            "mae_r": -1.4077,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 1.7339,
+            "mae_r": -1.4077,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.7339,
+            "mae_r": -2.9012,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 1.7339,
+            "mae_r": -4.2059,
+            "bars": 196
+          },
+          "full": {
+            "mfe_r": 1.7339,
+            "mae_r": -4.2059,
+            "bars": 196
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 21,
+            "bar_open_utc": "2026-08-17T19:30:00+00:00",
+            "minutes": 105,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 49,
+            "bar_open_utc": "2026-08-17T21:55:00+00:00",
+            "minutes": 245,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 68,
+            "bar_open_utc": "2026-08-17T23:30:00+00:00",
+            "minutes": 340,
+            "r_level": 1.25
+          },
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 7,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 35,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 7,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 35
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 1.7339,
+          "recovery": {
+            "0.0": {
+              "bar_index": 10,
+              "bar_open_utc": "2026-08-17T19:15:00+00:00",
+              "minutes": 50,
+              "r_level": 0.0,
+              "minutes_after_stop": 55
+            },
+            "0.5": {
+              "bar_index": 13,
+              "bar_open_utc": "2026-08-17T19:30:00+00:00",
+              "minutes": 65,
+              "r_level": 0.5,
+              "minutes_after_stop": 70
+            },
+            "1.0": {
+              "bar_index": 41,
+              "bar_open_utc": "2026-08-17T21:55:00+00:00",
+              "minutes": 205,
+              "r_level": 1.0,
+              "minutes_after_stop": 210
+            },
+            "1.25": {
+              "bar_index": 60,
+              "bar_open_utc": "2026-08-17T23:30:00+00:00",
+              "minutes": 300,
+              "r_level": 1.25,
+              "minutes_after_stop": 305
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 1.4077,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T23:30:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 8,
+            "bar_open_utc": "2026-08-17T18:25:00+00:00",
+            "minutes": 40,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 8,
+              "bar_open_utc": "2026-08-17T18:25:00+00:00",
+              "minutes": 40,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 122,
+            "bar_open_utc": "2026-08-18T04:00:00+00:00",
+            "minutes": 610,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 68,
+              "bar_open_utc": "2026-08-17T23:30:00+00:00",
+              "minutes": 340,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0343,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 35,
+          "destination_r": 5.8883
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0343,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 35,
+          "destination_r": 5.8883
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T19:20:00+00:00",
+          "entry_price": 114.958,
+          "risk_price": 0.06525087500000382,
+          "outcome": {
+            "status": "target_first",
+            "result_original_r": 1.25,
+            "bar_index": 51,
+            "bar_open_utc": "2026-08-17T23:40:00+00:00",
+            "minutes": 255
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 9,
+      "symbol": "NZDCHF",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T17:50:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T17:55:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T17:45:00+00:00",
+      "manual_result": "Loss",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2174299890,
+        "symbol": "NZDCHF",
+        "broker_symbol": "NZDCHFm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T17:55:26+00:00",
+        "entry_price": 0.47856000000000004,
+        "entry_lots": 0.33,
+        "entry_deal": 2010091813,
+        "status": "closed",
+        "exit_time_utc": "2026-08-17T18:19:26+00:00",
+        "exit_price": 0.47888,
+        "realized_pnl": -1369.69,
+        "exit_reason": "[sl 0.47888]",
+        "initial_order_sl": 0.47888,
+        "initial_order_tp": 0.47649,
+        "deal_count": 2
+      },
+      "actual_result": "Loss",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": -0.0688,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T17:55:00+00:00",
+        "entry_price": 0.478536072,
+        "stop_price": 0.47888394300000003,
+        "risk_price": 0.0003478710000000551,
+        "destination_price": 0.47649,
+        "destination_r": 5.8817,
+        "available_hours": 16.25,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": -0.4137,
+            "mae_r": -1.2474,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.0749,
+            "mae_r": -1.2761,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.2474,
+            "mae_r": -1.2761,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 4.0994,
+            "mae_r": -1.4486,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 5.8817,
+            "mae_r": -1.4486,
+            "bars": 195
+          },
+          "full": {
+            "mfe_r": 5.8817,
+            "mae_r": -1.4486,
+            "bars": 195
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 94,
+            "bar_open_utc": "2026-08-18T01:45:00+00:00",
+            "minutes": 470,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 104,
+            "bar_open_utc": "2026-08-18T02:35:00+00:00",
+            "minutes": 520,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 110,
+            "bar_open_utc": "2026-08-18T03:05:00+00:00",
+            "minutes": 550,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 113,
+            "bar_open_utc": "2026-08-18T03:20:00+00:00",
+            "minutes": 565,
+            "r_level": 2.0
+          },
+          "destination": {
+            "bar_index": 164,
+            "bar_open_utc": "2026-08-18T07:35:00+00:00",
+            "minutes": 820,
+            "r_level": 5.881697525805917
+          }
+        },
+        "stop_passage": {
+          "bar_index": 5,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 25,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 5,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 25
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 5.8817,
+          "recovery": {
+            "0.0": {
+              "bar_index": 26,
+              "bar_open_utc": "2026-08-17T20:35:00+00:00",
+              "minutes": 130,
+              "r_level": 0.0,
+              "minutes_after_stop": 135
+            },
+            "0.5": {
+              "bar_index": 88,
+              "bar_open_utc": "2026-08-18T01:45:00+00:00",
+              "minutes": 440,
+              "r_level": 0.5,
+              "minutes_after_stop": 445
+            },
+            "1.0": {
+              "bar_index": 98,
+              "bar_open_utc": "2026-08-18T02:35:00+00:00",
+              "minutes": 490,
+              "r_level": 1.0,
+              "minutes_after_stop": 495
+            },
+            "1.25": {
+              "bar_index": 104,
+              "bar_open_utc": "2026-08-18T03:05:00+00:00",
+              "minutes": 520,
+              "r_level": 1.25,
+              "minutes_after_stop": 525
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 1.4486,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-18T03:05:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 12,
+            "bar_open_utc": "2026-08-17T18:55:00+00:00",
+            "minutes": 60,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 12,
+              "bar_open_utc": "2026-08-17T18:55:00+00:00",
+              "minutes": 60,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 113,
+            "bar_open_utc": "2026-08-18T03:20:00+00:00",
+            "minutes": 565,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 110,
+              "bar_open_utc": "2026-08-18T03:05:00+00:00",
+              "minutes": 550,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 25,
+          "destination_r": 5.8817
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 25,
+          "destination_r": 5.8817
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T21:00:00+00:00",
+          "entry_price": 0.47855000000000003,
+          "risk_price": 0.0003339430000000032,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 26,
+            "bar_open_utc": "2026-08-17T23:10:00+00:00",
+            "minutes": 130
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T18:00:00+00:00",
+        "entry_price": 0.47856000000000004,
+        "stop_price": 0.47888394300000003,
+        "risk_price": 0.0003239429999999932,
+        "destination_price": 0.47649,
+        "destination_r": 6.39,
+        "available_hours": 16.17,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": -0.5248,
+            "mae_r": -1.2965,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.2161,
+            "mae_r": -1.2965,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.3396,
+            "mae_r": -1.2965,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 4.4761,
+            "mae_r": -1.4817,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 6.39,
+            "mae_r": -1.4817,
+            "bars": 194
+          },
+          "full": {
+            "mfe_r": 6.39,
+            "mae_r": -1.4817,
+            "bars": 194
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 92,
+            "bar_open_utc": "2026-08-18T01:40:00+00:00",
+            "minutes": 460,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 101,
+            "bar_open_utc": "2026-08-18T02:25:00+00:00",
+            "minutes": 505,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 108,
+            "bar_open_utc": "2026-08-18T03:00:00+00:00",
+            "minutes": 540,
+            "r_level": 1.25
+          },
+          "2.0": {
+            "bar_index": 112,
+            "bar_open_utc": "2026-08-18T03:20:00+00:00",
+            "minutes": 560,
+            "r_level": 2.0
+          },
+          "destination": {
+            "bar_index": 163,
+            "bar_open_utc": "2026-08-18T07:35:00+00:00",
+            "minutes": 815,
+            "r_level": 6.390013057852954
+          }
+        },
+        "stop_passage": {
+          "bar_index": 4,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 20,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 4,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 20
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 6.39,
+          "recovery": {
+            "0.0": {
+              "bar_index": 26,
+              "bar_open_utc": "2026-08-17T20:35:00+00:00",
+              "minutes": 130,
+              "r_level": 0.0,
+              "minutes_after_stop": 135
+            },
+            "0.5": {
+              "bar_index": 87,
+              "bar_open_utc": "2026-08-18T01:40:00+00:00",
+              "minutes": 435,
+              "r_level": 0.5,
+              "minutes_after_stop": 440
+            },
+            "1.0": {
+              "bar_index": 96,
+              "bar_open_utc": "2026-08-18T02:25:00+00:00",
+              "minutes": 480,
+              "r_level": 1.0,
+              "minutes_after_stop": 485
+            },
+            "1.25": {
+              "bar_index": 103,
+              "bar_open_utc": "2026-08-18T03:00:00+00:00",
+              "minutes": 515,
+              "r_level": 1.25,
+              "minutes_after_stop": 520
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 1.4817,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-18T03:00:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 10,
+            "bar_open_utc": "2026-08-17T18:50:00+00:00",
+            "minutes": 50,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 10,
+              "bar_open_utc": "2026-08-17T18:50:00+00:00",
+              "minutes": 50,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "target_first",
+            "result_original_r": 1.875,
+            "bar_index": 112,
+            "bar_open_utc": "2026-08-18T03:20:00+00:00",
+            "minutes": 560,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 108,
+              "bar_open_utc": "2026-08-18T03:00:00+00:00",
+              "minutes": 540,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 20,
+          "destination_r": 6.39
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T18:20:00+00:00",
+          "minutes": 20,
+          "destination_r": 6.39
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T20:40:00+00:00",
+          "entry_price": 0.47855,
+          "risk_price": 0.0003339430000000587,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 30,
+            "bar_open_utc": "2026-08-17T23:10:00+00:00",
+            "minutes": 150
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 10,
+      "symbol": "AUDNZD",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "15m_zone_distal_plus_buffer",
+      "liquidity_stop": false,
+      "signal_bar_open_utc": "2026-08-17T18:15:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T18:20:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T17:20:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2174444724,
+        "symbol": "AUDNZD",
+        "broker_symbol": "AUDNZDm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T18:20:22+00:00",
+        "entry_price": 1.2037900000000001,
+        "entry_lots": 0.27,
+        "entry_deal": 2010226838,
+        "status": "closed",
+        "exit_time_utc": "2026-08-17T21:31:29+00:00",
+        "exit_price": 1.20406,
+        "realized_pnl": -453.03,
+        "exit_reason": "[sl 1.20406]",
+        "initial_order_sl": 1.20435,
+        "initial_order_tp": 1.19919,
+        "deal_count": 2
+      },
+      "actual_result": "Loss",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": true,
+      "unexplained_stop_modification": true,
+      "actual_slippage_r_vs_signal_trigger": -0.1252,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T18:20:00+00:00",
+        "entry_price": 1.2037098115,
+        "stop_price": 1.2043502145,
+        "risk_price": 0.0006404030000000116,
+        "destination_price": 1.19919,
+        "destination_r": 7.0578,
+        "available_hours": 15.83,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.0153,
+            "mae_r": -0.5624,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.6868,
+            "mae_r": -0.5937,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.6868,
+            "mae_r": -1.0934,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.6868,
+            "mae_r": -7.8235,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 0.6868,
+            "mae_r": -8.573,
+            "bars": 189
+          },
+          "full": {
+            "mfe_r": 0.6868,
+            "mae_r": -8.573,
+            "bars": 189
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 15,
+            "bar_open_utc": "2026-08-17T19:35:00+00:00",
+            "minutes": 75,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 44,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 220,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 44,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 220
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 0.5619,
+          "recovery": {
+            "0.0": {
+              "bar_index": 12,
+              "bar_open_utc": "2026-08-17T23:10:00+00:00",
+              "minutes": 60,
+              "r_level": 0.0,
+              "minutes_after_stop": 65
+            },
+            "0.5": {
+              "bar_index": 15,
+              "bar_open_utc": "2026-08-17T23:25:00+00:00",
+              "minutes": 75,
+              "r_level": 0.5,
+              "minutes_after_stop": 80
+            },
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 76,
+            "bar_open_utc": "2026-08-18T00:45:00+00:00",
+            "minutes": 380,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 76,
+              "bar_open_utc": "2026-08-18T00:45:00+00:00",
+              "minutes": 380,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 84,
+            "bar_open_utc": "2026-08-18T01:25:00+00:00",
+            "minutes": 420,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 84,
+              "bar_open_utc": "2026-08-18T01:25:00+00:00",
+              "minutes": 420,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.6868,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 220,
+          "destination_r": 7.0578
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.6868,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 220,
+          "destination_r": 7.0578
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T19:30:00+00:00",
+          "entry_price": 1.20368,
+          "risk_price": 0.0006702144999999327,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 30,
+            "bar_open_utc": "2026-08-17T22:05:00+00:00",
+            "minutes": 150
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T18:25:00+00:00",
+        "entry_price": 1.2037900000000001,
+        "stop_price": 1.2043502145,
+        "risk_price": 0.0005602144999998782,
+        "destination_price": 1.19919,
+        "destination_r": 8.2111,
+        "available_hours": 15.75,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.2321,
+            "mae_r": -0.482,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.9282,
+            "mae_r": -0.5355,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.9282,
+            "mae_r": -1.1067,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.9282,
+            "mae_r": -8.8002,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 0.9282,
+            "mae_r": -9.657,
+            "bars": 188
+          },
+          "full": {
+            "mfe_r": 0.9282,
+            "mae_r": -9.657,
+            "bars": 188
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 13,
+            "bar_open_utc": "2026-08-17T19:30:00+00:00",
+            "minutes": 65,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 43,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 215,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 43,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 215
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 0.7854,
+          "recovery": {
+            "0.0": {
+              "bar_index": 7,
+              "bar_open_utc": "2026-08-17T22:45:00+00:00",
+              "minutes": 35,
+              "r_level": 0.0,
+              "minutes_after_stop": 40
+            },
+            "0.5": {
+              "bar_index": 13,
+              "bar_open_utc": "2026-08-17T23:15:00+00:00",
+              "minutes": 65,
+              "r_level": 0.5,
+              "minutes_after_stop": 70
+            },
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 75,
+            "bar_open_utc": "2026-08-18T00:45:00+00:00",
+            "minutes": 375,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 75,
+              "bar_open_utc": "2026-08-18T00:45:00+00:00",
+              "minutes": 375,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 76,
+            "bar_open_utc": "2026-08-18T00:50:00+00:00",
+            "minutes": 380,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 76,
+              "bar_open_utc": "2026-08-18T00:50:00+00:00",
+              "minutes": 380,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.9282,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 215,
+          "destination_r": 8.2111
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.9282,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:05:00+00:00",
+          "minutes": 215,
+          "destination_r": 8.2111
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T20:45:00+00:00",
+          "entry_price": 1.20363,
+          "risk_price": 0.0007202145000000382,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 15,
+            "bar_open_utc": "2026-08-17T22:05:00+00:00",
+            "minutes": 75
+          }
+        }
+      }
+    },
+    {
+      "trade_number": 11,
+      "symbol": "GBPCAD",
+      "direction": "long",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T18:30:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T18:35:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T18:10:00+00:00",
+      "manual_result": "Loss",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "no_money",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T18:35:00+00:00",
+        "entry_price": 1.878393912,
+        "stop_price": 1.8775511177499997,
+        "risk_price": 0.0008427942500002228,
+        "destination_price": 1.8809,
+        "destination_r": 2.9735,
+        "available_hours": 15.58,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.3988,
+            "mae_r": -0.4437,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.9564,
+            "mae_r": -0.4437,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 1.3836,
+            "mae_r": -0.4437,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.6446,
+            "mae_r": -3.1964,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 1.6446,
+            "mae_r": -3.7541,
+            "bars": 186
+          },
+          "full": {
+            "mfe_r": 1.6446,
+            "mae_r": -3.7541,
+            "bars": 186
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 14,
+            "bar_open_utc": "2026-08-17T19:45:00+00:00",
+            "minutes": 70,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 59,
+            "bar_open_utc": "2026-08-17T23:35:00+00:00",
+            "minutes": 295,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 60,
+            "bar_open_utc": "2026-08-17T23:40:00+00:00",
+            "minutes": 300,
+            "r_level": 1.25
+          },
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 103,
+          "bar_open_utc": "2026-08-18T03:15:00+00:00",
+          "minutes": 515,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "target_first",
+          "result_original_r": 1.25,
+          "bar_index": 60,
+          "bar_open_utc": "2026-08-17T23:40:00+00:00",
+          "minutes": 300
+        },
+        "post_stop": null,
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 0.4437,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-17T23:40:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "target_first",
+            "result_original_r": 1.5625,
+            "bar_index": 79,
+            "bar_open_utc": "2026-08-18T01:15:00+00:00",
+            "minutes": 395,
+            "constant_money_result_r": 1.25,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 60,
+              "bar_open_utc": "2026-08-17T23:40:00+00:00",
+              "minutes": 300,
+              "constant_money_result_r": 1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 136,
+            "bar_open_utc": "2026-08-18T06:00:00+00:00",
+            "minutes": 680,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "target_first",
+              "result_original_r": 1.25,
+              "bar_index": 60,
+              "bar_open_utc": "2026-08-17T23:40:00+00:00",
+              "minutes": 300,
+              "constant_money_result_r": 0.8333
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": 1.125,
+          "partial_done": true,
+          "peak_r": 1.6446,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-18T01:20:00+00:00",
+          "minutes": 400,
+          "destination_r": 2.9735
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": 1.0,
+          "partial_done": true,
+          "peak_r": 1.6446,
+          "final_sl_r": 1.0,
+          "bar_open_utc": "2026-08-18T01:20:00+00:00",
+          "minutes": 400,
+          "destination_r": 2.9735
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-18T05:30:00+00:00",
+          "entry_price": 1.87845,
+          "risk_price": 0.0008988822500002325,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 6,
+            "bar_open_utc": "2026-08-18T06:00:00+00:00",
+            "minutes": 30
+          }
+        }
+      },
+      "actual_fill_path": null
+    },
+    {
+      "trade_number": 12,
+      "symbol": "EURAUD",
+      "direction": "long",
+      "model": "aggressive_liquidation",
+      "stop_basis": "15m_zone_distal_plus_buffer",
+      "liquidity_stop": false,
+      "signal_bar_open_utc": "2026-08-17T18:50:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T18:55:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T16:10:00+00:00",
+      "manual_result": "Loss",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "no_money",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T18:55:00+00:00",
+        "entry_price": 1.6293914655000001,
+        "stop_price": 1.6285985660000002,
+        "risk_price": 0.0007928994999999439,
+        "destination_price": 1.63213,
+        "destination_r": 3.4538,
+        "available_hours": 15.25,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.49,
+            "mae_r": -0.2036,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.7927,
+            "mae_r": -0.6324,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.7927,
+            "mae_r": -1.0108,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 1.3981,
+            "mae_r": -1.5405,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 1.3981,
+            "mae_r": -1.5405,
+            "bars": 182
+          },
+          "full": {
+            "mfe_r": 1.3981,
+            "mae_r": -1.5405,
+            "bars": 182
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 13,
+            "bar_open_utc": "2026-08-17T20:00:00+00:00",
+            "minutes": 65,
+            "r_level": 0.5
+          },
+          "1.0": {
+            "bar_index": 121,
+            "bar_open_utc": "2026-08-18T05:05:00+00:00",
+            "minutes": 605,
+            "r_level": 1.0
+          },
+          "1.25": {
+            "bar_index": 122,
+            "bar_open_utc": "2026-08-18T05:10:00+00:00",
+            "minutes": 610,
+            "r_level": 1.25
+          },
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 69,
+          "bar_open_utc": "2026-08-18T00:45:00+00:00",
+          "minutes": 345,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 69,
+          "bar_open_utc": "2026-08-18T00:45:00+00:00",
+          "minutes": 345
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 1.3981,
+          "recovery": {
+            "0.0": {
+              "bar_index": 36,
+              "bar_open_utc": "2026-08-18T03:50:00+00:00",
+              "minutes": 180,
+              "r_level": 0.0,
+              "minutes_after_stop": 185
+            },
+            "0.5": {
+              "bar_index": 47,
+              "bar_open_utc": "2026-08-18T04:45:00+00:00",
+              "minutes": 235,
+              "r_level": 0.5,
+              "minutes_after_stop": 240
+            },
+            "1.0": {
+              "bar_index": 51,
+              "bar_open_utc": "2026-08-18T05:05:00+00:00",
+              "minutes": 255,
+              "r_level": 1.0,
+              "minutes_after_stop": 260
+            },
+            "1.25": {
+              "bar_index": 52,
+              "bar_open_utc": "2026-08-18T05:10:00+00:00",
+              "minutes": 260,
+              "r_level": 1.25,
+              "minutes_after_stop": 265
+            }
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": true,
+          "required_stop_multiple": 1.5405,
+          "same_bar_path_ambiguous": false,
+          "target_bar_open_utc": "2026-08-18T05:10:00+00:00"
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 92,
+            "bar_open_utc": "2026-08-18T02:40:00+00:00",
+            "minutes": 460,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 92,
+              "bar_open_utc": "2026-08-18T02:40:00+00:00",
+              "minutes": 460,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 93,
+            "bar_open_utc": "2026-08-18T02:45:00+00:00",
+            "minutes": 465,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 93,
+              "bar_open_utc": "2026-08-18T02:45:00+00:00",
+              "minutes": 465,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.7927,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:45:00+00:00",
+          "minutes": 345,
+          "destination_r": 3.4538
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.7927,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:45:00+00:00",
+          "minutes": 345,
+          "destination_r": 3.4538
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T22:00:00+00:00",
+          "entry_price": 1.6294300000000002,
+          "risk_price": 0.0008314339999999643,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 33,
+            "bar_open_utc": "2026-08-18T00:45:00+00:00",
+            "minutes": 165
+          }
+        }
+      },
+      "actual_fill_path": null
+    },
+    {
+      "trade_number": 13,
+      "symbol": "USDCAD",
+      "direction": "long",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T21:15:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T21:20:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T21:15:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "no_money",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T21:20:00+00:00",
+        "entry_price": 1.3873293599999998,
+        "stop_price": 1.3866306649999998,
+        "risk_price": 0.0006986950000000824,
+        "destination_price": 1.39479,
+        "destination_r": 10.678,
+        "available_hours": 12.83,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.3301,
+            "mae_r": -0.2853,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.3301,
+            "mae_r": -1.1011,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.3301,
+            "mae_r": -1.1155,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.7022,
+            "mae_r": -1.4589,
+            "bars": 144
+          },
+          "24h": {
+            "mfe_r": 0.7022,
+            "mae_r": -1.7595,
+            "bars": 154
+          },
+          "full": {
+            "mfe_r": 0.7022,
+            "mae_r": -1.7595,
+            "bars": 154
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 83,
+            "bar_open_utc": "2026-08-18T04:15:00+00:00",
+            "minutes": 415,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 33,
+          "bar_open_utc": "2026-08-18T00:05:00+00:00",
+          "minutes": 165,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 33,
+          "bar_open_utc": "2026-08-18T00:05:00+00:00",
+          "minutes": 165
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 0.7022,
+          "recovery": {
+            "0.0": {
+              "bar_index": 4,
+              "bar_open_utc": "2026-08-18T00:30:00+00:00",
+              "minutes": 20,
+              "r_level": 0.0,
+              "minutes_after_stop": 25
+            },
+            "0.5": {
+              "bar_index": 49,
+              "bar_open_utc": "2026-08-18T04:15:00+00:00",
+              "minutes": 245,
+              "r_level": 0.5,
+              "minutes_after_stop": 250
+            },
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 126,
+            "bar_open_utc": "2026-08-18T07:50:00+00:00",
+            "minutes": 630,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 126,
+              "bar_open_utc": "2026-08-18T07:50:00+00:00",
+              "minutes": 630,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 146,
+            "bar_open_utc": "2026-08-18T09:30:00+00:00",
+            "minutes": 730,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 146,
+              "bar_open_utc": "2026-08-18T09:30:00+00:00",
+              "minutes": 730,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.3301,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:05:00+00:00",
+          "minutes": 165,
+          "destination_r": 10.678
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.3301,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:05:00+00:00",
+          "minutes": 165,
+          "destination_r": 10.678
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-18T03:50:00+00:00",
+          "entry_price": 1.38742,
+          "risk_price": 0.0007893350000003352,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 38,
+            "bar_open_utc": "2026-08-18T07:00:00+00:00",
+            "minutes": 190
+          }
+        }
+      },
+      "actual_fill_path": null
+    },
+    {
+      "trade_number": 14,
+      "symbol": "GBPJPY",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "15m_zone_distal_plus_buffer",
+      "liquidity_stop": false,
+      "signal_bar_open_utc": "2026-08-17T22:15:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T22:20:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T22:15:00+00:00",
+      "manual_result": "Loss",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "invalid_stops",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T22:20:00+00:00",
+        "entry_price": 215.93120275,
+        "stop_price": 215.99479920000002,
+        "risk_price": 0.06359645000000569,
+        "destination_price": 215.597,
+        "destination_r": 5.2551,
+        "available_hours": 11.83,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.9152,
+            "mae_r": -1.2862,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.9152,
+            "mae_r": -3.1102,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.9152,
+            "mae_r": -3.1102,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.9152,
+            "mae_r": -4.6826,
+            "bars": 142
+          },
+          "24h": {
+            "mfe_r": 0.9152,
+            "mae_r": -4.6826,
+            "bars": 142
+          },
+          "full": {
+            "mfe_r": 0.9152,
+            "mae_r": -4.6826,
+            "bars": 142
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 8,
+            "bar_open_utc": "2026-08-17T23:00:00+00:00",
+            "minutes": 40,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 0,
+          "bar_open_utc": "2026-08-17T22:20:00+00:00",
+          "minutes": 0,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 0,
+          "bar_open_utc": "2026-08-17T22:20:00+00:00",
+          "minutes": 0
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 0.9152,
+          "recovery": {
+            "0.0": {
+              "bar_index": 3,
+              "bar_open_utc": "2026-08-17T22:40:00+00:00",
+              "minutes": 15,
+              "r_level": 0.0,
+              "minutes_after_stop": 20
+            },
+            "0.5": {
+              "bar_index": 7,
+              "bar_open_utc": "2026-08-17T23:00:00+00:00",
+              "minutes": 35,
+              "r_level": 0.5,
+              "minutes_after_stop": 40
+            },
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 0,
+            "bar_open_utc": "2026-08-17T22:20:00+00:00",
+            "minutes": 0,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 0,
+              "bar_open_utc": "2026-08-17T22:20:00+00:00",
+              "minutes": 0,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 24,
+            "bar_open_utc": "2026-08-18T00:20:00+00:00",
+            "minutes": 120,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 24,
+              "bar_open_utc": "2026-08-18T00:20:00+00:00",
+              "minutes": 120,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:20:00+00:00",
+          "minutes": 0,
+          "destination_r": 5.2551
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:20:00+00:00",
+          "minutes": 0,
+          "destination_r": 5.2551
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T23:05:00+00:00",
+          "entry_price": 215.908,
+          "risk_price": 0.08679920000002994,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 13,
+            "bar_open_utc": "2026-08-18T00:10:00+00:00",
+            "minutes": 65
+          }
+        }
+      },
+      "actual_fill_path": null
+    },
+    {
+      "trade_number": 15,
+      "symbol": "CHFJPY",
+      "direction": "short",
+      "model": "conservative_mss",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T22:15:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T22:20:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T22:05:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "actual_mt5_fill",
+      "execution_failure": null,
+      "mt5_match_method": "inferred_nearest_same_symbol_direction",
+      "mt5": {
+        "position_id": 2175177960,
+        "symbol": "CHFJPY",
+        "broker_symbol": "CHFJPYm",
+        "direction": "short",
+        "entry_time_utc": "2026-08-17T22:20:26+00:00",
+        "entry_price": 196.58,
+        "entry_lots": 0.16,
+        "entry_deal": 2010873665,
+        "status": "closed",
+        "exit_time_utc": "2026-08-18T00:37:36+00:00",
+        "exit_price": 196.665,
+        "realized_pnl": -898.07,
+        "exit_reason": "[sl 196.665]",
+        "initial_order_sl": 196.665,
+        "initial_order_tp": 195.915,
+        "deal_count": 2
+      },
+      "actual_result": "Loss",
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": -0.2047,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T22:20:00+00:00",
+        "entry_price": 196.55817150000001,
+        "stop_price": 196.66483275,
+        "risk_price": 0.1066612499999735,
+        "destination_price": 195.915,
+        "destination_r": 6.03,
+        "available_hours": 11.83,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.3391,
+            "mae_r": -0.5797,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.3391,
+            "mae_r": -1.5078,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.3391,
+            "mae_r": -1.6016,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.3391,
+            "mae_r": -4.3205,
+            "bars": 142
+          },
+          "24h": {
+            "mfe_r": 0.3391,
+            "mae_r": -4.3205,
+            "bars": 142
+          },
+          "full": {
+            "mfe_r": 0.3391,
+            "mae_r": -4.3205,
+            "bars": 142
+          }
+        },
+        "first_passage": {
+          "0.5": null,
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 27,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 135,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 27,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 135
+        },
+        "post_stop": {
+          "mfe_r_after_stop": -0.2609,
+          "recovery": {
+            "0.0": null,
+            "0.5": null,
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 28,
+            "bar_open_utc": "2026-08-18T00:40:00+00:00",
+            "minutes": 140,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 28,
+              "bar_open_utc": "2026-08-18T00:40:00+00:00",
+              "minutes": 140,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 33,
+            "bar_open_utc": "2026-08-18T01:05:00+00:00",
+            "minutes": 165,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 33,
+              "bar_open_utc": "2026-08-18T01:05:00+00:00",
+              "minutes": 165,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.3391,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 135,
+          "destination_r": 6.03
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.3391,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 135,
+          "destination_r": 6.03
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T23:05:00+00:00",
+          "entry_price": 196.558,
+          "risk_price": 0.10683274999999526,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 18,
+            "bar_open_utc": "2026-08-18T00:35:00+00:00",
+            "minutes": 90
+          }
+        }
+      },
+      "actual_fill_path": {
+        "anchor": "actual_fill_next_complete_5m_bar",
+        "start_utc": "2026-08-17T22:25:00+00:00",
+        "entry_price": 196.58,
+        "stop_price": 196.66483275,
+        "risk_price": 0.08483274999997548,
+        "destination_price": 195.915,
+        "destination_r": 7.839,
+        "available_hours": 11.75,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.6837,
+            "mae_r": -0.389,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.6837,
+            "mae_r": -1.6385,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.6837,
+            "mae_r": -2.0865,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.6837,
+            "mae_r": -5.1749,
+            "bars": 141
+          },
+          "24h": {
+            "mfe_r": 0.6837,
+            "mae_r": -5.1749,
+            "bars": 141
+          },
+          "full": {
+            "mfe_r": 0.6837,
+            "mae_r": -5.1749,
+            "bars": 141
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 8,
+            "bar_open_utc": "2026-08-17T23:05:00+00:00",
+            "minutes": 40,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 26,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 130,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 26,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 130
+        },
+        "post_stop": {
+          "mfe_r_after_stop": -0.0707,
+          "recovery": {
+            "0.0": null,
+            "0.5": null,
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 27,
+            "bar_open_utc": "2026-08-18T00:40:00+00:00",
+            "minutes": 135,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 27,
+              "bar_open_utc": "2026-08-18T00:40:00+00:00",
+              "minutes": 135,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 28,
+            "bar_open_utc": "2026-08-18T00:45:00+00:00",
+            "minutes": 140,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 28,
+              "bar_open_utc": "2026-08-18T00:45:00+00:00",
+              "minutes": 140,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.6837,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 130,
+          "destination_r": 7.839
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.6837,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-18T00:35:00+00:00",
+          "minutes": 130,
+          "destination_r": 7.839
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "no_reclaim_entry"
+        }
+      }
+    },
+    {
+      "trade_number": 16,
+      "symbol": "CADJPY",
+      "direction": "short",
+      "model": "aggressive_liquidation",
+      "stop_basis": "liquidity_pool_plus_buffer",
+      "liquidity_stop": true,
+      "signal_bar_open_utc": "2026-08-17T22:20:00+00:00",
+      "signal_bar_close_utc": "2026-08-17T22:25:00+00:00",
+      "alert_bar_close_utc": "2026-08-17T22:10:00+00:00",
+      "manual_result": "Profit",
+      "execution_class": "rejected_counterfactual",
+      "execution_failure": "invalid_stops",
+      "mt5_match_method": null,
+      "mt5": null,
+      "actual_result": null,
+      "management_event_types": [],
+      "broker_stop_modified_from_initial": false,
+      "unexplained_stop_modification": false,
+      "actual_slippage_r_vs_signal_trigger": null,
+      "signal_path": {
+        "anchor": "signal_trigger_counterfactual",
+        "start_utc": "2026-08-17T22:25:00+00:00",
+        "entry_price": 114.8962549,
+        "stop_price": 114.93674655,
+        "risk_price": 0.040491649999992774,
+        "destination_price": 114.742,
+        "destination_r": 3.8095,
+        "available_hours": 11.75,
+        "right_censored_before_24h": true,
+        "excursions": {
+          "1h": {
+            "mfe_r": 0.031,
+            "mae_r": -1.2779,
+            "bars": 12
+          },
+          "3h": {
+            "mfe_r": 0.7966,
+            "mae_r": -2.8338,
+            "bars": 36
+          },
+          "6h": {
+            "mfe_r": 0.7966,
+            "mae_r": -5.5998,
+            "bars": 72
+          },
+          "12h": {
+            "mfe_r": 0.7966,
+            "mae_r": -7.7484,
+            "bars": 141
+          },
+          "24h": {
+            "mfe_r": 0.7966,
+            "mae_r": -7.7484,
+            "bars": 141
+          },
+          "full": {
+            "mfe_r": 0.7966,
+            "mae_r": -7.7484,
+            "bars": 141
+          }
+        },
+        "first_passage": {
+          "0.5": {
+            "bar_index": 15,
+            "bar_open_utc": "2026-08-17T23:40:00+00:00",
+            "minutes": 75,
+            "r_level": 0.5
+          },
+          "1.0": null,
+          "1.25": null,
+          "2.0": null,
+          "destination": null
+        },
+        "stop_passage": {
+          "bar_index": 0,
+          "bar_open_utc": "2026-08-17T22:25:00+00:00",
+          "minutes": 0,
+          "r_level": -1.0
+        },
+        "fixed_1_25r": {
+          "status": "stop_first",
+          "result_original_r": -1.0,
+          "bar_index": 0,
+          "bar_open_utc": "2026-08-17T22:25:00+00:00",
+          "minutes": 0
+        },
+        "post_stop": {
+          "mfe_r_after_stop": 0.7966,
+          "recovery": {
+            "0.0": {
+              "bar_index": 7,
+              "bar_open_utc": "2026-08-17T23:05:00+00:00",
+              "minutes": 35,
+              "r_level": 0.0,
+              "minutes_after_stop": 40
+            },
+            "0.5": {
+              "bar_index": 14,
+              "bar_open_utc": "2026-08-17T23:40:00+00:00",
+              "minutes": 70,
+              "r_level": 0.5,
+              "minutes_after_stop": 75
+            },
+            "1.0": null,
+            "1.25": null
+          }
+        },
+        "required_stop_to_1_25r": {
+          "target_reached": false,
+          "required_stop_multiple": null,
+          "same_bar_path_ambiguous": false
+        },
+        "expanded_stop_constant_money_risk": {
+          "1.25": {
+            "status": "stop_first",
+            "result_original_r": -1.25,
+            "bar_index": 3,
+            "bar_open_utc": "2026-08-17T22:40:00+00:00",
+            "minutes": 15,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.8,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.25,
+              "bar_index": 3,
+              "bar_open_utc": "2026-08-17T22:40:00+00:00",
+              "minutes": 15,
+              "constant_money_result_r": -1.0
+            }
+          },
+          "1.5": {
+            "status": "stop_first",
+            "result_original_r": -1.5,
+            "bar_index": 25,
+            "bar_open_utc": "2026-08-18T00:30:00+00:00",
+            "minutes": 125,
+            "constant_money_result_r": -1.0,
+            "lot_fraction_vs_current": 0.6667,
+            "same_original_target": {
+              "status": "stop_first",
+              "result_original_r": -1.5,
+              "bar_index": 25,
+              "bar_open_utc": "2026-08-18T00:30:00+00:00",
+              "minutes": 125,
+              "constant_money_result_r": -1.0
+            }
+          }
+        },
+        "current_ladder": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:25:00+00:00",
+          "minutes": 0,
+          "destination_r": 3.8095
+        },
+        "ladder_partial_at_1r": {
+          "status": "stop",
+          "result_r": -1.0,
+          "partial_done": false,
+          "peak_r": 0.0,
+          "final_sl_r": null,
+          "bar_open_utc": "2026-08-17T22:25:00+00:00",
+          "minutes": 0,
+          "destination_r": 3.8095
+        },
+        "delayed_reclaim_after_minus_0_5r": {
+          "status": "entry_found",
+          "entry_bar_open_utc": "2026-08-17T23:35:00+00:00",
+          "entry_price": 114.884,
+          "risk_price": 0.05274654999999484,
+          "outcome": {
+            "status": "stop_first",
+            "result_original_r": -1.0,
+            "bar_index": 9,
+            "bar_open_utc": "2026-08-18T00:20:00+00:00",
+            "minutes": 45
+          }
+        }
+      },
+      "actual_fill_path": null
+    }
+  ]
+}

@@ -9,6 +9,10 @@ dies. This manager enforces the rules the broker cannot:
     breakeven, then ratchet the stop behind each S146_TRAIL_STEP_R rung reached.
     MT5 cannot hold a partial-volume take profit, so the partial has to be a
     market close driven from here.
+  * the money lock: a cash floor that is independent of R. Once floating profit
+    reaches S146_MONEY_LOCK_TRIGGER_MULT x the margin committed to the trade,
+    close just enough volume to realise S146_MONEY_LOCK_SECURE_MULT x that
+    margin and let the R ladder carry the remainder. Fires once per position.
   * the hard holding limit (the draw toward a 4H zone has no deadline of its own)
   * cancelling a stop order that never triggered within its validity window
   * cancelling a stop order whose 4H destination got mitigated before the fill,
@@ -457,6 +461,16 @@ class TradeManagerS146:
         changed = peak_r > float(ladder.get("peak_r") or 0.0)
         ladder["peak_r"] = round(peak_r, 4)
 
+        # Money lock runs before the R rungs and is deliberately independent of
+        # them. When it closes volume the loop stops here so the next poll works
+        # from the broker's refreshed volume rather than this stale snapshot.
+        money_lock = self._money_lock(position, signal, ladder, entry_price, long_side)
+        if money_lock == "closed":
+            self.save()
+            return
+        if money_lock == "state":
+            changed = True
+
         if peak_r >= CONFIG.s146_partial_at_r and not ladder.get("partial_done"):
             if self._bank_partial(position, signal, ladder, peak_r):
                 changed = True
@@ -470,6 +484,147 @@ class TradeManagerS146:
 
         if changed:
             self.save()
+
+    def _margin_basis(self, position, ladder: dict, entry_price: float) -> float:
+        """Margin committed to this position, snapshotted once at full volume.
+
+        Snapshotting matters: a later partial close shrinks the position, and a
+        basis recomputed from the smaller volume would silently lower the money
+        lock's own trigger. Falls back to the configured per-trade margin budget
+        when MT5 cannot price the margin.
+        """
+        cached = ladder.get("margin_basis")
+        if cached:
+            return float(cached)
+        basis = 0.0
+        source = "config_margin_per_trade"
+        order_type = (mt5.ORDER_TYPE_BUY if position.type == mt5.POSITION_TYPE_BUY
+                      else mt5.ORDER_TYPE_SELL)
+        try:
+            value = mt5.order_calc_margin(
+                order_type, position.symbol, float(position.volume), float(entry_price))
+            if value and float(value) > 0:
+                basis = float(value)
+                source = "order_calc_margin"
+        except Exception:
+            basis = 0.0
+        if basis <= 0:
+            basis = float(CONFIG.margin_per_trade)
+        ladder["margin_basis"] = round(basis, 2)
+        ladder["margin_basis_source"] = source
+        ladder["margin_basis_volume"] = float(position.volume)
+        return basis
+
+    def _volume_for_amount(self, broker_sym: str, volume: float, profit: float,
+                           amount: float) -> tuple[float, float]:
+        """Volume to close so the realised amount is at least `amount`.
+
+        Profit scales with volume, so the required share is amount/profit.
+        Rounded UP to the volume step ("at least"), then capped so the remainder
+        never drops below the broker minimum. Returns (lots, uncapped_lots).
+        """
+        si = mt5.symbol_info(broker_sym)
+        if si is None or profit <= 0 or amount <= 0:
+            return 0.0, 0.0
+        step = float(getattr(si, "volume_step", 0.01) or 0.01)
+        vmin = float(getattr(si, "volume_min", step) or step)
+        volume = float(volume)
+        needed = volume * (float(amount) / float(profit))
+        wanted = round(math.ceil(needed / step - 1e-9) * step, 8)
+        max_closable = round(math.floor((volume - vmin) / step + 1e-9) * step, 8)
+        if max_closable < step:
+            return 0.0, wanted
+        return round(min(wanted, max_closable), 8), wanted
+
+    def _money_lock(self, position, signal: dict, ladder: dict,
+                    entry_price: float, long_side: bool) -> Optional[str]:
+        """Bank a cash floor once floating profit reaches a multiple of margin.
+
+        Returns "closed" when volume was reduced, "state" when only bookkeeping
+        changed, and None when nothing happened. The R ladder is untouched: this
+        only shrinks the position, and the trail continues on the remainder.
+        """
+        if not CONFIG.s146_money_lock_enabled or mt5 is None:
+            return None
+        if ladder.get("money_lock_done"):
+            return None
+
+        profit = float(getattr(position, "profit", 0.0) or 0.0)
+        if profit <= 0:
+            return None
+        basis = self._margin_basis(position, ladder, entry_price)
+        if basis <= 0:
+            return None
+        trigger = float(CONFIG.s146_money_lock_trigger_mult) * basis
+        if profit < trigger:
+            return None
+
+        target_amount = float(CONFIG.s146_money_lock_secure_mult) * basis
+        lots, wanted_lots = self._volume_for_amount(
+            position.symbol, position.volume, profit, target_amount)
+        symbol = signal.get("symbol", position.symbol)
+        journal = {
+            "signal_id": signal.get("signal_id"),
+            "symbol": symbol,
+            "position_ticket": int(position.ticket),
+            "profit": round(profit, 2),
+            "margin_basis": round(basis, 2),
+            "margin_basis_source": ladder.get("margin_basis_source"),
+            "trigger_mult": CONFIG.s146_money_lock_trigger_mult,
+            "trigger_profit": round(trigger, 2),
+            "secure_mult": CONFIG.s146_money_lock_secure_mult,
+            "target_amount": round(target_amount, 2),
+            "volume_before": float(position.volume),
+        }
+
+        if lots <= 0:
+            ladder["money_lock_done"] = True
+            ladder["money_lock_skipped"] = "volume below broker minimum"
+            log.info(f"s146 #{position.ticket} money lock skipped: {position.volume} lots "
+                     f"cannot be split while leaving a runner")
+            s146_events.log_5m("money_lock_skipped", {
+                **journal, "reason": "volume below broker minimum",
+                "lots_wanted": wanted_lots,
+            }, key=f"money_lock_skip:{position.ticket}")
+            return "state"
+
+        secured = profit * lots / float(position.volume)
+        capped = lots < wanted_lots
+        if CONFIG.dry_run:
+            log.info(f"[DRY RUN] would money-lock {lots} of {position.volume} lots on "
+                     f"#{position.ticket}: profit {profit:.2f} >= {trigger:.2f}, "
+                     f"securing ~{secured:.2f}")
+            return None
+
+        res = self.client.close_partial(
+            position, lots,
+            f"s146 lock {CONFIG.s146_money_lock_trigger_mult}x margin")
+        ok = res is not None and res.retcode == mt5.TRADE_RETCODE_DONE
+        log.info(f"s146 #{position.ticket} money lock {lots}/{position.volume} lots "
+                 f"| profit {profit:.2f} >= {trigger:.2f} (={CONFIG.s146_money_lock_trigger_mult}x "
+                 f"margin {basis:.2f}) | secured ~{secured:.2f} of target {target_amount:.2f} "
+                 f"ok={ok}")
+        s146_events.log_5m("money_lock_banked", {
+            **journal,
+            "lots_closed": lots,
+            "lots_wanted": wanted_lots,
+            "capped_to_keep_runner": bool(capped),
+            "secured_estimate": round(secured, 2),
+            "deal_ticket": int(getattr(res, "deal", 0) or 0),
+            "ok": bool(ok),
+            "retcode": str(getattr(res, "retcode", "no result")),
+            "comment": str(getattr(res, "comment", "")),
+        }, key=f"money_lock:{position.ticket}:{'ok' if ok else 'fail'}")
+        if not ok:
+            log.error(f"s146 #{position.ticket}: money lock close rejected "
+                      f"{getattr(res, 'retcode', 'no result')} "
+                      f"{getattr(res, 'comment', '')}")
+            return None
+        ladder["money_lock_done"] = True
+        ladder["money_lock_lots"] = lots
+        ladder["money_lock_profit"] = round(profit, 2)
+        ladder["money_lock_secured"] = round(secured, 2)
+        return "closed"
 
     def _bank_partial(self, position, signal: dict, ladder: dict, peak_r: float) -> bool:
         """Close S146_PARTIAL_FRACTION at market. Returns True if state changed."""

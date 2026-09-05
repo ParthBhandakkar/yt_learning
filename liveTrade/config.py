@@ -171,6 +171,18 @@ class Config:
     s146_trail_step_r: float = field(default_factory=lambda: _f("S146_TRAIL_STEP_R", 0.5))
     s146_trail_giveback_r: float = field(
         default_factory=lambda: _f("S146_TRAIL_GIVEBACK_R", 0.5))
+    # Money-based profit lock, independent of the R ladder above. When floating
+    # profit reaches TRIGGER_MULT x the margin actually committed to the trade,
+    # close just enough volume to bank SECURE_MULT x that margin, then let the
+    # normal R ladder carry the remainder. Defaults: at 1.5x margin (Rs 1500 on
+    # Rs 1000 of margin) bank 0.7x margin (Rs 700). This fires at most once per
+    # position and always leaves at least the broker minimum volume running.
+    s146_money_lock_enabled: bool = field(
+        default_factory=lambda: _b("S146_MONEY_LOCK_ENABLED", True))
+    s146_money_lock_trigger_mult: float = field(
+        default_factory=lambda: _f("S146_MONEY_LOCK_TRIGGER_MULT", 1.5))
+    s146_money_lock_secure_mult: float = field(
+        default_factory=lambda: _f("S146_MONEY_LOCK_SECURE_MULT", 0.7))
     # ---------------------------------------------------------------- stops
     # Anchor the stop behind the nearest pool of resting orders just outside the
     # 15m entry zone (equal highs/lows preferred, since that is where stops sit)
